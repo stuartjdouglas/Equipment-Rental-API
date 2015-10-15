@@ -3,6 +3,6 @@
 
 tests:
   script:
-    - go test ./test
+    - "go test ./test"
   tags:
     - golang
