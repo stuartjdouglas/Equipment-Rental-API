@@ -9,5 +9,5 @@ install:
   - go get github.com/zenazn/goji
   - go get gopkg.in/mgo.v2
   - go get github.com/stretchr/testify
-  - go get github.com/stretchr/testify/tree/master/assert
+after_script:
   - go test -v ./test
