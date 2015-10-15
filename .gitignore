@@ -7,7 +7,7 @@
 _obj
 _test
 _Godeps
-Godeps/
+Godeps/_workspace/
 
 # Architecture specific extensions/prefixes
 *.[568vq]

@@ -1,0 +1,5 @@
+{
+    "Title": "Default Title",
+    "Port": 3000,
+    "MongoDb": "mongodb://remon:lemon@ds042898.mongolab.com:42898/lemon"
+}
