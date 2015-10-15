@@ -8,5 +8,5 @@ go:
 install:
   - go get github.com/zenazn/goji
   - go get gopkg.in/mgo.v2
-  - go get github.com/stretchr/testify/assert
+  - go get github.com/stretchr/testify
   - go test -v ./test
