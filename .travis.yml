@@ -1,0 +1,12 @@
+language: go
+
+go:
+  - tip
+
+test:
+- "go test ./test"
+
+install:
+  - go get github.com/zenazn/goji
+  - go get gopkg.in/mgo.v2
+  - go get github.com/stretchr/testify/assert
