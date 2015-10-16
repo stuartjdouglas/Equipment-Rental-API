@@ -7,5 +7,3 @@ runTests:
   script:
     - "go test ./test/** -v -x"
   stage: test
-  tags:
-    - Golang
