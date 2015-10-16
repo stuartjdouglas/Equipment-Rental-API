@@ -15,7 +15,7 @@ type Config struct {
 
 
 // Generates a template JSON file, writes it to file and returns the struct
-func GenConfig() Config{
+func GenConfig(path string) Config{
 
 	log.Println("Creating config.json")
 
@@ -33,7 +33,7 @@ func GenConfig() Config{
 	}
 
 	// Write to file
-	e := ioutil.WriteFile("config.json",str , 0644)
+	e := ioutil.WriteFile(path, str, 0644)
 	if e != nil {
 		// If file fails to write, panic
 		panic(e)
@@ -44,14 +44,14 @@ func GenConfig() Config{
 }
 
 // Loads the config from config.json, if not existing create one and return config struct
-func LoadConfig() Config{
+func LoadConfig(path string) Config{
 	// Read in the file
-	file, e := ioutil.ReadFile("config.json")
+	file, e := ioutil.ReadFile(path)
 	// Create the empty struct
 	config:= Config{}
 	if e != nil {
 		//file does not exist
-		config = GenConfig()
+		config = GenConfig(path)
 	} else {
 		// Parse the json
 		json.Unmarshal(file, &config)

@@ -2,12 +2,10 @@ before_script:
   - "export GOPATH=\"`pwd`/go\""
   - "gigo install -r requirements.txt"
 stages:
-  - build
   - test
-  - deploy
 runTests:
   script:
-    - "go test ./test -v -x"
+    - "go test ./test/** -v -x"
   stage: test
   tags:
     - Golang

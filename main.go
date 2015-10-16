@@ -7,10 +7,12 @@ import (
 	"fmt"
 )
 
+const CONF_FILE = "./config.json"
+
 // Starts the server
 func main() {
 	// Create the server and give it the config values
-	fmt.Println(config.LoadConfig().Title);
-	settings := config.LoadConfig()
+	fmt.Println(config.LoadConfig(CONF_FILE).Title);
+	settings := config.LoadConfig(CONF_FILE)
 	server.Start(settings, config.Connection(settings.MongoDb));
 }
