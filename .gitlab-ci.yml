@@ -1,15 +1,10 @@
 before_script:
   - "export GOPATH=\"`pwd`/go\""
+  - "gigo install -r requirements.txt"
 stages:
   - build
   - test
   - deploy
-fetchDependencies:
-  stage: build
-  script:
-    - "go get github.com/stretchr/testify"
-    - "go get github.com/zenazn/goji"
-    - "go get gopkg.in/mgo.v2"
 runTests:
   script:
     - "go test ./test -v -x"
