@@ -12,7 +12,7 @@ fetchDependencies:
     - "go get gopkg.in/mgo.v2"
 runTests:
   script:
-    - "go test ./test"
+    - "go test ./test -v -x"
   stage: test
   tags:
     - Golang
