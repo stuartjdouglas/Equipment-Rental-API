@@ -1,6 +1,6 @@
 before_script:
   - "export GOPATH=\"`pwd`/go\""
-  - "gigo install -r requirements.txt"
+  - "gigo install -r ./requirements.txt"
 stages:
   - test
 runTests:
