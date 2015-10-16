@@ -71,6 +71,10 @@ func CreateRoutes (api router.API) {
 		res.Write(data)
 	})
 
+	api.Router.Get("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		r.Body.Read()
+	})
+
 	api.Router.Get("/users", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetUsers(api)

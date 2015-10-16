@@ -3,7 +3,6 @@ package models
 
 import (
 	"../router"
-
 	"gopkg.in/mgo.v2/bson"
 	"log"
 )
@@ -15,7 +14,7 @@ type person struct {
 
 type user struct {
 	Username 	string 	`json:"username"`
-	Profile 	Profile `json:"profile"`
+	Profile 	*Profile `json:"profile"`
 }
 
 type Profile struct {
@@ -25,7 +24,7 @@ type Profile struct {
 }
 
 type fulluser struct {
-	Username 	string `json:"username"`
+	Username 	string `json:"username", bson:"username"`
 	First_name 	string `json:"first_name"`
 	Last_name 	string `json:"last_name"`
 	Email 		string `json:"email"`
