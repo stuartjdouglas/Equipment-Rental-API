@@ -2,8 +2,8 @@
 package main
 
 import (
-	"./core/server"
 	"./core/config"
+	"./core/server"
 	"fmt"
 )
 

@@ -1,0 +1,5 @@
+tests:
+  script:
+    - "go test ./test"
+  tags:
+    - golang

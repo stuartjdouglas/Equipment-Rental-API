@@ -6,6 +6,7 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
+
 	assert.NotNil(t, config.LoadConfig(), "should not be empty")
 }
 
