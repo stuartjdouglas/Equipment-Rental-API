@@ -6,8 +6,8 @@ import (
 	"../routes"
 	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
-	"../config"
 	"github.com/zenazn/goji/web/middleware"
+	"../config"
 	"../router"
 )
 
