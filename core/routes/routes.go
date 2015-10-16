@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/zenazn/goji/web"
 	"../models"
+	"strings"
 )
 
 
@@ -32,6 +33,22 @@ type hello struct {
 	Message string `json:"message"`
 }
 
+type test_struct struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email string `json:"email"`
+}
+
+func processUser(username string, password string) test_struct {
+	user:= test_struct{}
+	if strings.Replace(username, " ", "+", -1) != "" && strings.Replace(password, " ", "+", -1) != "" {
+		user.Username = username;
+		user.Password = password;
+		return user;
+	}	else	{
+		return user
+	}
+}
 
 func CreateRoutes (api router.API) {
 
@@ -71,8 +88,36 @@ func CreateRoutes (api router.API) {
 		res.Write(data)
 	})
 
-	api.Router.Get("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		r.Body.Read()
+	type error_response struct {
+		Message string `json:"message"`
+	}
+
+
+
+
+
+	api.Router.Post("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		newdata := test_struct{}
+		err := json.NewDecoder(r.Body).Decode(&newdata)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+		}
+
+		if !models.CheckIfUserExists(api, newdata.Username) {
+			if models.RegisterUser(api, newdata.Username, newdata.Password, newdata.Email) {
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusCreated)
+				json.NewEncoder(res).Encode(error_response{Message:"User Created"})
+			} else {
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(res).Encode(error_response{Message:"User not created: Something went wrong"})
+			}
+		} else {
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusConflict)
+			json.NewEncoder(res).Encode(error_response{Message:"User not created: Already exists"})
+		}
 	})
 
 	api.Router.Get("/users", func (c web.C, res http.ResponseWriter, r *http.Request) {
@@ -84,8 +129,6 @@ func CreateRoutes (api router.API) {
 			return
 		}
 
-//		fmt.Printf(data)
-		
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		res.Write(data)

@@ -32,6 +32,8 @@ func Connection(url string) Context{
 
 	if e != nil {
 		return Context{Session:nil, Err: e}
+	} else {
+		log.Printf("Connected to " + url)
 	}
 
 	context := Context{}
