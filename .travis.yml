@@ -3,5 +3,4 @@ language: go
 go:
   - "1.5.1"
 script: go_import_path ./ && go get github.com/stretchr/testify && go get github.com/zenazn/goji && go get gopkg.in/mgo.v2 && go test -v ./test
-notifications:
-  email: false
+
