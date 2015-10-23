@@ -1,72 +1,42 @@
 package routes
 
 import (
-//	"net/http"
-//	"github.com/zenazn/goji/web"
-//	"strings"
-//	"../controllers"
-//	"../config"
-//	"../server"
 	"../router"
-"net/http"
+	"net/http"
 	"encoding/json"
 	"fmt"
 	"github.com/zenazn/goji/web"
 	"../models"
-	"strings"
 )
 
 
-/*
-
-	 // Sets the Header
-w.Header().Set("Content-Type", "application/json")
-
-// Returns the JSON
-encoder := json.NewEncoder(w)
-encoder.Encode(message)
-
- */
-
+type login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
 type hello struct {
 	Message string `json:"message"`
 }
 
-type test_struct struct {
+type register struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email string `json:"email"`
 }
 
-func processUser(username string, password string) test_struct {
-	user:= test_struct{}
-	if strings.Replace(username, " ", "+", -1) != "" && strings.Replace(password, " ", "+", -1) != "" {
-		user.Username = username;
-		user.Password = password;
-		return user;
-	}	else	{
-		return user
-	}
+type error_response struct {
+	Message string `json:"message"`
 }
+
 
 func CreateRoutes (api router.API) {
 
-//	api.Router.Get("/hello/:name", controllers.Hello)
-//	api.Router.Get("/person", controllers.Person)
-
+	// A test route
 	api.Router.Get("/hello/:name", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		message := hello{
 			Message: fmt.Sprintf("こんにちは, %s!", c.URLParams["name"]),
 		}
-		//	encoder := json.NewEncoder(w)
-
-//		data, err := json.Marshal(message)
-//		if err != nil {
-//			http.Error(res, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		json.NewEncoder(res).Encode(message)
@@ -74,30 +44,19 @@ func CreateRoutes (api router.API) {
 
 
 	api.Router.Get("/user/:name", func (c web.C, res http.ResponseWriter, r *http.Request) {
-
 		result := models.GetUser(api, c.URLParams["name"])
-
 		data, err := json.Marshal(result)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		res.Write(data)
 	})
 
-	type error_response struct {
-		Message string `json:"message"`
-	}
-
-
-
-
-
 	api.Router.Post("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		newdata := test_struct{}
+		newdata := register{}
 		err := json.NewDecoder(r.Body).Decode(&newdata)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
@@ -123,6 +82,8 @@ func CreateRoutes (api router.API) {
 	api.Router.Get("/users", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetUsers(api)
+
+		fmt.Println(result)
 		data, err := json.Marshal(result)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -132,6 +93,49 @@ func CreateRoutes (api router.API) {
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		res.Write(data)
-//		json.NewEncoder(res).Encode(data)
+	})
+
+	api.Router.Get("/profile", func (c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if r.Header.Get("token") != "" {
+			result := models.GetProfile(api, r.Header.Get("token"))
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			http.Error(res, "", http.StatusUnauthorized)
+		}
+
+	})
+
+	api.Router.Post("/logout", func (c web.C, res http.ResponseWriter, r *http.Request) {
+//		Not yet implemented
+//		Call method to remove token
+	})
+
+	api.Router.Post("/login", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		loginDetails := login{}
+		err := json.NewDecoder(r.Body).Decode(&loginDetails)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+		}
+
+		result := models.LoginUser(api, loginDetails.Username, loginDetails.Password)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+
 	})
 }
