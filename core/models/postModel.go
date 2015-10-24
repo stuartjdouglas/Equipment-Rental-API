@@ -17,6 +17,12 @@ type Post struct {
 }
 
 
+type Posts struct {
+	Post []Post `json:"post"`
+	Total int `json:"total"`
+}
+
+
 func CheckIfPostExists (api router.API, slug string) bool {
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM posts WHERE slug = ?)", slug).Scan(&exist)
@@ -77,4 +83,41 @@ func CreatePost(api router.API, post Post, token string, slug string) bool {
 
 	defer stmt.Close()
 	return true
+}
+
+func GetPosts (api router.API) Posts {
+	var content = []Post{}
+	stmt, err := api.Context.Session.Prepare("SELECT title, slug, author, content, date_created, date_edited FROM posts")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+
+	for rows.Next() {
+		var result Post
+		err := rows.Scan(
+			&result.Title,
+			&result.Slug,
+			&result.Author,
+			&result.Content,
+			&result.Date_created,
+			&result.Date_edited,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return Posts{Post: content, Total: len(content)}
 }

@@ -58,4 +58,23 @@ func createPostRoutes (api router.API) {
 			http.Error(res, "", http.StatusUnauthorized)
 		}
 	})
+
+
+
+//	Get all posts
+	api.Router.Get("/posts", func (c web.C, res http.ResponseWriter, r *http.Request) {
+
+		result := models.GetPosts(api)
+
+		fmt.Println(result)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+	})
 }
