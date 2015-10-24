@@ -42,13 +42,13 @@ type userProfile struct {
 }
 
 // Logins in the user and returns an access token
-func LoginUser(api router.API, username string, password string) auth {
+func LoginUser(api router.API, username string, password string, ip_address string) auth {
 	login := auth{}
 	if getAuthUser(api, username, password) {
 		// Generate the token
 		token := utils.GenerateToken(username);
 		// Add the token to the database
-		return addUserToken(api, username, token);
+		return addUserToken(api, username, token, ip_address);
 
 	} else {
 		return login
@@ -66,17 +66,18 @@ func getUserID(api router.API, username string) int {
 	return id
 }
 
+
 // Adds a token into the database
-func addUserToken(api router.API, username string, token string) auth {
+func addUserToken(api router.API, username string, token string, ip_address string) auth {
 	login := auth{}
 	userid := getUserID(api, username)
-	stmt, err := api.Context.Session.Prepare("INSERT INTO tokens (token, user_id, date_generated, date_expires) values (?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("INSERT INTO tokens (token, user_id, date_generated, date_expires, ip_address) values (?, ?, ?, ?, ?)")
 
 	if err != nil {
 		panic(err)
 	}
 
-	res, err:= stmt.Exec(token, userid, time.Now(), time.Now())
+	res, err:= stmt.Exec(token, userid, time.Now(), time.Now().AddDate(0, 0, 7), ip_address)
 	if (err != nil) {
 		panic(err)
 	}
@@ -87,7 +88,7 @@ func addUserToken(api router.API, username string, token string) auth {
 
 	login.Username = username
 	login.Token = token
-	login.Expiry = time.Now();
+	login.Expiry = time.Now().AddDate(0, 0, 7);
 
 	return login;
 }
@@ -251,6 +252,81 @@ func getUserIdFromToken(api router.API, token string) int {
 		log.Fatal(err)
 	}
 	return id;
+}
+
+type session struct{
+	Date_generated 	time.Time `json:"date_generated"`
+	Date_expires	time.Time `json:"date_expires"`
+	Ip_address		string    `json:"ip_address"`
+}
+
+func GetSessions(api router.API, token string) []session {
+	sessions := []session{}
+	userid := getUserIdFromToken(api, token)
+
+	stmt, err := api.Context.Session.Prepare("SELECT date_generated, date_expires, ip_address FROM tokens WHERE user_id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(userid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var sess session
+		err := rows.Scan(
+			&sess.Date_generated,
+			&sess.Date_expires,
+			&sess.Ip_address,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+		sessions = append(sessions, sess)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return sessions
+}
+
+func GetSession(api router.API, token string) []session {
+	sessions := []session{}
+
+	stmt, err := api.Context.Session.Prepare("SELECT date_generated, date_expires, ip_address FROM tokens WHERE token = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var sess session
+		err := rows.Scan(
+			&sess.Date_generated,
+			&sess.Date_expires,
+			&sess.Ip_address,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+		sessions = append(sessions, sess)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return sessions
 }
 
 func GetProfile(api router.API, token string) []userProfile {

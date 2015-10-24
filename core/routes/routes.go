@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/zenazn/goji/web"
 	"../models"
+	"net"
 )
 
 
@@ -31,7 +32,7 @@ type error_response struct {
 
 
 func CreateRoutes (api router.API) {
-
+	createPostRoutes(api)
 	// A test route
 	api.Router.Get("/hello/:name", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		message := hello{
@@ -114,6 +115,40 @@ func CreateRoutes (api router.API) {
 
 	})
 
+	api.Router.Get("/profile/sessions", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("token") != "" {
+			result := models.GetSessions(api, r.Header.Get("token"))
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			http.Error(res, "", http.StatusUnauthorized)
+		}
+	})
+
+	api.Router.Get("/profile/session", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("token") != "" {
+			result := models.GetSession(api, r.Header.Get("token"))
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			http.Error(res, "", http.StatusUnauthorized)
+		}
+	})
+
 	api.Router.Post("/logout", func (c web.C, res http.ResponseWriter, r *http.Request) {
 //		Not yet implemented
 //		Call method to remove token
@@ -125,8 +160,8 @@ func CreateRoutes (api router.API) {
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 		}
-
-		result := models.LoginUser(api, loginDetails.Username, loginDetails.Password)
+		ip_address, _, _ := net.SplitHostPort(r.RemoteAddr)
+		result := models.LoginUser(api, loginDetails.Username, loginDetails.Password, ip_address)
 		data, err := json.Marshal(result)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
