@@ -121,3 +121,76 @@ func GetPosts (api router.API) Posts {
 
 	return Posts{Post: content, Total: len(content)}
 }
+func GetPostsFromUser (api router.API, username string) Posts {
+	var content = []Post{}
+	stmt, err := api.Context.Session.Prepare("SELECT title, slug, author, content, date_created, date_edited FROM posts where author = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+
+	for rows.Next() {
+		var result Post
+		err := rows.Scan(
+			&result.Title,
+			&result.Slug,
+			&result.Author,
+			&result.Content,
+			&result.Date_created,
+			&result.Date_edited,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return Posts{Post: content, Total: len(content)}
+}
+
+func GetPost (api router.API, slug string) Posts {
+	var content = []Post{}
+	stmt, err := api.Context.Session.Prepare("SELECT title, slug, author, content, date_created, date_edited FROM posts where slug = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(slug)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+
+	for rows.Next() {
+		var result Post
+		err := rows.Scan(
+			&result.Title,
+			&result.Slug,
+			&result.Author,
+			&result.Content,
+			&result.Date_created,
+			&result.Date_edited,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return Posts{Post: content, Total: len(content)}
+}

@@ -77,4 +77,36 @@ func createPostRoutes (api router.API) {
 		res.WriteHeader(200)
 		res.Write(data)
 	})
+
+	api.Router.Get("/posts/:username", func (c web.C, res http.ResponseWriter, r *http.Request) {
+
+		result := models.GetPostsFromUser(api, c.URLParams["username"])
+
+		fmt.Println(result)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+	})
+
+	api.Router.Get("/post/:slug", func (c web.C, res http.ResponseWriter, r *http.Request) {
+
+		result := models.GetPost(api, c.URLParams["slug"])
+
+		fmt.Println(result)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+	})
 }
