@@ -12,8 +12,8 @@ import (
 
 
 type login struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" param:"username"`
+	Password string `json:"password" param:"password"`
 }
 
 type hello struct {
@@ -132,6 +132,23 @@ func CreateRoutes (api router.API) {
 		}
 	})
 
+	api.Router.Get("/hello", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("token") != "" {
+			result := models.GetHello(api, r.Header.Get("token"))
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			http.Error(res, "", http.StatusUnauthorized)
+		}
+	})
+
 	api.Router.Get("/profile/session", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {
 			result := models.GetSession(api, r.Header.Get("token"))
@@ -154,23 +171,46 @@ func CreateRoutes (api router.API) {
 //		Call method to remove token
 	})
 
+
+
+
 	api.Router.Post("/login", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		loginDetails := login{}
-		err := json.NewDecoder(r.Body).Decode(&loginDetails)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusBadRequest)
-		}
-		ip_address, _, _ := net.SplitHostPort(r.RemoteAddr)
-		result := models.LoginUser(api, loginDetails.Username, loginDetails.Password, ip_address)
-		data, err := json.Marshal(result)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
+		var loginDetails = login{
+			Username:r.FormValue("username"),
+			Password: r.FormValue("password"),
 		}
 
-		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(200)
-		res.Write(data)
+
+		if len(loginDetails.Username) == 0 || len(loginDetails.Password) == 0{
+			fmt.Println("Get user info from json");
+
+			err := json.NewDecoder(r.Body).Decode(&loginDetails)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusBadRequest)
+			}
+		}
+		ip_address, _, _ := net.SplitHostPort(r.RemoteAddr)
+		println("username: " + r.FormValue("username") + "  |  Password: " + r.FormValue("password"))
+
+		var login models.Auth
+		login = models.LoginUser(api, loginDetails.Username, loginDetails.Password, ip_address)
+
+		if(login.Success) {
+			data, err := json.Marshal(login)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusOK)
+			res.Write(data)
+		} else {
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(res).Encode(error_response{Message:"Invalid Username or Password"})
+		}
+
+
 
 	})
 }

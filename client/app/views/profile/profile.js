@@ -1,27 +1,28 @@
 'use strict';
 
-angular.module('app.home', ['ngRoute'])
+angular.module('app.profile', ['ngRoute'])
 
-.config(['$routeProvider', function($routeProvider) {
-  $routeProvider.when('/home/', {
-    templateUrl: 'home/home.html',
-    controller: 'HomeCtrl'
-  });
-}])
-
-.controller('HomeCtrl', ['$cookies', '$scope', '$http', function($cookies, $scope, $http) {
+.config(['$routeProvider',
+    function($routeProvider) {
+        $routeProvider.when('/profile/', {
+            templateUrl: 'views/profile/profile.html',
+            controller: 'ProfileCtrl'
+        });
+    }
+])
+.controller('ProfileCtrl', ['$cookies', '$scope', '$http', function($cookies, $scope, $http) {
 	if ($cookies.get('token')) {
         	$scope.view = true;
 
             $http({
-                url: backend + "/hello",
+                url: backend + "/profile",
                 method: 'GET',
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'token': $cookies.get('token')
                 }
             }).success(function(data, status, headers, config) {
-            	$scope.message = data.message;
+            	$scope.profile = data.profile[0];
                 console.log(data);
             }).
             error(function(data, status, headers, config) {

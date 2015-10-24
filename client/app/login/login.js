@@ -9,6 +9,6 @@ angular.module('app.login', ['ngRoute'])
   });
 }])
 
-.controller('LoginCtrl', [function() {
-
+.controller('LoginCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
+	$scope.view = !$rootScope.loggedIn;
 }]);
