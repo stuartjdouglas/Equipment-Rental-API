@@ -155,7 +155,6 @@ func GetUser(api router.API, username string) []user {
 
 // Checks if a user already exists
 func CheckIfUserExists(api router.API, username string) bool {
-	fmt.Println(api.Context.Session)
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE username = ?)", username).Scan(&exist)
 	if (err != nil) {
