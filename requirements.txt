@@ -4,3 +4,4 @@ github.com/go-sql-driver/mysql
 github.com/satori/go.uuid
 github.com/rs/cors
 github.com/franela/goblin
+github.com/hypebeast/gojistatic
