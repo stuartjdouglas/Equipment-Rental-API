@@ -1,5 +1,15 @@
 {
-    "Title": "Default Title",
-    "Port": 3000,
-    "MongoDb": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true"
+    "development": {
+        "title": "Default Title",
+        "port": 3000,
+        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true"
+    },
+    "production": {
+        "title": "Default Title",
+        "port": 3000,
+        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true"
+    }
+
 }
+
+

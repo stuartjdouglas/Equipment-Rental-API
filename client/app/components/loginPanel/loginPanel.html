@@ -1,0 +1,39 @@
+<style>
+.makemered {
+	background-color:red;
+	color:white;
+	width:100%;
+	padding-top:20px;
+	padding-bottom:20px;
+}
+</style>
+<form ng-submit="login(user)">
+<div class="row" >
+
+<div class="four columns makemered" ng-show="error">
+  		<p>{{error}}</p>
+  	</div>
+  	<div class="row" >
+  	
+  </div>
+  	
+    <div class="two columns">
+      <label for="exampleEmailInput">Your email</label>
+      <input class="u-full-width" ng-model="user.name" type="text" placeholder="Lemon" id="">
+    </div>
+    <div class="two columns">
+     <label for="exampleEmailInput">Password</label>
+      <input class="u-full-width" ng-model="user.password" type="password" placeholder="********" id="">
+    </div>
+  </div>
+  <div class="row" >
+  	
+  <div class="two columns">
+  <p></p>
+  </div>
+  <div class="one columns">
+  <input class="button-primary" type="submit" value="Submit" >
+
+  </div>
+  </div>
+</form>

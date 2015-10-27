@@ -25,10 +25,11 @@ type fullUser struct {
 	Password 	string `json:"password", bson:"password"`
 }
 
-type auth struct {
-	Username 	string `json:"username"`
-	Token 		string `json:"token"`
-	Expiry		time.Time    `json:"expiry"`
+type Auth struct {
+	Success		bool 		`json:"success"`
+	Username 	string 		`json:"username"`
+	Token 		string 		`json:"token"`
+	Expiry		time.Time   `json:"expiry"`
 }
 
 type userProfile struct {
@@ -38,12 +39,15 @@ type userProfile struct {
 	First_name		string `json:"first_name"`
 	Last_name		string `json:"last_name"`
 	Location 		string `json:"location"`
-	Date_registered	string `json:"date_registered"`
+	Date_registered	time.Time `json:"date_registered"`
 }
 
+type profile struct {
+	Profile	[]userProfile    `json:"profile"`
+}
 // Logins in the user and returns an access token
-func LoginUser(api router.API, username string, password string, ip_address string) auth {
-	login := auth{}
+func LoginUser(api router.API, username string, password string, ip_address string) Auth {
+	var login Auth
 	if getAuthUser(api, username, password) {
 		// Generate the token
 		token := utils.GenerateToken(username);
@@ -68,8 +72,8 @@ func getUserID(api router.API, username string) int {
 
 
 // Adds a token into the database
-func addUserToken(api router.API, username string, token string, ip_address string) auth {
-	login := auth{}
+func addUserToken(api router.API, username string, token string, ip_address string) Auth {
+	var login Auth
 	userid := getUserID(api, username)
 	stmt, err := api.Context.Session.Prepare("INSERT INTO tokens (token, user_id, date_generated, date_expires, ip_address) values (?, ?, ?, ?, ?)")
 
@@ -85,7 +89,7 @@ func addUserToken(api router.API, username string, token string, ip_address stri
 	fmt.Println(res);
 
 	defer stmt.Close()
-
+	login.Success = true
 	login.Username = username
 	login.Token = token
 	login.Expiry = time.Now().AddDate(0, 0, 7);
@@ -155,7 +159,6 @@ func GetUser(api router.API, username string) []user {
 
 // Checks if a user already exists
 func CheckIfUserExists(api router.API, username string) bool {
-	fmt.Println(api.Context.Session)
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE username = ?)", username).Scan(&exist)
 	if (err != nil) {
@@ -329,7 +332,8 @@ func GetSession(api router.API, token string) []session {
 	return sessions
 }
 
-func GetProfile(api router.API, token string) []userProfile {
+// TODO fix json so you don't have to parse [0] to get values
+func GetProfile(api router.API, token string) profile {
 	userid := getUserIdFromToken(api, token)
 	stmt, err := api.Context.Session.Prepare("SELECT username, bio, email, first_name, last_name, location, date_registered FROM users WHERE id = ?")
 	if err != nil {
@@ -364,7 +368,20 @@ func GetProfile(api router.API, token string) []userProfile {
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return user;
+	return profile{Profile:user};
+}
+
+type hello struct {
+	Message string `json:"message"`
+}
+
+func GetHello(api router.API, token string) hello {
+
+	author := getUsername(api, getUserIdFromToken(api, token))
+	message := fmt.Sprintf("こんにちは, %s!", author)
+
+	return hello{Message:message}
+
 }
 
 

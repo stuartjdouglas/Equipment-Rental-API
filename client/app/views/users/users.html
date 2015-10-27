@@ -1,0 +1,15 @@
+<table class="u-full-width">
+    <thead>
+    <tr>
+        <th><h3>Username</h3></th>
+        <th><h3>Biography</h3></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="user in users">
+        <td><a href="#/user/{{user.username}}">{{user.username}}</a></td>
+        <td>{{user.bio}}</td>
+
+    </tr>
+    </tbody>
+</table>

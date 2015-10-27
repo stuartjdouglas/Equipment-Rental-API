@@ -8,9 +8,14 @@ import (
 )
 
 type Config struct {
-	Title string
-	Port int
-	MongoDb string
+	Development Properties `json:"development"`
+	Production Properties `json:"production"`
+}
+
+type Properties struct {
+	Title string `json:"title"`
+	Port int `json:"port"`
+	DbUrl string `json:"dburl"`
 }
 
 
@@ -21,9 +26,13 @@ func GenConfig(path string) Config{
 
 	config:= Config{}
 	//Set the default values
-	config.Title = "Default Title"
-	config.Port = 3000
-	config.MongoDb = "mongodb://remon:lemon@ds042898.mongolab.com:42898/lemon"
+	config.Development.Title = "Default Title"
+	config.Development.Port = 3000
+	config.Development.DbUrl = "mongodb://remon:lemon@ds042898.mongolab.com:42898/lemon"
+
+	config.Production.Title = "Default Title"
+	config.Production.Port = 3000
+	config.Production.DbUrl = "mongodb://remon:lemon@ds042898.mongolab.com:42898/lemon"
 
 	// Parse the json and format in pretty print format
 	str, err := json.MarshalIndent(config, "", "    ")
@@ -44,7 +53,7 @@ func GenConfig(path string) Config{
 }
 
 // Loads the config from config.json, if not existing create one and return config struct
-func LoadConfig(path string) Config{
+func LoadConfig(path string, devMode bool) Properties{
 	// Read in the file
 	file, e := ioutil.ReadFile(path)
 	// Create the empty struct
@@ -57,6 +66,21 @@ func LoadConfig(path string) Config{
 		json.Unmarshal(file, &config)
 	}
 
+//	Create the properties object which will contain the used settings of mode defined by user
+	var settings Properties
+
+//	If the operator has defined to use devMode use development values otherwise set to Production values
+	if devMode {
+		settings.Title = config.Development.Title
+		settings.DbUrl = config.Development.DbUrl
+		settings.Port  = config.Development.Port
+	} else {
+//		Always fall back to production values
+		settings.Title = config.Production.Title
+		settings.DbUrl = config.Production.DbUrl
+		settings.Port  = config.Production.Port
+	}
+
 	// Return the config struct
-	return config
+	return settings
 }
