@@ -5,6 +5,7 @@ import (
 	"./core/config"
 	"./core/server"
 	"fmt"
+	"strconv"
 )
 
 const CONF_FILE = "./config.json"
@@ -12,7 +13,9 @@ const CONF_FILE = "./config.json"
 // Starts the server
 func main() {
 	// Create the server and give it the config values
-	fmt.Println(config.LoadConfig(CONF_FILE).Title);
-	settings := config.LoadConfig(CONF_FILE)
-	server.Start(settings, config.Connection(settings.MongoDb));
+	settings := config.LoadConfig(CONF_FILE, true)
+
+	fmt.Println(settings.Title + ": " + settings.DbUrl + ": " + strconv.Itoa(settings.Port))
+
+	server.Start(settings, config.Connection(settings.DbUrl));
 }

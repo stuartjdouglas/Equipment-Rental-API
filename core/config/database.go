@@ -10,6 +10,7 @@ _ "github.com/go-sql-driver/mysql"
 type Context struct {
 	Session *sql.DB
 	Err error
+	Debug bool
 }
 
 type Person struct {
@@ -19,14 +20,15 @@ type Person struct {
 
 
 func Connection(url string) Context{
-	fmt.Println(url);
+//	root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true
 	db, err := sql.Open("mysql", url)
 	if err != nil {
 		fmt.Println(err)
 		panic(err)
 //		return Context{Session:nil, Err: err}
 	} else {
-		log.Printf("Connected to " + url)
+//		log.Printf("Connected to " + url)
+		log.Println("Connected to maria");
 	}
 	context := Context{}
 	context.Session = db

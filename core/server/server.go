@@ -10,12 +10,21 @@ import (
 	"../config"
 	"../router"
 	"github.com/hypebeast/gojistatic"
+	"github.com/rs/cors"
 )
 
-func Start(settings config.Config, context config.Context) {
+func Start(settings config.Properties, context config.Context) {
 	fmt.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Port))
 
 	masterRouter := web.New()
+
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		AllowCredentials: true,
+		AllowedHeaders: []string{"*"},
+	})
 
 
 	//Get routes
@@ -37,6 +46,8 @@ func Start(settings config.Config, context config.Context) {
 	}))
 	angularRouter.Use(gojistatic.Static("/*", options))
 
+//	Apply the CORS options to the main route handler
+	masterRouter.Use(c.Handler)
 
 
 	apiRouter.Use(middleware.SubRouter)
@@ -48,9 +59,25 @@ func Start(settings config.Config, context config.Context) {
 	routes.CreateRenderRoutes(router.API{Router:renderRouter, Context:context})
 
 	// Gracefully Serve
-	err := graceful.ListenAndServe(":" + strconv.Itoa(settings.Port), masterRouter)
-	if err != nil {
-		panic(err)
+	if portIsFree(settings.Port) {
+		err := graceful.ListenAndServe(":" + strconv.Itoa(settings.Port), masterRouter)
+		if err != nil {
+			//		If an error occurs, normally is port is already in use
+
+			//		Don't panic
+			panic(err)
+		}
 	}
 }
+
+// Checks if a port is free
+func portIsFree(port int) bool {
+//	If the port is being used
+
+//	Return false
+
+//	if not in use
+	return true
+}
+
 
