@@ -1,6 +1,6 @@
 github.com/zenazn/goji
-github.com/stretchr/testify
 gopkg.in/mgo.v2
 github.com/go-sql-driver/mysql
 github.com/satori/go.uuid
 github.com/rs/cors
+github.com/franela/goblin

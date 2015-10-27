@@ -3,6 +3,7 @@ package main
 
 import (
 	"./core/config"
+	"./core/config/database"
 	"./core/server"
 	"fmt"
 	"strconv"
@@ -17,5 +18,5 @@ func main() {
 
 	fmt.Println(settings.Title + ": " + settings.DbUrl + ": " + strconv.Itoa(settings.Port))
 
-	server.Start(settings, config.Connection(settings.DbUrl));
+	server.Start(settings, database.Connection(settings.DbUrl));
 }

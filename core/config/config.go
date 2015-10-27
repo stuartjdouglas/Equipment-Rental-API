@@ -52,6 +52,8 @@ func GenConfig(path string) Config{
 	return config
 }
 
+
+
 // Loads the config from config.json, if not existing create one and return config struct
 func LoadConfig(path string, devMode bool) Properties{
 	// Read in the file

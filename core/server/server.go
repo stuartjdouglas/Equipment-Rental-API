@@ -8,12 +8,13 @@ import (
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
 	"../config"
+	"../config/database"
 	"../router"
 	"github.com/hypebeast/gojistatic"
 	"github.com/rs/cors"
 )
 
-func Start(settings config.Properties, context config.Context) {
+func Start(settings config.Properties, context database.Context) {
 	fmt.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Port))
 
 	masterRouter := web.New()
