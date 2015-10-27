@@ -8,19 +8,19 @@ const CONF_FILE = "./../config.json"
 
 func TestLoadConfig(t *testing.T) {
 
-	assert.NotNil(t, config.LoadConfig(CONF_FILE), "should not be empty")
+	assert.NotNil(t, config.LoadConfig(CONF_FILE, true), "should not be empty")
 }
 
 func TestHasTitle(t *testing.T) {
-	assert.NotNil(t, config.LoadConfig(CONF_FILE).Title, "should be a title")
+	assert.NotNil(t, config.LoadConfig(CONF_FILE, true).Title, "should be a title")
 }
 
 func TestHasMongoDB(t *testing.T) {
-	assert.NotNil(t, config.LoadConfig(CONF_FILE).MongoDb, "should be a Mongo Url")
+	assert.NotNil(t, config.LoadConfig(CONF_FILE, true).DbUrl, "should be a Mongo Url")
 }
 
 func TestHasPort(t *testing.T) {
-	assert.NotNil(t, config.LoadConfig(CONF_FILE).Port, "should be a port number")
+	assert.NotNil(t, config.LoadConfig(CONF_FILE, true).Port, "should be a port number")
 }
 
 

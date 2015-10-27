@@ -5,7 +5,6 @@ import(
 	"encoding/json"
 "net/http"
 	"net"
-	"fmt"
 	"github.com/zenazn/goji/web"
 	"strings"
 )
@@ -24,7 +23,7 @@ func generateAuthRoutes(api router.API)	{
 			Username: r.FormValue("username"),
 			Password: r.FormValue("password"),
 		}
-		
+
 		if len(loginDetails.Username) == 0 || len(loginDetails.Password) == 0{
 			err := json.NewDecoder(r.Body).Decode(&loginDetails)
 			if err != nil {
