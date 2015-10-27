@@ -7,6 +7,8 @@ angular.module('app', [
   'app.login',
   'app.profile',
   'app.register',
+    'app.users',
+    'app.user',
   // Directives
   'app.loginPanel',
   'app.registerPanel',

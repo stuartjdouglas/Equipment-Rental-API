@@ -4,36 +4,30 @@
 <p ng-hide="view">You need to be logged in</p>
 
 <table class="u-full-width">
-
-  <tbody>
-    <tr>
+  <img src="http://media1.giphy.com/media/wZWTSyIwoMbQY/200.gif" height="500px" width="500px" ng-hide="profile">
+  <tbody ng-show="profile">
+    <tr ng-show="profile.username" class="animated fadeIn">
       <td><h4>Username</h4></td>
       <td>{{profile.username}}</td>
     </tr>
-    <tr>
+    <tr ng-show="profile.bio" class="animated fadeIn">
       <td><h4>Biography</h4></td>
       <td>{{profile.bio}}</td>
     </tr>
-    <tr>
+    <tr ng-show="profile.email" class="animated fadeIn">
       <td><h4>Email</h4></td>
       <td>{{profile.email}}</td>
     </tr>
-    <tr>
+    <tr ng-show="profile.location" class="animated fadeIn">
       <td><h4>location</h4></td>
       <td>{{profile.location}}</td>
     </tr>
-    <tr>
+    <tr ng-show="profile.first_name" class="animated fadeIn">
       <td><h4>Full name</h4></td>
       <td>{{profile.first_name}} {{profile.last_name}}</td>
     </tr>
-    <tr>
-      <td><h4>Username</h4></td>
-      <td>{{profile.username}}</td>
-    </tr>
-    <tr>
-      <td><h4>Username</h4></td>
-      <td>{{profile.username}}</td>
-    </tr>
+
+
 
   
   </tbody>

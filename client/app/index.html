@@ -9,31 +9,62 @@
   <title>Equipment Rental</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
-  <link rel="stylesheet" href="assets/css/skeleton.css">
-  <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
+    <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
+    <link rel="stylesheet" href="assets/css/skeleton.css">
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="bower_components/animate.css/animate.min.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
   <base href="/">
 </head>
 <body>
-  <div ng-controller="AuthCtrl"></div>
-  <ul class="menu">
-    <li><a href="#/home">Home</a></li>
-    <li><a href="#/profile" ng-show="loggedIn">Profile</a></li>
-    <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
-    <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
-    <li><a href="#/login" ng-show="loggedIn">Logout</a></li>
-  </ul>
-  <div ng-view></div>
-  <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-route/angular-route.js"></script>
+    <div class="wrapper">
+        <div class="header">
+            <div class="container">
+                <div class="three columns">
+                    <div class="icon">
+                        <p>Image</p>
+                    </div>
+                </div>
+                <div class="nine columns">
+                    <div class="sidebar">
+
+                        <div ng-controller="AuthCtrl"></div>
+                        <ul class="menu">
+                            <li><a href="#/home">Home</a></li>
+                            <li><a href="#/users">Users</a></li>
+                            <li><a href="#/profile" ng-show="loggedIn">Profile</a></li>
+                            <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
+                            <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
+                            <li><a href="#/login" ng-show="loggedIn">Logout</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <div class="container">
+
+                <div ng-view class="animated fadeIn"></div>
+
+        </div>
+    </div>
+
+
+
+
+  <script src="bower_components/angular/angular.min.js"></script>
+  <script src="bower_components/angular-route/angular-route.min.js"></script>
   <!-- views -->
   <script src="app.js"></script>
   <script src="home/home.js"></script>
   <script src="login/login.js"></script>
   <script src="views/profile/profile.js"></script>
   <script src="views/register/register.js"></script>
+    <script src="views/users/users.js"></script>
+    <script src="views/user/user.js"></script>
   <!-- Factories -->
   <script src="config.js"></script>
   <!-- Directives -->
