@@ -9,14 +9,14 @@ import (
 	"strconv"
 )
 
-const CONF_FILE = "./config.json"
+const confFile = "./config.json"
 
 // Starts the server
 func main() {
 	// Create the server and give it the config values
-	settings := config.LoadConfig(CONF_FILE, true)
+	settings := config.LoadConfig(confFile, true)
 
-	fmt.Println(settings.Title + ": " + settings.DbUrl + ": " + strconv.Itoa(settings.Port))
+	fmt.Println(">>>>>>>>>" + settings.Title + ": " + settings.DbUrl + ": " + strconv.Itoa(settings.Port))
 
-	server.Start(settings, database.Connection(settings.DbUrl));
+	server.Start(settings, database.Connection(settings.DbUrl))
 }
