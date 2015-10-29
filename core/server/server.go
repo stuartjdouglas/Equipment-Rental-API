@@ -30,17 +30,25 @@ func Start(settings config.Properties, context database.Context) {
 	//Create subroutes
 	apiRouter 		:= web.New()
 	angularRouter 	:= web.New()
+	imageRouter		:= web.New()
 
 	// Assign sub routes to handle certain path requests
 	masterRouter.Handle("/api/*", apiRouter)
+	masterRouter.Handle("/data/*", imageRouter)
 	masterRouter.Handle("/*", angularRouter)
 
 	// Apply SubRouter middleware to allow sub routing
 	apiRouter.Use(middleware.SubRouter)
 	angularRouter.Use(middleware.SubRouter)
+	imageRouter.Use(middleware.SubRouter)
 
 	// Serve the static files in the client app directory (this is to host the angular app)
 	angularRouter.Use(gojistatic.Static("client/app/", gojistatic.StaticOptions{
+		SkipLogging: true,
+		Expires: nil,
+	}))
+
+	imageRouter.Use(gojistatic.Static("data/images/", gojistatic.StaticOptions{
 		SkipLogging: true,
 		Expires: nil,
 	}))

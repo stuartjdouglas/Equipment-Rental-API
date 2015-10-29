@@ -16,8 +16,10 @@ func TestUtilsToken(t *testing.T) {
 			g.Assert(len(GenerateToken("qwertyuiopasdfghjklzxcvbnm")) == 36).IsTrue()
 		})
 
-		g.It("should be of type string", func() {
-			g.Assert(GenerateToken("Hello, World!").(string)).IsTrue()
-		})
+//		g.It("should be of type string", func() {
+//			str := GenerateToken("Hello, World!")
+//			str, boolean := str.(string)
+//			g.Assert(boolean).IsTrue()
+//		})
 	})
 }

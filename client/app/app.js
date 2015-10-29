@@ -9,6 +9,8 @@ angular.module('app', [
   'app.register',
     'app.users',
     'app.user',
+    'app.image',
+    'app.images',
   // Directives
   'app.loginPanel',
   'app.registerPanel',

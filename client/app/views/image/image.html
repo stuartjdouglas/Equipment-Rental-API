@@ -1,0 +1,10 @@
+<div class="image viewer" ng-show="view">
+    <div class="image" ng-repeat="image in images">
+        <h2>{{image.title}}</h2>
+        <img src="/data/{{image.location}}"/>
+    </div>
+    <i>{{images.total}} images</i>
+</div>
+<div class="unauthorized" ng-hide="view">
+    <h3>You are unauthorized to view this content</h3>
+</div>

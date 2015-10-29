@@ -6,39 +6,52 @@ import (
 "net/http"
 	"../models"
 	"../utils"
-	"io/ioutil"
-	"fmt"
-	"mime/multipart"
-	"os"
-	"io"
 	"path"
+	"encoding/json"
 )
 
-func writeToFile(image byte, filename string) {
-	fmt.Println(filename);
-	path:= "client/images/"
-	ioutil.WriteFile(path + filename, []byte("hello"), 0644)
-	fmt.Println("write file to desk");
-}
-
-
-func write(image multipart.File, filename string) {
-	f, err := os.OpenFile("client/images/" + filename, os.O_WRONLY | os.O_CREATE, 0666)
-	if err != nil {
-		panic (err)
-	}
-	io.Copy(f, image)
-	image.Close()
-}
 
 func generateImageRoutes(api router.API) {
+	api.Router.Get("/image/:filename", func(c web.C, res http.ResponseWriter, r *http.Request) {
+		result := models.GetImage(api,c.URLParams["filename"])
 
-//	TODO Upload
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+		res.Write(data)
+	})
 
-	type image struct {
-		Image []byte `json:"image"`
-	}
+	api.Router.Get("/images", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("token")
+		res.Header().Set("Content-Type", "application/json")
+		if token != "" {
+			result := models.GetAllImages(api)
+
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusOK)
+			res.Write(data)
+		} else {
+//			res.Header().Set("Content-Type", "application/json")
+							res.WriteHeader(http.StatusUnauthorized)
+//							res.Write(data)
+		}
+
+//		res.Header().Set("Content-Type", "application/json")
+						res.WriteHeader(http.StatusInternalServerError)
+//						res.Write(data)
+	})
+
 
 	api.Router.Post("/image/upload", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
@@ -51,7 +64,11 @@ func generateImageRoutes(api router.API) {
 				}
 
 
-				write(file, utils.GenerateToken(header.Filename) + path.Ext(header.Filename))
+				if utils.Write(file, utils.GenerateToken(header.Filename) + path.Ext(header.Filename)) {
+//					models.AddImageLocationToDb(api, utils.GenerateToken(header.Filename) + path.Ext(header.Filename), header.Filename)
+				} else {
+
+				}
 
 //				res.Header().Set("Content-Type", "application/json")
 //				res.WriteHeader(200)
