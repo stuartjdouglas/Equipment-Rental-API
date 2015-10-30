@@ -10,6 +10,9 @@ import (
 	"encoding/json"
 )
 
+type Error struct {
+	Message string `json:"message"`
+}
 
 func generateImageRoutes(api router.API) {
 	api.Router.Get("/image/:filename", func(c web.C, res http.ResponseWriter, r *http.Request) {
@@ -63,22 +66,28 @@ func generateImageRoutes(api router.API) {
 					panic(err)
 				}
 
+				// TODO Check if it already exists
+				filename := utils.RandomString(10) + path.Ext(header.Filename)
+				if utils.Write(file, filename) {
+					models.AddImageLocationToDb(api, filename, header.Filename, header.Filename, token)
 
-				if utils.Write(file, utils.GenerateToken(header.Filename) + path.Ext(header.Filename)) {
-//					models.AddImageLocationToDb(api, utils.GenerateToken(header.Filename) + path.Ext(header.Filename), header.Filename)
-				} else {
+					result := models.GetImage(api, filename)
 
+					data, err := json.Marshal(result)
+					if err != nil {
+						http.Error(res, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					res.Header().Set("Content-Type", "application/json")
+					res.WriteHeader(http.StatusOK)
+					res.Write(data)
 				}
-
-//				res.Header().Set("Content-Type", "application/json")
-//				res.WriteHeader(200)
-//				res.Write(data)
 			} else {
-				http.Error(res, "", http.StatusUnauthorized)
+//				TODO Return UNAUTHORIZED
 			}
 
 		} else {
-			http.Error(res, "", http.StatusUnauthorized)
+			// TODO Return UNAUTHORIZED
 		}
 	})
 

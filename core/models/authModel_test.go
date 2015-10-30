@@ -17,7 +17,7 @@ func TestAuthModel(t *testing.T) {
 	g.Describe("Sessions", func() {
 //		TODO get token from a login
 		g.It("Should be valid", func() {
-			g.Assert(IsSessionValid(router, "f4fa5c51-0b58-4884-8f8d-ea832728ac8e")).IsTrue()
+			g.Assert(IsSessionValid(router, "6cebef82-ac30-4492-b63f-f7aa0c249c20")).IsTrue()
 		})
 
 		g.It("Should be invalid", func() {

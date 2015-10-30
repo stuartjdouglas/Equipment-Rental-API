@@ -7,14 +7,15 @@ import (
 )
 
 type Images struct {
-	Images []Image `json:"image"`
-	Total int `json:"total"`
+	Images 	[]Image `json:"image"`
+	Total 	int 	`json:"total"`
 }
 
 type Image struct {
-	Title string `json:"title"`
-	Location string `json:"location"`
-	Date_added time.Time `json:"date_added"`
+	Title 			string 		`json:"title"`
+	Location 		string 		`json:"location"`
+	Date_added 		time.Time 	`json:"date_added"`
+	File_location 	string 		`json:"file_location"`
 }
 
 func GetImage(api router.API, filename string) Images {
@@ -41,6 +42,7 @@ func GetImage(api router.API, filename string) Images {
 		if err != nil {
 			panic(err)
 		}
+		image.File_location = "/data/" + image.Location
 		images = append(images, image)
 	}
 	if err = rows.Err(); err != nil {
@@ -52,7 +54,7 @@ func GetImage(api router.API, filename string) Images {
 
 func GetAllImages(api router.API) Images {
 	var images = []Image{}
-	stmt, err := api.Context.Session.Prepare("SELECT file_name, title, date_added FROM images")
+	stmt, err := api.Context.Session.Prepare("SELECT file_name, title, date_added FROM images ORDER BY date_added DESC")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,6 +76,7 @@ func GetAllImages(api router.API) Images {
 		if err != nil {
 			panic(err)
 		}
+		image.File_location = "/data/" + image.Location
 		images = append(images, image)
 	}
 	if err = rows.Err(); err != nil {
@@ -99,33 +102,21 @@ func IsImageAvailable(api router.API, token string) bool {
 	return false
 }
 
-//func AddImageLocationToDb (api router.API, filename string, title string) {
-////	userid := getUserIdFromToken(api, token)
-////	author := getUsername(api, userid)
-//	stmt, err := api.Context.Session.Prepare("INSERT INTO posts (title, slug, author, content, date_created, date_edited, users_id) values (?, ?, ?, ?, ?, ?, ?)")
-//
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	res, err:= stmt.Exec()
-//	if (err != nil) {
-//		return false
-//	}
-//	//	TODO Remove this
-//	fmt.Println(res);
-//
-//	defer stmt.Close()
-//	return true
-//}
+func AddImageLocationToDb (api router.API, filename string, title string, original_name string, token string) bool {
+	userid := getUserIdFromToken(api, token)
+	stmt, err := api.Context.Session.Prepare("INSERT INTO images (file_name, title, date_added, original_name, users_id) values (?, ?, ?, ?, ?)")
+
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = stmt.Exec(filename, title, time.Now(), original_name, userid)
+	if (err != nil) {
+		return false
+	}
+
+	defer stmt.Close()
+	return true
+}
 
 
-//func getAllImage(api router.API, token string) Images {
-//	var images []Images{}
-//
-//
-//	return Images{
-//		Images:images,
-//		Total: len(images),
-//	}
-//}

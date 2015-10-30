@@ -11,11 +11,15 @@ angular.module('app', [
     'app.user',
     'app.image',
     'app.images',
+    'app.imageupload',
   // Directives
   'app.loginPanel',
   'app.registerPanel',
+    'app.imageUploadForm',
   // Factories
   'app.config',
+  //  Dependencies
+    'ngFileUpload',
   'ngCookies'
 ]).
 config(['$routeProvider','$locationProvider', function($routeProvider, $locationProvider) {
