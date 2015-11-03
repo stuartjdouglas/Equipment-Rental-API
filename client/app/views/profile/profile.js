@@ -10,28 +10,26 @@ angular.module('app.profile', ['ngRoute'])
         });
     }
 ])
-.controller('ProfileCtrl', ['$cookies', '$scope', '$http', function($cookies, $scope, $http) {
-	if ($cookies.get('token')) {
-        	$scope.view = true;
+.controller('ProfileCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
+    if ($rootScope.loggedIn) {
 
-            $http({
-                url: backend + "/profile",
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'token': $cookies.get('token')
-                }
-            }).success(function(data, status, headers, config) {
-            	$scope.profile = data.profile[0];
-                console.log(data);
-            }).
-            error(function(data, status, headers, config) {
-                console.log(data);
+        $http({
+            url: backend + "/profile",
+            method: 'GET',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'token': window.sessionStorage.token
+            }
+        }).success(function(data, status, headers, config) {
+            $scope.profile = data.profile[0];
+            $scope.view = true;
+        }).
+        error(function(data, status, headers, config) {
+            $scope.error = true;
+        });
+    } else {
+        $scope.view = false;
+    }
 
 
-
-            });
-        } else {
-        	$scope.view = false;
-        }
 }]);

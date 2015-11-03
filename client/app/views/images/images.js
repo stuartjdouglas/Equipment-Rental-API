@@ -10,9 +10,9 @@ angular.module('app.images', ['ngRoute'])
             });
         }
     ])
-    .controller('ImagesCtrl', ['$routeParams', '$scope', '$http', '$cookies', function($routeParams, $scope, $http, $cookies) {
+    .controller('ImagesCtrl', ['$routeParams', '$scope', '$http', '$rootScope', function($routeParams, $scope, $http, $rootScope) {
 
-        if ($cookies.get('token')) {
+        if ($rootScope.loggedIn) {
             $scope.view = true;
 
             $http({
@@ -20,7 +20,7 @@ angular.module('app.images', ['ngRoute'])
                 method: 'GET',
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'token': $cookies.get('token')
+                    'token': window.sessionStorage.token
                 }
             }).success(function(data, status, headers, config) {
                 $scope.images = data;

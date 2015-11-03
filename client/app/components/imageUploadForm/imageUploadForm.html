@@ -1,18 +1,33 @@
-<form name="myForm" enctype="multipart/form-data">
+<form name="myForm" enctype="multipart/form-data" ng-hide="view">
     <fieldset>
         <legend>Image Upload</legend>
         <h3 ng-show="success">Image Upload Success</h3>
 
-        <input type="file" ngf-select="" ng-model="picFile" name="file" accept="image/*" required="">
-        <i ng-show="myForm.file.$error.required">*required</i>
-        <br>
 
-        <button ng-disabled="!myForm.$valid" ng-click="upload(picFile)">Submit</button>
-        <img ngf-src="picFile" class="thumb">
+        <div class="row">
+            <div class="nine columns">
+                <input type="file" ngf-select="" ng-model="picFile" name="file" accept="image/*" required="">
+
+                <i ng-show="myForm.file.$error.required">*required</i>
+            </div>
+            <div class="three columns">
+                <button ng-hide="uploading" ng-disabled="!myForm.$valid" ng-click="upload(picFile)">Submit</button>
+
               <span class="progress" ng-show="picFile.progress >= 0">
                   <div style="width:{{picFile.progress}}%" ng-bind="picFile.progress + '%'" class="ng-binding"></div>
               </span>
-        <span ng-show="picFile.result">Upload Successful</span>
+                <span ng-show="picFile.result">Upload Successful</span>
+            </div>
+        </div>
+
+
+        <h3 ng-show="picFile">Image Preview</h3>
+        <img ngf-src="picFile" width="100%" class="thumb">
+
+
+
     </fieldset>
     <br>
 </form>
+
+<h3 ng-show="view">You must be logged in to view this</h3>

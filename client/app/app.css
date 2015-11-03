@@ -1,5 +1,13 @@
 /* app css stylesheet */
 
+body {
+    background-color:#e3e3e3;
+}
+
+.wrapper {
+    background-color:#fff;
+    padding:10px;
+}
 
 /*Header*/
 .header {
@@ -9,7 +17,8 @@
 .header .icon {
   background-color:#455a64;
   width:auto;
-  height:100px;
+  height:40px;
+  max-height:40px;
 }
 
 .header .icon .row {
