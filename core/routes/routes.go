@@ -35,6 +35,7 @@ func CreateRoutes (api router.API) {
 	generateUserRoutes(api)
 	generateAuthRoutes(api)
 	generateImageRoutes(api)
+	generateQrRoutes(api)
 	// A test route
 	api.Router.Get("/hello/:name", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		message := hello{
