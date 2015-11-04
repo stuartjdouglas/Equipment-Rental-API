@@ -7,9 +7,8 @@ import (
 
 
 
-func GenerateQR(code string) image.Image{
-
-	return utils.GenerateQRCode(code)
+func GenerateQR(code string, height int, width int) image.Image{
+	return utils.GenerateQRCode(code, height, width)
 }
 
 

@@ -6,23 +6,28 @@ import (
 	"github.com/boombuler/barcode"
 )
 
+// GenerateQRCode creates a QR code image with the given code and returns the image
+func GenerateQRCode(code string, height int, width int) image.Image {
+	// If the height and width is less than 300 set to 300
+	if height < 300 || width < 300 {
+		height = 300
+		width = 300
+	}
 
-func GenerateQRCode(id string) image.Image {
+	image, err := qr.Encode(code, qr.L, qr.Unicode)
 
-	code, err := qr.Encode(id, qr.L, qr.Unicode)
+	if err != nil {
+		log.Println("Error Generating QR code")
+	}
+
+	if code != image.Content() {
+		log.Fatal("data if different")
+	}
+
+	image, err = barcode.Scale(image, height, width)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Encoded data: ", code.Content())
 
-	if id != code.Content() {
-		log.Fatal("data differs")
-	}
-
-	code, err = barcode.Scale(code, 300, 300)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return code
+	return image
 }

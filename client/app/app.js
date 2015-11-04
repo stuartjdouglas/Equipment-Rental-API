@@ -22,7 +22,8 @@ angular.module('app', [
   //  Dependencies
     'ngFileUpload',
     'ngStorage',
-  'ngCookies'
+  'ngCookies',
+    'angularMoment'
 ]).
 config(['$routeProvider','$locationProvider', function($routeProvider, $locationProvider) {
 	$routeProvider.otherwise({redirectTo: '/home'});

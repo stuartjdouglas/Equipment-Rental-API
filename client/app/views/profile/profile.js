@@ -21,12 +21,31 @@ angular.module('app.profile', ['ngRoute'])
                 'token': window.sessionStorage.token
             }
         }).success(function(data, status, headers, config) {
-            $scope.profile = data.profile[0];
+            $scope.profile = data.profile;
             $scope.view = true;
+            $http({
+                url: backend + "/identify/qr/user",
+                method: 'GET',
+                headers: {
+                    'token': window.sessionStorage.token,
+                    'width': 300,
+                    'height': 300,
+                    'code': data.profile.username
+                }
+            }).success(function(data, status, headers, config) {
+
+                $scope.qr = data;
+            }).
+            error(function(data, status, headers, config) {
+                $scope.error = true;
+            });
         }).
         error(function(data, status, headers, config) {
             $scope.error = true;
         });
+
+
+
     } else {
         $scope.view = false;
     }
