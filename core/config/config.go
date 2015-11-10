@@ -13,26 +13,29 @@ type Config struct {
 }
 
 type Properties struct {
-	Title string `json:"title"`
-	Port int `json:"port"`
-	DbUrl string `json:"dburl"`
+	Type 	string 	`json:"type"`
+	Title 	string 	`json:"title"`
+	Port 	int 	`json:"port"`
+	DbUrl 	string 	`json:"dburl"`
 }
 
 
 // Generates a template JSON file, writes it to file and returns the struct
 func GenConfig(path string) Config{
-
-	log.Println("Creating config.json")
-
-	config:= Config{}
-	//Set the default values
-	config.Development.Title = "Default Title"
-	config.Development.Port = 3000
-	config.Development.DbUrl = "mongodb://remon:lemon@ds042898.mongolab.com:42898/lemon"
-
-	config.Production.Title = "Default Title"
-	config.Production.Port = 3000
-	config.Production.DbUrl = "mongodb://remon:lemon@ds042898.mongolab.com:42898/lemon"
+	log.Println("Configuration file is missing; generating....")
+	// Create default configuration struct
+	config:= Config{
+		Development: Properties{
+			Title: "Default Title",
+			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+			Port: 3000,
+		},
+		Production: Properties{
+			Title: "Default Title",
+			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+			Port: 80,
+		},
+	}
 
 	// Parse the json and format in pretty print format
 	str, err := json.MarshalIndent(config, "", "    ")
@@ -44,11 +47,9 @@ func GenConfig(path string) Config{
 	// Write to file
 	e := ioutil.WriteFile(path, str, 0644)
 	if e != nil {
-		// If file fails to write, panic
-		panic(e)
+		log.Fatal("Unable to write to filesystem")
 	}
-
-	// return the new config struct
+	// Generated config will return even if write failed
 	return config
 }
 
@@ -66,21 +67,21 @@ func LoadConfig(path string, devMode bool) Properties{
 		json.Unmarshal(file, &config)
 	}
 
-//	Create the properties object which will contain the used settings of mode defined by user
-	var settings Properties
-
-//	If the operator has defined to use devMode use development values otherwise set to Production values
+	//	If the operator has defined to use devMode use development values otherwise set to Production values
 	if devMode {
-		settings.Title = config.Development.Title
-		settings.DbUrl = config.Development.DbUrl
-		settings.Port  = config.Development.Port
-	} else {
-//		Always fall back to production values
-		settings.Title = config.Production.Title
-		settings.DbUrl = config.Production.DbUrl
-		settings.Port  = config.Production.Port
+		return Properties{
+			Type:	"Development",
+			Title: 	config.Development.Title,
+			DbUrl: 	config.Development.DbUrl,
+			Port: 	config.Development.Port,
+		}
 	}
 
-	// Return the config struct
-	return settings
+	//	Always fall back to production values
+	return Properties{
+		Type:	"Production",
+		Title: config.Development.Title,
+		DbUrl: config.Development.DbUrl,
+		Port: config.Development.Port,
+	}
 }

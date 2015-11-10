@@ -9,8 +9,8 @@ angular.module('app.home', ['ngRoute'])
   });
 }])
 
-.controller('HomeCtrl', ['$cookies', '$scope', '$http', function($cookies, $scope, $http) {
-	if ($cookies.get('token')) {
+.controller('HomeCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
+	if ($rootScope.loggedIn) {
         	$scope.view = true;
 
             $http({
@@ -18,7 +18,7 @@ angular.module('app.home', ['ngRoute'])
                 method: 'GET',
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'token': $cookies.get('token')
+                    'token': window.sessionStorage.token
                 }
             }).success(function(data, status, headers, config) {
             	$scope.message = data.message;

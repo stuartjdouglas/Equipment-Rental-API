@@ -3,21 +3,22 @@ package server
 import (
 	"fmt"
 	"strconv"
-	"../routes"
 	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
-	"../config"
-	"../router"
 	"github.com/hypebeast/gojistatic"
 	"github.com/rs/cors"
+	"../routes"
+	"../config"
+	"../config/database"
+	"../router"
 )
-
-func Start(settings config.Properties, context config.Context) {
+// Start handles all route configuration and starts the http server
+func Start(settings config.Properties, context database.Context) {
 	fmt.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Port))
 
+    // Create the main router
 	masterRouter := web.New()
-
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -26,37 +27,37 @@ func Start(settings config.Properties, context config.Context) {
 		AllowedHeaders: []string{"*"},
 	})
 
+	//Create subroutes
+	apiRouter 		:= web.New()
+	angularRouter 	:= web.New()
+	imageRouter		:= web.New()
 
-	//Get routes
-	apiRouter :=  web.New()
-	renderRouter := web.New()
-	angularRouter := web.New()
-
+	// Assign sub routes to handle certain path requests
 	masterRouter.Handle("/api/*", apiRouter)
-	masterRouter.Handle("/client/*", renderRouter)
+	masterRouter.Handle("/data/*", imageRouter)
 	masterRouter.Handle("/*", angularRouter)
 
-//	angularRouter.Get("/*", http.FileServer(http.Dir("client/app")))
+	// Apply SubRouter middleware to allow sub routing
+	apiRouter.Use(middleware.SubRouter)
+	angularRouter.Use(middleware.SubRouter)
+	imageRouter.Use(middleware.SubRouter)
 
-	var options gojistatic.StaticOptions
-
+	// Serve the static files in the client app directory (this is to host the angular app)
 	angularRouter.Use(gojistatic.Static("client/app/", gojistatic.StaticOptions{
 		SkipLogging: true,
 		Expires: nil,
 	}))
-	angularRouter.Use(gojistatic.Static("/*", options))
 
-//	Apply the CORS options to the main route handler
+	imageRouter.Use(gojistatic.Static("data/images/", gojistatic.StaticOptions{
+		SkipLogging: true,
+		Expires: nil,
+	}))
+
+	// Apply the CORS options to the main route handler
 	masterRouter.Use(c.Handler)
 
-
-	apiRouter.Use(middleware.SubRouter)
-	angularRouter.Use(middleware.SubRouter)
-	renderRouter.Use(middleware.SubRouter)
-
+	// Create the routes
 	routes.CreateRoutes(router.API{Router:apiRouter, Context:context})
-
-	routes.CreateRenderRoutes(router.API{Router:renderRouter, Context:context})
 
 	// Gracefully Serve
 	if portIsFree(settings.Port) {

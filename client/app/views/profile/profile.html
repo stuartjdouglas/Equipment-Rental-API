@@ -1,34 +1,22 @@
-<h1>Profile</h1>
 
-<p ng-show="view">You are logged in</p>
-<p ng-hide="view">You need to be logged in</p>
+<div class="" ng-show="view">
+  <div class="row">
+    <div class="four columns">
+      <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{profile.gravatar}}?s=90&d=identicon" width="100%" height="auto"/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <img ng-src="data:image/JPEG;base64,{{qr}}" width="100%" height="auto"/>
+      <i>Android app: Scan me</i>
+    </div>
+    <div class="eight columns">
+      <p><h3><b>@{{profile.username}}</b></h3></p>
+      <p><b>Name</b> {{profile.first_name}} {{profile.last_name}}</p>
+      <p><b>Location</b> {{profile.location}}</p>
+      <p><b>Email</b> {{profile.email}}</p>
+      <p><b>Registered</b> <span am-time-ago="profile.date_registered"></span></p>
+    </div>
+  </div>
 
-<table class="u-full-width">
-  <img src="http://media1.giphy.com/media/wZWTSyIwoMbQY/200.gif" height="500px" width="500px" ng-hide="profile">
-  <tbody ng-show="profile">
-    <tr ng-show="profile.username" class="animated fadeIn">
-      <td><h4>Username</h4></td>
-      <td>{{profile.username}}</td>
-    </tr>
-    <tr ng-show="profile.bio" class="animated fadeIn">
-      <td><h4>Biography</h4></td>
-      <td>{{profile.bio}}</td>
-    </tr>
-    <tr ng-show="profile.email" class="animated fadeIn">
-      <td><h4>Email</h4></td>
-      <td>{{profile.email}}</td>
-    </tr>
-    <tr ng-show="profile.location" class="animated fadeIn">
-      <td><h4>location</h4></td>
-      <td>{{profile.location}}</td>
-    </tr>
-    <tr ng-show="profile.first_name" class="animated fadeIn">
-      <td><h4>Full name</h4></td>
-      <td>{{profile.first_name}} {{profile.last_name}}</td>
-    </tr>
-
-
-
-  
-  </tbody>
-</table>
+</div>

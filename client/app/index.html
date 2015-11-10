@@ -3,7 +3,7 @@
 <!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html lang="en" ng-app="app" class="no-js"> <!--<![endif]-->
-<head>
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Equipment Rental</title>
@@ -14,11 +14,13 @@
     <link rel="stylesheet" href="assets/css/skeleton.css">
     <link rel="stylesheet" href="app.css">
     <link rel="stylesheet" href="bower_components/animate.css/animate.min.css">
+    <link rel="stylesheet" href="bower_components/angular-toastr/dist/angular-toastr.min.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/>
+<link href='bower_components/webfont-notosans/regular/stylesheet.css' rel='stylesheet' type='text/css'>
   <base href="/">
 </head>
 <body>
-    <div class="wrapper">
         <div class="header">
             <div class="container">
                 <div class="three columns">
@@ -33,10 +35,12 @@
                         <ul class="menu">
                             <li><a href="#/home">Home</a></li>
                             <li><a href="#/users">Users</a></li>
+                            <li><a href="#/upload/image"><i class="fa fa-plus"></i>Upload Image</a></li>
+                            <li><a href="#/images">Images</a></li>
                             <li><a href="#/profile" ng-show="loggedIn">Profile</a></li>
                             <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
                             <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
-                            <li><a href="#/login" ng-show="loggedIn">Logout</a></li>
+                            <li><a href="#/logout" ng-show="loggedIn">Logout</a></li>
                         </ul>
                     </div>
 
@@ -45,33 +49,50 @@
             </div>
 
         </div>
-        <div class="container">
-
-                <div ng-view class="animated fadeIn"></div>
-
+        <div class="row">
+            <div class="two columns">
+                <p></p>
+            </div>
+            <div class="eight columns">
+                <div ng-view class="animated fadeIn wrapper"></div>
+            </div>
+            <div class="two columns">
+                <p></p>
+            </div>
         </div>
-    </div>
 
 
 
 
   <script src="bower_components/angular/angular.min.js"></script>
   <script src="bower_components/angular-route/angular-route.min.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.min.js"></script>
   <!-- views -->
   <script src="app.js"></script>
   <script src="home/home.js"></script>
   <script src="login/login.js"></script>
+        <script src="views/logout/logout.js"></script>
   <script src="views/profile/profile.js"></script>
   <script src="views/register/register.js"></script>
     <script src="views/users/users.js"></script>
     <script src="views/user/user.js"></script>
+    <script src="views/image/image.js"></script>
+    <script src="views/images/images.js"></script>
+    <script src="views/imageupload/imageupload.js"></script>
   <!-- Factories -->
   <script src="config.js"></script>
   <!-- Directives -->
   <script src="components/loginPanel/loginPanel.js"></script>
   <script src="components/registerPanel/registerPanel.js"></script>
+    <script src="components/imageUploadForm/imageUploadForm.js"></script>
   <!-- Imports -->
 <script src="bower_components/cryptojslib/rollups/sha512.js"></script>
+
 <script src="/bower_components/angular-cookies/angular-cookies.min.js"></script>
+<script src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>
+<script src="bower_components/angular-toastr/dist/angular-toastr.min.js"></script>
+<script src="bower_components/ngstorage/ngStorage.min.js"></script>
+        <script src="bower_components/moment/min/moment.min.js"></script>
+        <script src="bower_components/angular-moment/angular-moment.min.js"></script>
 </body>
 </html>

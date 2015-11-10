@@ -1,15 +1,9 @@
 <table class="u-full-width">
-    <thead>
-    <tr>
-        <th><h3>Username</h3></th>
-        <th><h3>Biography</h3></th>
-    </tr>
-    </thead>
+    <h2>Users</h2>
     <tbody>
     <tr ng-repeat="user in users">
+        <td><a href="#/user/{{user.username}}"><img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{user.gravatar}}?s=90&d=identicon" width="50px" height="auto"/></a></td>
         <td><a href="#/user/{{user.username}}">{{user.username}}</a></td>
-        <td>{{user.bio}}</td>
-
     </tr>
     </tbody>
 </table>

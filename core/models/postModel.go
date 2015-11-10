@@ -6,6 +6,12 @@ import (
 	"log"
 )
 
+type Posts struct {
+	Post []Post `json:"post"`
+	Total int 	`json:"total"`
+}
+
+
 
 type Post struct {
 	Title			string 		`json:"title"`
@@ -15,13 +21,6 @@ type Post struct {
 	Date_created	time.Time   `json:"date_Created"`
 	Date_edited		time.Time 	`json:"date_edited"`
 }
-
-
-type Posts struct {
-	Post []Post `json:"post"`
-	Total int `json:"total"`
-}
-
 
 func CheckIfPostExists (api router.API, slug string) bool {
 	var exist bool

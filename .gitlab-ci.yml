@@ -5,5 +5,5 @@ stages:
   - test
 runTests:
   script:
-    - "go test ./test/** -v -x"
+  - "go test ./core/... -v"
   stage: test

@@ -8,10 +8,10 @@ angular.module('app.loginPanel', ['app.config'])
                 datasource: '='
             },
             templateUrl: 'components/loginPanel/loginPanel.html',
-            controller: function($scope, $http, $rootScope) {
+            controller: function($scope, $http, $rootScope,$sessionStorage, $location) {
                 
                 $scope.login = function(user) {
-                    console.log(user);
+
                     var hash = CryptoJS.SHA512(user.password).toString();
 
                     $http({
@@ -23,16 +23,16 @@ angular.module('app.loginPanel', ['app.config'])
                         },
                         headers: {
                             'Content-Type': 'multipart/form-data'
-                            
+
                         }
                     }).success(function(data, status, headers, config) {
-                          document.cookie="token=" + data.token + "; expires" + data.expiry + " path=/";
-                          $scope.error = false;
-                        console.log(data);
+                        //$sessionStorage.token = data.token;
+                        window.sessionStorage.token = data.token;
+                        $scope.error = false;
                         $rootScope.loggedIn = true;
+                        $location.path( "/home");
                     }).
                     error(function(data, status, headers, config) {
-                        console.log(data);
                         $scope.error = data.message;
 
 

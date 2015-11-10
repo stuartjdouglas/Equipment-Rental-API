@@ -10,22 +10,16 @@ angular.module('app.users', ['ngRoute'])
             });
         }
     ])
-    .controller('UsersCtrl', ['$cookies', '$scope', '$http', function($cookies, $scope, $http) {
-        if ($cookies.get('token')) {
+    .controller('UsersCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
+        if ($rootScope.loggedIn) {
             $scope.view = true;
 
             $http({
                 url: backend + "/users",
                 method: 'GET'
             }).success(function(data, status, headers, config) {
-                console.log(data);
                 $scope.users = data;
-            }).
-                error(function(data, status, headers, config) {
-                    console.log(data);
-
-
-
+            }).error(function(data, status, headers, config) {
                 });
         } else {
             $scope.view = false;

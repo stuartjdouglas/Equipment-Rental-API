@@ -19,7 +19,23 @@ angular.module('app.user', ['ngRoute'])
                 method: 'GET'
             }).success(function(data, status, headers, config) {
                 console.log(data);
-                $scope.user = data[0];
+                $scope.user = data;
+                $http({
+                    url: backend + "/identify/qr/user",
+                    method: 'GET',
+                    headers: {
+                        'token': window.sessionStorage.token,
+                        'width': 300,
+                        'height': 300,
+                        'code': data.username
+                    }
+                }).success(function(data, status, headers, config) {
+
+                    $scope.qr = data;
+                }).
+                error(function(data, status, headers, config) {
+                    $scope.error = true;
+                });
             }).
                 error(function(data, status, headers, config) {
                     console.log(data);

@@ -3,11 +3,17 @@
 *.a
 *.so
 
+
+
 # Folders
 _obj
 _test
 _Godeps
 Godeps/_workspace/
+
+data/images/*.jpg
+data/images/*.gif
+data/images/*.png
 
 # Architecture specific extensions/prefixes
 *.[568vq]

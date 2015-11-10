@@ -4,7 +4,8 @@ import (
 	"encoding/hex"
 )
 
-func ShaSum(data []byte) string {
+// Sha512Me Returns an SHA512 encrypted string
+func Sha512Me(data []byte) string {
 	bytes := sha512.Sum512(data)
 	return hex.EncodeToString(bytes[:])
 }

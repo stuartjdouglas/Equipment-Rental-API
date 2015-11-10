@@ -1,17 +1,31 @@
-Querying {{query}}
 
-<table class="u-full-width">
-    <thead>
-    <tr>
-        <th><h3>Username</h3></th>
-        <th><h3>Biography</h3></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td>{{user.username}}</td>
-        <td>{{user.bio}}</td>
+<div class="" ng-show="view">
+    <br/>
+    <br/>
+    <br/>
+    <div class="row">
+        <div class="three columns">
+            <p></p>
+        </div>
+        <div class="six columns">
+            <img ng-src="data:image/JPEG;base64,{{qr}}" width="100%" height="auto"/>
+        </div>
+        <div class="three columns">
+            <p></p>
+        </div>
 
-    </tr>
-    </tbody>
-</table>
+    </div>
+    <br/>
+    <br/>
+
+    <br/>
+    <div class="row">
+        <div class="four columns">
+            <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{user.gravatar}}?s=90&d=identicon" width="100%" height="auto"/>
+        </div>
+        <div class="eight columns">
+            <p><h3><b>@{{user.username}}</b></h3></p>
+        </div>
+    </div>
+
+</div>
