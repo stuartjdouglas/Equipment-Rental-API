@@ -5,3 +5,5 @@ github.com/satori/go.uuid
 github.com/rs/cors
 github.com/franela/goblin
 github.com/hypebeast/gojistatic
+github.com/boombuler/barcode
+github.com/boombuler/barcode/qr
