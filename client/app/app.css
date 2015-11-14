@@ -2,56 +2,63 @@
 
 body {
     background-color:#e3e3e3;
+  position:absolute;
+  width:100%;
+
 }
 
 .wrapper {
     background-color:#fff;
-    padding:10px;
 }
 
-/*Header*/
-.header {
-  background-color:#263238;
+/*
+    Header
+  http://codepen.io/andytran/pen/kmAEy
+*/
+header {
+  background-color: #263238;
+  width: 100%;
+  display: table;
+  height:60px;
 }
 
-.header .icon {
-  background-color:#455a64;
-  width:auto;
-  height:40px;
-  max-height:40px;
-}
-
-.header .icon .row {
-  height:100%;
-}
-
-.header .icon .row .three.columns {
-  height:100%;
-}
-
-
-/*Header: navigation*/
-.menu {
+header ul {
   list-style: none;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
-  display:block;
-  font-size:1.2em;
-}
-
-
-
-.menu ul {
-  list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
-.menu li {
-  display: inline;
+header ul li {
+  position: relative;
+  margin:0;
+  display: inline-block;
+  margin-right: -4px;
+  text-align: center;
+}
+
+header ul li.right {
+  position: absolute;
+  right:0;
+}
+
+header ul li.right img {
+  position: relative;
+  height:50%;
 }
 
 
-/* Side Design */
+header ul li a {
+  display: block;
+  background: #263238;
+  padding: 15px 20px;
+  height:100%;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+  transition: 0.2s linear;
+}
 
+header ul li a:hover {
+   background: #333;
+ }
 

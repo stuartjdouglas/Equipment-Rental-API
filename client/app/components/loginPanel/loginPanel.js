@@ -28,6 +28,8 @@ angular.module('app.loginPanel', ['app.config'])
                     }).success(function(data, status, headers, config) {
                         //$sessionStorage.token = data.token;
                         window.sessionStorage.token = data.token;
+                        window.localStorage.username = data.username;
+                        window.localStorage.gravatar = data.gravatar;
                         $scope.error = false;
                         $rootScope.loggedIn = true;
                         $location.path( "/home");

@@ -35,6 +35,7 @@ type fullUser struct {
 type Auth struct {
 	Success		bool 		`json:"success"`
 	Username 	string 		`json:"username"`
+	Gravatar	string      `json:"gravatar"`
 	Token 		string 		`json:"token"`
 	Expiry		time.Time   `json:"expiry"`
 }
@@ -99,9 +100,52 @@ func addUserToken(api router.API, username string, token string, ip_address stri
 	login.Success = true
 	login.Username = username
 	login.Token = token
+	login.Gravatar = getGravatarString(api, token)
 	login.Expiry = time.Now().AddDate(0, 0, 7);
 
 	return login;
+}
+
+func getGravatarString(api router.API, token string) string {
+	userid := getUserIdFromToken(api, token)
+
+	stmt, err := api.Context.Session.Prepare("SELECT email FROM users where id=?")
+
+	if err != nil {
+		panic(err)
+	}
+
+	rows, err := stmt.Query(userid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	user := user{}
+
+	for rows.Next() {
+		var result tempUser
+		err := rows.Scan(
+			&result.Email,
+		)
+
+
+
+		if err != nil {
+			panic(err)
+		}
+
+		sum := md5.Sum([]byte(result.Email))
+		gravatar := hex.EncodeToString(sum[:])
+		user.Username = result.Username;
+		user.Gravatar = gravatar;
+
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return user.Gravatar;
 }
 
 // Checks if a user has given the correct details or not

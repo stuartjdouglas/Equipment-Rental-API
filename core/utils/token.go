@@ -7,3 +7,7 @@ import (
 func GenerateToken(username string) string{
 	return uuid.NewV4().String()
 }
+
+func GenerateUUID() string {
+	return uuid.NewV4().String()
+}
