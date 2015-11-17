@@ -37,4 +37,8 @@ config(['$routeProvider','$locationProvider', function($routeProvider, $location
     username: window.localStorage.username,
     gravatar: window.localStorage.gravatar
   };
+
+  $rootScope.site = {
+    title: "Site name"
+  }
 }]);

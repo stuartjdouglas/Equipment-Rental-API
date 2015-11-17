@@ -9,6 +9,7 @@ body {
 
 .wrapper {
     background-color:#fff;
+  padding:20px;
 }
 
 /*
@@ -39,11 +40,18 @@ header ul li {
 header ul li.right {
   position: absolute;
   right:0;
+  padding:0;
+}
+
+header ul li.right a {
+  padding:0;
+  height:60px;
+
 }
 
 header ul li.right img {
   position: relative;
-  height:50%;
+  height:100%;
 }
 
 
