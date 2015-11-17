@@ -11,6 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
+<link rel="stylesheet" href="//cdn.getkickstart.com/css/kickstart.min.css" />
 <link rel="stylesheet" href="assets/css/skeleton.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="bower_components/animate.css/animate.min.css">
@@ -21,32 +22,29 @@
 <base href="/">
 </head>
 <body>
+<div class="header">
+    <div class="three columns">
+        <div class="icon">
+            <p>Image</p>
+        </div>
+    </div>
+    <div class="nine columns">
+        <div class="sidebar">
 
-
-
-
-
-<header ng-controller="AuthCtrl">
-    <div class="navigation">
-        <nav>
-            <ul>
-                <li><a href="#"><i class="fa fa-lemon-o"></i> <b>{{site.title}}</b></a></li>
-                <li><a href="#/home"><i class="fa fa-home"></i> Home</a></li>
-                <li><a href="#/users"><i class="fa fa-users"></i> Users</a></li>
-                <li><a href="#/p"><i class="fa fa-cubes"></i> Items</a></li>
+            <div ng-controller="AuthCtrl"></div>
+            <ul class="menu">
+                <li><a href="#/home">Home</a></li>
+                <li><a href="#/users">Users</a></li>
+                <li><a href="#/p"><i class="fa fa-plus"></i>Items</a></li>
                 <!--<li><a href="#/images">Images</a></li>-->
-                <!--<li><a href="#/profile" ng-show="loggedIn">Profile</a></li>-->
+                <li><a href="#/profile" ng-show="loggedIn">Profile</a></li>
                 <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
                 <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
-                <li><a href="#/logout" ng-show="loggedIn"><i class="fa fa-power-off"></i> Logout</a></li>
-                <li class="right"><a href="#/profile" ng-show="loggedIn">
-                    @{{auth.username}}
-                    <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{auth.gravatar}}?s=90&d=identicon"/>
-                </a></li>
+                <li><a href="#/logout" ng-show="loggedIn">Logout</a></li>
             </ul>
-        </nav>
+        </div>
+
     </div>
-</header>
 
 
 </div>
@@ -55,7 +53,7 @@
         <p></p>
     </div>
     <div class="eight columns">
-        <div ng-view class="animated fadeIn wrapper"></div>
+        <div ng-view class="animated fadeIn wrapper container"></div>
     </div>
     <div class="two columns">
         <p></p>
@@ -97,6 +95,5 @@
 <script src="bower_components/ngstorage/ngStorage.min.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
 <script src="bower_components/angular-moment/angular-moment.min.js"></script>
-
 </body>
 </html>

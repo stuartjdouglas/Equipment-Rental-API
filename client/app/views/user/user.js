@@ -39,9 +39,18 @@ angular.module('app.user', ['ngRoute'])
             }).
                 error(function(data, status, headers, config) {
                     console.log(data);
+            });
 
 
-
-                });
+        $http({
+            url: backend + "/products/" + $routeParams.user,
+            method: 'GET',
+        }).success(function(data, status, headers, config) {
+            console.log(data);
+            $scope.products = data;
+        }).
+        error(function(data, status, headers, config) {
+            $scope.error = true;
+        });
 
     }]);

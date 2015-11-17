@@ -28,4 +28,11 @@
         </div>
     </div>
 
+
+    <h3>There are {{products.total}} products.</h3>
+    <div class="row" ng-repeat="product in products.item">
+        <h4>{{product.title}}</h4>
+        <i>{{product.description}}</i>
+    </div>
+
 </div>

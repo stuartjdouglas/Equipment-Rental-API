@@ -13,6 +13,8 @@ angular.module('app', [
     'app.image',
     'app.images',
     'app.imageupload',
+    'app.item',
+    'app.items',
   // Directives
   'app.loginPanel',
   'app.registerPanel',
@@ -31,4 +33,12 @@ config(['$routeProvider','$locationProvider', function($routeProvider, $location
 
 .controller('AuthCtrl', ['$sessionStorage', '$scope', '$rootScope', function($sessionStorage, $scope, $rootScope) {
 	$rootScope.loggedIn = window.sessionStorage.token != undefined;
+  $rootScope.auth = {
+    username: window.localStorage.username,
+    gravatar: window.localStorage.gravatar
+  };
+
+  $rootScope.site = {
+    title: "Site name"
+  }
 }]);

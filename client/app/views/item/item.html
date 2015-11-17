@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="twelve columns">
+        <h3><b>{{product.title}}</b></h3>
+    </div>
+</div>
+<div class="row">
+    <h4>Description</h4>
+    <div class="twelve columns">{{product.description}}</div>
+
+    <h4>Information</h4>
+    <p>Available for <b>{{product.product_rental_period_limit}}</b> days.</p>
+</div>
+
+
+<div class="row">
+    <div class="six columns">
+        <h4>Owner</h4>
+        <p>@{{product.owner}}</p>
+    </div>
+    <div class="six columns">
+        <button class="button-primary">Rent</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="six columns">
+    <i><b>Date Added: </b><span am-time-ago="product.date_added"></span></i>
+    </div>
+    <div class="six columns">
+    <i><b>Date Updated: </b><span am-time-ago="product.date_updated"></span></i>
+
+    </div>
+</div>
