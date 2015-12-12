@@ -1,12 +1,13 @@
 package routes
 import(
-	"../router"
-	"../models"
+
 	"encoding/json"
 "net/http"
 	"net"
 	"github.com/zenazn/goji/web"
 	"strings"
+	"github/remony/Equipment-Rental-API/core/router"
+	"github/remony/Equipment-Rental-API/core/models"
 )
 
 func generateAuthRoutes(api router.API)	{

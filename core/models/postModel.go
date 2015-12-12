@@ -1,9 +1,9 @@
 package models
 import (
 	"time"
-	"../router"
 	"fmt"
 	"log"
+	"github/remony/Equipment-Rental-API/core/router"
 )
 
 type Posts struct {

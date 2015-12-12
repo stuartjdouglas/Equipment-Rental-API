@@ -1,9 +1,9 @@
 package models
 
 import (
-	"../router"
 	"time"
 	"log"
+	"github/remony/Equipment-Rental-API/core/router"
 )
 
 type Images struct {

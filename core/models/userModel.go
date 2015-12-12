@@ -1,13 +1,13 @@
 package models
 
 import (
-	"../router"
-	"../utils"
 	"fmt"
 	"time"
 	"log"
 	"crypto/md5"
 	"encoding/hex"
+	"github/remony/Equipment-Rental-API/core/router"
+	"github/remony/Equipment-Rental-API/core/utils"
 )
 
 type user struct {

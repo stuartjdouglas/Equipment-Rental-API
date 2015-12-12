@@ -1,9 +1,9 @@
 package models
 import (
 	"time"
-	"../router"
-	"../utils"
 	"log"
+	"github/remony/Equipment-Rental-API/core/router"
+	"github/remony/Equipment-Rental-API/core/utils"
 )
 
 type Items struct {

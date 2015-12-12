@@ -2,14 +2,14 @@
 package main
 
 import (
-	"./core/config"
-	"./core/config/database"
-	"./core/server"
 	"fmt"
 	"strconv"
 	"os"
 	"os/exec"
 	"log"
+	"github/remony/Equipment-Rental-API/core/config"
+	"github/remony/Equipment-Rental-API/core/server"
+	"github/remony/Equipment-Rental-API/core/config/database"
 )
 
 const confFile = "./config.json"

@@ -2,7 +2,7 @@ package router
 import (
 	"github.com/zenazn/goji/web"
 
-	"../config/database"
+	"github/remony/Equipment-Rental-API/core/config/database"
 )
 
 // API contains the context and router
