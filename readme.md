@@ -1,0 +1,1 @@
+![](https://travis-ci.org/remony/Equipment-Rental-API.svg?branch=develop)
