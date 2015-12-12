@@ -2,7 +2,7 @@ package models
 
 import (
 	"image"
-	"github/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/utils"
 )
 
 

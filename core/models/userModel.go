@@ -6,8 +6,8 @@ import (
 	"log"
 	"crypto/md5"
 	"encoding/hex"
-	"github/remony/Equipment-Rental-API/core/router"
-	"github/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/utils"
 )
 
 type user struct {

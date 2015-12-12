@@ -2,8 +2,8 @@ package models
 import (
 	"time"
 	"log"
-	"github/remony/Equipment-Rental-API/core/router"
-	"github/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/utils"
 )
 
 type Items struct {

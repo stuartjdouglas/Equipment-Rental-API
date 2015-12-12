@@ -6,8 +6,8 @@ import(
 	"net"
 	"github.com/zenazn/goji/web"
 	"strings"
-	"github/remony/Equipment-Rental-API/core/router"
-	"github/remony/Equipment-Rental-API/core/models"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 func generateAuthRoutes(api router.API)	{

@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/exec"
 	"log"
-	"github/remony/Equipment-Rental-API/core/config"
-	"github/remony/Equipment-Rental-API/core/server"
-	"github/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/config"
+	"github.com/remony/Equipment-Rental-API/core/server"
+	"github.com/remony/Equipment-Rental-API/core/config/database"
 )
 
 const confFile = "./config.json"

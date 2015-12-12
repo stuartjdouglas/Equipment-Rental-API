@@ -6,9 +6,9 @@ import (
 "net/http"
 	"path"
 	"encoding/json"
-	"github/remony/Equipment-Rental-API/core/router"
-	"github/remony/Equipment-Rental-API/core/models"
-	"github/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
+	"github.com/remony/Equipment-Rental-API/core/utils"
 )
 
 type Error struct {

@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 	"log"
-	"github/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/router"
 )
 
 type Images struct {

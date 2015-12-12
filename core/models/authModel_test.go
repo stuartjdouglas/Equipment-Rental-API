@@ -4,9 +4,9 @@ import (
 	"testing"
 	. "github.com/franela/goblin"
 
-	"github/remony/Equipment-Rental-API/core/config/database"
-	"github/remony/Equipment-Rental-API/core/router"
-	"github/remony/Equipment-Rental-API/core/config"
+	"github.com/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/config"
 )
 const CONF_FILE = "./../../config.json"
 

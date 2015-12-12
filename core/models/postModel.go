@@ -3,7 +3,7 @@ import (
 	"time"
 	"fmt"
 	"log"
-	"github/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/router"
 )
 
 type Posts struct {

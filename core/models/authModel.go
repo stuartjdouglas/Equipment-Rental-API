@@ -2,7 +2,7 @@ package models
 
 import (
 
-	"github/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/router"
 )
 
 func IsSessionValid(api router.API, token string) bool {

@@ -8,10 +8,10 @@ import (
 	"github.com/zenazn/goji/web/middleware"
 	"github.com/hypebeast/gojistatic"
 	"github.com/rs/cors"
-	"github/remony/Equipment-Rental-API/core/config"
-	"github/remony/Equipment-Rental-API/core/config/database"
-	"github/remony/Equipment-Rental-API/core/routes"
-	"github/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/config"
+	"github.com/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/routes"
+	"github.com/remony/Equipment-Rental-API/core/router"
 )
 // Start handles all route configuration and starts the http server
 func Start(settings config.Properties, context database.Context) {
