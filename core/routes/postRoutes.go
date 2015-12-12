@@ -1,13 +1,13 @@
 package routes
 
 import (
-	"../router"
 	"github.com/zenazn/goji/web"
 	"net/http"
-	"../models"
 	"encoding/json"
 	"strings"
 	"fmt"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 

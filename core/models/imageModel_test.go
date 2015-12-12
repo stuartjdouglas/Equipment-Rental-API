@@ -1,10 +1,10 @@
 	package models
 import (
 	"testing"
-	"../config"
-	"../config/database"
-	"../router"
 	. "github.com/franela/goblin"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/config"
 )
 
 func TestImageModel(t *testing.T) {

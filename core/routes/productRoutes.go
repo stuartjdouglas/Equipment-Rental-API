@@ -1,10 +1,10 @@
 package routes
 import (
-	"../router"
 	"github.com/zenazn/goji/web"
 	"net/http"
-	"../models"
 	"encoding/json"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 type Product struct {

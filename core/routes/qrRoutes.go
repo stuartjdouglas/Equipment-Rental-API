@@ -1,15 +1,15 @@
 package routes
 
 import (
-	"../router"
 	"github.com/zenazn/goji/web"
 	"net/http"
-	"../models"
 	"bytes"
 	"image/jpeg"
 	"log"
 	"strconv"
 	"encoding/base64"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 

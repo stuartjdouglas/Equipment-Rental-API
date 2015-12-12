@@ -1,11 +1,11 @@
 package routes
 import (
-	"../router"
-	"../models"
 "net/http"
 	"encoding/json"
 	"github.com/zenazn/goji/web"
 	"fmt"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 func generateUserRoutes(api router.API) {

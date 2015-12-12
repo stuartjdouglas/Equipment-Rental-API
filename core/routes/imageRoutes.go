@@ -1,13 +1,14 @@
 package routes
 
 import (
-	"../router"
+
 	"github.com/zenazn/goji/web"
 "net/http"
-	"../models"
-	"../utils"
 	"path"
 	"encoding/json"
+	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models"
+	"github.com/remony/Equipment-Rental-API/core/utils"
 )
 
 type Error struct {

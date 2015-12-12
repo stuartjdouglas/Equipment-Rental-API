@@ -8,10 +8,10 @@ import (
 	"github.com/zenazn/goji/web/middleware"
 	"github.com/hypebeast/gojistatic"
 	"github.com/rs/cors"
-	"../routes"
-	"../config"
-	"../config/database"
-	"../router"
+	"github.com/remony/Equipment-Rental-API/core/config"
+	"github.com/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/routes"
+	"github.com/remony/Equipment-Rental-API/core/router"
 )
 // Start handles all route configuration and starts the http server
 func Start(settings config.Properties, context database.Context) {
@@ -19,7 +19,6 @@ func Start(settings config.Properties, context database.Context) {
 
     // Create the main router
 	masterRouter := web.New()
-
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
@@ -33,6 +32,7 @@ func Start(settings config.Properties, context database.Context) {
 	imageRouter		:= web.New()
 
 	// Assign sub routes to handle certain path requests
+
 	masterRouter.Handle("/api/*", apiRouter)
 	masterRouter.Handle("/data/*", imageRouter)
 	masterRouter.Handle("/*", angularRouter)
