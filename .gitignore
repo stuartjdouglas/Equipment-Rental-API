@@ -10,6 +10,7 @@ _obj
 _test
 _Godeps
 Godeps/_workspace/
+Godeps/Readme
 
 data/images/*.jpg
 data/images/*.gif
