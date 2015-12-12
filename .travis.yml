@@ -3,10 +3,8 @@ language: go
 go:
   - "1.5.1"
 install:
-  - "go get github.com/stretchr/testify"
-  - "go get github.com/stretchr/testify/assert"
-  - "go get github.com/zenazn/goji"
-  - "go get gopkg.in/mgo.v2"
+  - "go get"
+  - "go get github.com/franela/goblin"
 script:
   - "go env"
-  - "go test -v ./test"
+  - "go test -v ./.."
