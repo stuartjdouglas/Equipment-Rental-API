@@ -1,9 +1,11 @@
 before_script:
   - "export GOPATH=\"`pwd`/go\""
-  - "gigo install -r ./requirements.txt"
+#  - "gigo install -r ./requirements.txt"
+  - "go get"
 stages:
   - test
 runTests:
   script:
-  - "go test ./core/... -v"
+  - "go test ./... -v"
+  - "go get github.com/franela/goblin"
   stage: test
