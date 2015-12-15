@@ -4,6 +4,7 @@ import (
 	"time"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 type Images struct {
@@ -103,7 +104,7 @@ func IsImageAvailable(api router.API, token string) bool {
 }
 
 func AddImageLocationToDb (api router.API, filename string, title string, original_name string, token string) bool {
-	userid := getUserIdFromToken(api, token)
+	userid := sessions.GetUserIdFromToken(api, token)
 	stmt, err := api.Context.Session.Prepare("INSERT INTO images (file_name, title, date_added, original_name, users_id) values (?, ?, ?, ?, ?)")
 
 	if err != nil {

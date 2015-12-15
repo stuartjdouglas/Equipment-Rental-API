@@ -4,6 +4,7 @@ import (
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 type Items struct {
@@ -22,7 +23,7 @@ type Item struct {
 }
 
 func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string) bool {
-	userid := getUserIdFromToken(api, token)
+	userid := sessions.GetUserIdFromToken(api, token)
 	product_id := utils.GenerateUUID();
 
 	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, product_rented_to, users_id, owner_id) values (?,?,?,?,?,?,?,?,?,?)")

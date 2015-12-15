@@ -9,6 +9,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 type Error struct {
@@ -61,7 +62,7 @@ func generateImageRoutes(api router.API) {
 		token := r.Header.Get("token")
 
 		if token != "" {
-			if models.IsSessionValid(api, token) {
+			if sessions.IsSessionValid(api, token) {
 				file, header, err:= r.FormFile("image")
 				if err != nil {
 					panic(err)

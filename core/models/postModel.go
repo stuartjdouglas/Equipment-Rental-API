@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 type Posts struct {
@@ -65,7 +66,7 @@ func getUsername(api router.API, userid int) string {
 }
 
 func CreatePost(api router.API, post Post, token string, slug string) bool {
-	userid := getUserIdFromToken(api, token)
+	userid := sessions.GetUserIdFromToken(api, token)
 	author := getUsername(api, userid)
 	stmt, err := api.Context.Session.Prepare("INSERT INTO posts (title, slug, author, content, date_created, date_edited, users_id) values (?, ?, ?, ?, ?, ?, ?)")
 

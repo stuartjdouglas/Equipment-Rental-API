@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 func generateUserRoutes(api router.API) {
@@ -82,7 +83,7 @@ func generateUserRoutes(api router.API) {
 
 	api.Router.Get("/profile/sessions", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {
-			result := models.GetSessions(api, r.Header.Get("token"))
+			result := sessions.GetSessions(api, r.Header.Get("token"))
 			data, err := json.Marshal(result)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -96,9 +97,10 @@ func generateUserRoutes(api router.API) {
 			http.Error(res, "", http.StatusUnauthorized)
 		}
 	})
+
 	api.Router.Get("/profile/session", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {
-			result := models.GetSession(api, r.Header.Get("token"))
+			result := sessions.GetSession(api, r.Header.Get("token"))
 			data, err := json.Marshal(result)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
