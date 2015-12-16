@@ -2,8 +2,7 @@ package routes
 import(
 
 	"encoding/json"
-"net/http"
-	"net"
+	"net/http"
 	"github.com/zenazn/goji/web"
 	"strings"
 	"github.com/remony/Equipment-Rental-API/core/router"
@@ -31,11 +30,9 @@ func generateAuthRoutes(api router.API)	{
 				http.Error(res, err.Error(), http.StatusBadRequest)
 			}
 		}
-//		TODO Remove IP address recording
-		ip_address, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 		var login models.Auth
-		login = models.LoginUser(api, strings.ToLower(loginDetails.Username), loginDetails.Password, ip_address)
+		login = models.LoginUser(api, strings.ToLower(loginDetails.Username), loginDetails.Password)
 
 		if(login.Success) {
 			data, err := json.Marshal(login)

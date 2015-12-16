@@ -38,6 +38,7 @@ func CreateRoutes (api router.API) {
 	generateQrRoutes(api)
 	generateProductRoutes(api)
 	// A test route
+
 	api.Router.Get("/hello/:name", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		message := hello{
 			Message: fmt.Sprintf("こんにちは, %s!", c.URLParams["name"]),
@@ -46,9 +47,6 @@ func CreateRoutes (api router.API) {
 		res.WriteHeader(200)
 		json.NewEncoder(res).Encode(message)
 	})
-
-
-
 
 	api.Router.Get("/hello", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {

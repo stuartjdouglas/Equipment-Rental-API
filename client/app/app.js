@@ -15,10 +15,12 @@ angular.module('app', [
     'app.imageupload',
     'app.item',
     'app.items',
+    'app.sessions',
   // Directives
   'app.loginPanel',
   'app.registerPanel',
     'app.imageUploadForm',
+    'app.rlabel',
   // Factories
   'app.config',
   //  Dependencies

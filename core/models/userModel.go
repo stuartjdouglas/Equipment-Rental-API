@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 type user struct {
@@ -35,9 +36,9 @@ type fullUser struct {
 type Auth struct {
 	Success		bool 		`json:"success"`
 	Username 	string 		`json:"username"`
-	Gravatar	string      `json:"gravatar"`
+	Gravatar	string      	`json:"gravatar"`
 	Token 		string 		`json:"token"`
-	Expiry		time.Time   `json:"expiry"`
+	Expiry		time.Time   	`json:"expiry"`
 }
 
 type userProfile struct {
@@ -54,13 +55,14 @@ type profile struct {
 	Profile	userProfile    `json:"profile"`
 }
 // Logins in the user and returns an access token
-func LoginUser(api router.API, username string, password string, ip_address string) Auth {
+func LoginUser(api router.API, username string, password string) Auth {
 	var login Auth
 	if getAuthUser(api, username, password) {
 		// Generate the token
-		token := utils.GenerateToken(username);
+		token := utils.GenerateToken(username)
+		indef := utils.GenerateToken(username)
 		// Add the token to the database
-		return addUserToken(api, username, token, ip_address);
+		return addUserToken(api, username, token, indef, true);
 
 	} else {
 		return login
@@ -80,21 +82,21 @@ func getUserID(api router.API, username string) int {
 
 
 // Adds a token into the database
-func addUserToken(api router.API, username string, token string, ip_address string) Auth {
+func addUserToken(api router.API, username string, token string, idenf string, active bool) Auth {
 	var login Auth
 	userid := getUserID(api, username)
-	stmt, err := api.Context.Session.Prepare("INSERT INTO tokens (token, user_id, date_generated, date_expires, ip_address) values (?, ?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("INSERT INTO tokens (token, user_id, date_generated, date_expires, idenf, active) values (?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
 		panic(err)
 	}
 
-	res, err:= stmt.Exec(token, userid, time.Now(), time.Now().AddDate(0, 0, 7), ip_address)
+	res, err:= stmt.Exec(token, userid, time.Now(), time.Now().AddDate(0, 0, 7), idenf, active)
 	if (err != nil) {
 		panic(err)
 	}
-//	TODO Remove this
-	fmt.Println(res);
+
+	res.RowsAffected()
 
 	defer stmt.Close()
 	login.Success = true
@@ -107,7 +109,7 @@ func addUserToken(api router.API, username string, token string, ip_address stri
 }
 
 func getGravatarString(api router.API, token string) string {
-	userid := getUserIdFromToken(api, token)
+	userid := sessions.GetUserIdFromToken(api, token)
 
 	stmt, err := api.Context.Session.Prepare("SELECT email FROM users where id=?")
 
@@ -161,16 +163,6 @@ func getAuthUser(api router.API, username string, password string) bool {
 		return true
 	}
 	return false
-
-
-	fmt.Println(exist)
-
-	if exist {
-		return true
-	}
-	return false
-
-
 }
 
 
@@ -239,8 +231,9 @@ func RegisterUser(api router.API, username string, password string, email string
 		panic(err)
 		return false;
 	}
-//	TODO Remove this: res should not be used or printed
-	fmt.Println(res)
+
+	_ = res
+
 	defer stmt.Close()
 
 	return true;
@@ -281,119 +274,19 @@ func GetUsers(api router.API) []user{
 			Gravatar:gravatar,
 		})
 	}
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 	return users;
 }
 
-func getUserIdFromToken(api router.API, token string) int {
-	stmt, err := api.Context.Session.Prepare("SELECT user_id FROM tokens where token=?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(token)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
 
-	var id int
 
-	for rows.Next() {
-		err := rows.Scan(
-			&id,
-		)
 
-		if err != nil {
-			panic(err)
-		}
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return id;
-}
-
-type session struct{
-	Date_generated 	time.Time `json:"date_generated"`
-	Date_expires	time.Time `json:"date_expires"`
-	Ip_address		string    `json:"ip_address"`
-}
-
-func GetSessions(api router.API, token string) []session {
-	sessions := []session{}
-	userid := getUserIdFromToken(api, token)
-
-	stmt, err := api.Context.Session.Prepare("SELECT date_generated, date_expires, ip_address FROM tokens WHERE user_id = ?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(userid)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var sess session
-		err := rows.Scan(
-			&sess.Date_generated,
-			&sess.Date_expires,
-			&sess.Ip_address,
-		)
-
-		if err != nil {
-			panic(err)
-		}
-		sessions = append(sessions, sess)
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return sessions
-}
-
-func GetSession(api router.API, token string) []session {
-	sessions := []session{}
-
-	stmt, err := api.Context.Session.Prepare("SELECT date_generated, date_expires, ip_address FROM tokens WHERE token = ?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(token)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var sess session
-		err := rows.Scan(
-			&sess.Date_generated,
-			&sess.Date_expires,
-			&sess.Ip_address,
-		)
-
-		if err != nil {
-			panic(err)
-		}
-		sessions = append(sessions, sess)
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return sessions
-}
 
 // TODO fix json so you don't have to parse [0] to get values
 func GetProfile(api router.API, token string) profile {
-	userid := getUserIdFromToken(api, token)
+	userid := sessions.GetUserIdFromToken(api, token)
 	stmt, err := api.Context.Session.Prepare("SELECT username, email, first_name, last_name, location, date_registered FROM users WHERE id = ?")
 	if err != nil {
 		log.Fatal(err)
@@ -438,7 +331,7 @@ type hello struct {
 
 func GetHello(api router.API, token string) hello {
 
-	author := getUsername(api, getUserIdFromToken(api, token))
+	author := getUsername(api, sessions.GetUserIdFromToken(api, token))
 	message := fmt.Sprintf("こんにちは, %s!", author)
 
 	return hello{Message:message}
