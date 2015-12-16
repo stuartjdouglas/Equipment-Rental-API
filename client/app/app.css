@@ -85,3 +85,13 @@ header ul li a:hover {
   background-color:#333;
 }
 
+
+.thumb {
+  width:100px;
+  height:auto;
+}
+
+.thumb.circle {
+  border-radius: 100%;
+
+}

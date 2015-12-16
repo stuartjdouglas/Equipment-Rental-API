@@ -5,6 +5,7 @@ import (
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
+	"strings"
 )
 
 type Images struct {
@@ -13,10 +14,18 @@ type Images struct {
 }
 
 type Image struct {
-	Title 			string 		`json:"title"`
-	Location 		string 		`json:"location"`
-	Date_added 		time.Time 	`json:"date_added"`
+	Title 		string 		`json:"title"`
+	Location 	string 		`json:"location"`
+	Date_added 	time.Time 	`json:"date_added"`
 	File_location 	string 		`json:"file_location"`
+	Size		size        	`json:"size"`
+}
+
+type size struct {
+	Large	string        `json:"large"`
+	Medium	string        `json:"medium"`
+	Small	string        `json:"small"`
+	Thumb	string        `json:"thumb"`
 }
 
 func DoesImageExist(api router.API, code string) bool {
@@ -66,8 +75,8 @@ func DoesImageExist(api router.API, code string) bool {
 //	return exist
 }
 
-func GetImage(api router.API, filename string) Images {
-	var images = []Image{}
+func GetImage(api router.API, filename string) Image {
+	var images = Image{}
 	stmt, err := api.Context.Session.Prepare("SELECT file_name, title, date_added FROM images where file_name = ?")
 	if err != nil {
 		log.Fatal(err)
@@ -91,13 +100,22 @@ func GetImage(api router.API, filename string) Images {
 			panic(err)
 		}
 		image.File_location = "/data/" + image.Location
-		images = append(images, image)
+
+		values := strings.Split(image.Location, ".")
+
+		image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]
+		image.Size.Medium = "/data/" +  values[0] + "_medium" + "." + values[1]
+		image.Size.Small = "/data/" +  values[0] + "_small" + "." + values[1]
+		image.Size.Thumb = "/data/" +  values[0] + "_thumb" + "." + values[1]
+
+
+		images = image
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	return Images{Images:images, Total:len(images)}
+	return images
 }
 
 func GetAllImages(api router.API) Images {
@@ -125,6 +143,12 @@ func GetAllImages(api router.API) Images {
 			panic(err)
 		}
 		image.File_location = "/data/" + image.Location
+		values := strings.Split(image.Location, ".")
+
+		image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]
+		image.Size.Medium = "/data/" +  values[0] + "_medium" + "." + values[1]
+		image.Size.Small = "/data/" +  values[0] + "_small" + "." + values[1]
+		image.Size.Thumb = "/data/" +  values[0] + "_thumb" + "." + values[1]
 		images = append(images, image)
 	}
 	if err = rows.Err(); err != nil {

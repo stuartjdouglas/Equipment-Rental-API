@@ -48,14 +48,9 @@ func generateImageRoutes(api router.API) {
 			res.WriteHeader(http.StatusOK)
 			res.Write(data)
 		} else {
-//			res.Header().Set("Content-Type", "application/json")
-							res.WriteHeader(http.StatusUnauthorized)
-//							res.Write(data)
+			res.WriteHeader(http.StatusUnauthorized)
 		}
 
-//		res.Header().Set("Content-Type", "application/json")
-						res.WriteHeader(http.StatusInternalServerError)
-//						res.Write(data)
 	})
 
 

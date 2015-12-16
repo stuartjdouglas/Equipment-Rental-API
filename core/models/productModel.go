@@ -21,7 +21,7 @@ type Item struct {
 	Product_description		string		`json:"description"`
 	Product_rental_period_limit	int64 		`json:"product_rental_period_limit"`
 	Owner 				user    		`json:"owner"`
-	Image				Images           `json:"image"`
+	Image				Image           `json:"image"`
 }
 
 func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string) bool {

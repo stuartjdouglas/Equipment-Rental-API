@@ -1,6 +1,7 @@
 <table class="u-full-width">
     <thead>
     <tr>
+        <th></th>
         <th>Title</th>
         <th>Description</th>
         <th>Availablity Length</th>
@@ -9,6 +10,7 @@
     </thead>
     <tbody>
     <tr ng-repeat="product in products.item">
+        <td><a href="#/p/{{product.id}}"><img src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
         <td><a href="#/p/{{product.id}}">{{product.title}}</a></td>
         <td><a href="#/p/{{product.id}}">{{product.description}}</a></td>
         <td><a href="#/p/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>

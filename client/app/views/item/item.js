@@ -16,8 +16,6 @@ angular.module('app.item', ['ngRoute'])
             url: backend + "/product/" + $routeParams.id,
             method: 'GET',
         }).success(function(data, status, headers, config) {
-            console.log(data);
-
             $scope.product = data.item[0];
         }).
         error(function(data, status, headers, config) {
