@@ -95,8 +95,8 @@ func addUserToken(api router.API, username string, token string, idenf string, a
 	if (err != nil) {
 		panic(err)
 	}
-//	TODO Remove this
-	fmt.Println(res);
+
+	res.RowsAffected()
 
 	defer stmt.Close()
 	login.Success = true
@@ -163,16 +163,6 @@ func getAuthUser(api router.API, username string, password string) bool {
 		return true
 	}
 	return false
-
-
-	fmt.Println(exist)
-
-	if exist {
-		return true
-	}
-	return false
-
-
 }
 
 
@@ -241,8 +231,9 @@ func RegisterUser(api router.API, username string, password string, email string
 		panic(err)
 		return false;
 	}
-//	TODO Remove this: res should not be used or printed
-	fmt.Println(res)
+
+	_ = res
+
 	defer stmt.Close()
 
 	return true;
@@ -283,7 +274,7 @@ func GetUsers(api router.API) []user{
 			Gravatar:gravatar,
 		})
 	}
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 	return users;

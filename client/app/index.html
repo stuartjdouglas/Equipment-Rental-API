@@ -12,9 +12,13 @@
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
 <link rel="stylesheet" href="assets/css/skeleton.css">
+<link rel="stylesheet" href="bower_components/pure/pure-min.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="bower_components/animate.css/animate.min.css">
 <link rel="stylesheet" href="bower_components/angular-toastr/dist/angular-toastr.min.css">
+
+
+
 <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
 <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/>
 <link href='bower_components/webfont-notosans/regular/stylesheet.css' rel='stylesheet' type='text/css'>
@@ -30,7 +34,7 @@
     <div class="navigation">
         <nav>
             <ul>
-                <li><a href="#"><i class="fa fa-lemon-o"></i> <b>{{site.title}}</b></a></li>
+                <li><a href="#/"><i class="fa fa-lemon-o"></i> <b>{{site.title}}</b></a></li>
                 <li><a href="#/home"><i class="fa fa-home"></i> Home</a></li>
                 <li><a href="#/users"><i class="fa fa-users"></i> Users</a></li>
                 <li><a href="#/p"><i class="fa fa-cubes"></i> Items</a></li>
@@ -38,7 +42,7 @@
                 <!--<li><a href="#/profile" ng-show="loggedIn">Profile</a></li>-->
                 <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
                 <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
-                <li><a href="#/logout" ng-show="loggedIn"><i class="fa fa-power-off"></i> Logout</a></li>
+                <li class=""><a href="#/logout" ng-show="loggedIn"><i class="fa fa-power-off"></i> Logout</a></li>
                 <li class="right"><a href="#/profile" ng-show="loggedIn">
                     @{{auth.username}}
                     <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{auth.gravatar}}?s=90&d=identicon"/>
@@ -55,7 +59,7 @@
         <p></p>
     </div>
     <div class="eight columns">
-        <div ng-view class="animated fadeIn wrapper"></div>
+        <div ng-view class="wrapper"></div>
     </div>
     <div class="two columns">
         <p></p>
@@ -82,12 +86,16 @@
 <script src="views/imageupload/imageupload.js"></script>
 <script src="views/item/item.js"></script>
 <script src="views/items/items.js"></script>
+<!-- Settings -->
+<script src="views\settings\sessions\sessions.js"></script>
 <!-- Factories -->
 <script src="config.js"></script>
 <!-- Directives -->
 <script src="components/loginPanel/loginPanel.js"></script>
 <script src="components/registerPanel/registerPanel.js"></script>
 <script src="components/imageUploadForm/imageUploadForm.js"></script>
+<script src="components/rLabel/rLabel.js"></script>
+
 <!-- Imports -->
 <script src="bower_components/cryptojslib/rollups/sha512.js"></script>
 
