@@ -8,7 +8,7 @@ import (
 )
 
 type Images struct {
-	Images 	[]Image `json:"image"`
+	Images 	[]Image `json:"images"`
 	Total 	int 	`json:"total"`
 }
 
@@ -105,6 +105,7 @@ func IsImageAvailable(api router.API, token string) bool {
 
 func AddImageLocationToDb (api router.API, filename string, title string, original_name string, token string) bool {
 	userid := sessions.GetUserIdFromToken(api, token)
+
 	stmt, err := api.Context.Session.Prepare("INSERT INTO images (file_name, title, date_added, original_name, users_id) values (?, ?, ?, ?, ?)")
 
 	if err != nil {

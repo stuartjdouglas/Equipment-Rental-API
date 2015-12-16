@@ -3,6 +3,11 @@
         <h3><b>{{product.title}}</b></h3>
     </div>
 </div>
+
+<div class="image" ng-repeat="image in product.image.images">
+    <img src="{{image.file_location}}"/>
+</div>
+
 <div class="row">
     <h4>Description</h4>
     <div class="twelve columns">{{product.description}}</div>
@@ -15,7 +20,8 @@
 <div class="row">
     <div class="six columns">
         <h4>Owner</h4>
-        <p>@{{product.owner}}</p>
+        <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{product.owner.gravatar}}?s=90&d=identicon" width="50px" height="auto"/>
+        <p>@{{product.owner.username}}</p>
     </div>
     <div class="six columns">
         <button class="button-primary">Rent</button>

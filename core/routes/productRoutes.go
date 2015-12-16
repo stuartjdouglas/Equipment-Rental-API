@@ -5,46 +5,54 @@ import (
 	"encoding/json"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models"
+	"log"
+	"github.com/remony/Equipment-Rental-API/core/utils"
+	"strconv"
+	"path"
 )
 
 type Product struct {
-	Title 				string 	`json:"title"`
-	Description			string	`json:"description"`
-	Rental_period_limit int 	`json:"rental_period_limit"`
+	Title 			string 	`json:"title"`
+	Description		string	`json:"description"`
+	Rental_period_limit 	int 	`json:"rental_period_limit"`
+	Image			string 	`json:"image"`
 }
 
 func generateProductRoutes (api router.API) {
 	api.Router.Post("/p", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("token") != "" {
-			product := Product{}
-			err := json.NewDecoder(r.Body).Decode(&product)
+		token := r.Header.Get("token")
+		if token != "" {
+
+			limit, err := strconv.Atoi(r.FormValue("rental_period_limit"))
+
 			if err != nil {
-				http.Error(res, err.Error(), http.StatusBadRequest)
+				log.Println(err)
+			}
+			product := Product {
+				Title:r.FormValue("title"),
+				Description:r.FormValue("description"),
+				Rental_period_limit:limit,
 			}
 
-//			fmt.Println(product.Rental_period_limit)
+			_ = product
 
-			if len(product.Title) > 140 {
-				res.Header().Set("Content-Type", "application/json")
-				res.WriteHeader(http.StatusNotAcceptable)
-				json.NewEncoder(res).Encode(error_response{Message:"Product not created: Title too long"})
+			file, header, err:= r.FormFile("image")
+			if err != nil {
+				panic(err)
 			}
 
-			//if !models.CheckIfProductExists(api, slug) {
-				if models.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit,  r.Header.Get("token")) {
-					res.Header().Set("Content-Type", "application/json")
-					res.WriteHeader(http.StatusCreated)
-					json.NewEncoder(res).Encode(error_response{Message:"Product Created"})
-				} else {
-					res.Header().Set("Content-Type", "application/json")
-					res.WriteHeader(http.StatusInternalServerError)
-					json.NewEncoder(res).Encode(error_response{Message:"Product not created: Something went wrong"})
-				}
-//			} else {
-//				res.Header().Set("Content-Type", "application/json")
-//				res.WriteHeader(http.StatusConflict)
-//				json.NewEncoder(res).Encode(error_response{Message:"Product not created: Already exists"})
-//			}
+			filename := utils.RandomString(10) + path.Ext(header.Filename)
+
+			// If write is success then add image details to db
+			if utils.Write(file, filename) {
+				models.AddImageLocationToDb(api, filename, header.Filename, header.Filename, token)
+			} else {
+				// Otherwise we should call is nil
+				filename = "nil"
+			}
+
+			models.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename)
+
 		} else {
 			http.Error(res, "", http.StatusUnauthorized)
 		}

@@ -5,6 +5,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/utils"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
+	"strconv"
 )
 
 type Items struct {
@@ -13,16 +14,17 @@ type Items struct {
 }
 
 type Item struct {
-	Product_name					string 		`json:"title"`
-	Product_id	 					string 		`json:"id"`
-	Date_added 						time.Time	`json:"date_added"`
-	Date_updated					time.Time 	`json:"date_updated"`
-	Product_description				string		`json:"description"`
-	Product_rental_period_limit		int64 		`json:"product_rental_period_limit"`
-	Owner 							int    		`json:"owner"`
+	Product_name			string 		`json:"title"`
+	Product_id			string 		`json:"id"`
+	Date_added 			time.Time	`json:"date_added"`
+	Date_updated			time.Time 	`json:"date_updated"`
+	Product_description		string		`json:"description"`
+	Product_rental_period_limit	int64 		`json:"product_rental_period_limit"`
+	Owner 				user    		`json:"owner"`
+	Image				Images           `json:"image"`
 }
 
-func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string) bool {
+func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string) bool {
 	userid := sessions.GetUserIdFromToken(api, token)
 	product_id := utils.GenerateUUID();
 
@@ -32,7 +34,7 @@ func CreateProduct(api router.API, product_name string, product_description stri
 		panic(err)
 	}
 
-	res, err:= stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, 0, userid, userid, userid)
+	res, err:= stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, userid, userid)
 	if (err != nil) {
 		log.Println(err)
 		return false
@@ -46,7 +48,7 @@ func CreateProduct(api router.API, product_name string, product_description stri
 
 func GetProducts (api router.API) Items {
 	var content = []Item{}
-	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id FROM products")
+	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,6 +62,8 @@ func GetProducts (api router.API) Items {
 
 	for rows.Next() {
 		var result Item
+		var image_filename string
+		var tmpuserid string
 		err := rows.Scan(
 			&result.Product_name,
 			&result.Product_id,
@@ -67,8 +71,16 @@ func GetProducts (api router.API) Items {
 			&result.Date_updated,
 			&result.Product_description,
 			&result.Product_rental_period_limit,
-			&result.Owner,
+			&tmpuserid,
+			&image_filename,
 		)
+
+		result.Image = GetImage(api, image_filename)
+		userid, err := strconv.Atoi(tmpuserid)
+		if err != nil {
+			panic(err)
+		}
+		result.Owner = GetUser(api, getUsername(api, userid))
 
 		if err != nil {
 			panic(err)
@@ -85,7 +97,7 @@ func GetProducts (api router.API) Items {
 func GetProductFromOwner (api router.API, username string) Items {
 	var content = []Item{}
 	user:= getUserID(api, username)
-	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id FROM products where users_id=? ")
+	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products where users_id=? ")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,6 +111,8 @@ func GetProductFromOwner (api router.API, username string) Items {
 
 	for rows.Next() {
 		var result Item
+		var image_filename string
+		var tmpuserid string
 		err := rows.Scan(
 			&result.Product_name,
 			&result.Product_id,
@@ -106,12 +120,24 @@ func GetProductFromOwner (api router.API, username string) Items {
 			&result.Date_updated,
 			&result.Product_description,
 			&result.Product_rental_period_limit,
-			&result.Owner,
+			&tmpuserid,
+			&image_filename,
 		)
+
+		if (image_filename != "nil") {
+			result.Image = GetImage(api, image_filename)
+		}
+
+		userid, err := strconv.Atoi(tmpuserid)
+		if err != nil {
+			panic(err)
+		}
+		result.Owner = GetUser(api, getUsername(api, userid))
 
 		if err != nil {
 			panic(err)
 		}
+
 		content = append(content, result)
 	}
 	if err = rows.Err(); err != nil {
@@ -123,7 +149,7 @@ func GetProductFromOwner (api router.API, username string) Items {
 
 func GetProductFromID (api router.API, id string) Items {
 	var content = []Item{}
-	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id FROM products where product_id=? ")
+	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products where product_id=? ")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -137,6 +163,8 @@ func GetProductFromID (api router.API, id string) Items {
 
 	for rows.Next() {
 		var result Item
+		var image_filename string
+		var useridtmp string
 		err := rows.Scan(
 			&result.Product_name,
 			&result.Product_id,
@@ -144,12 +172,19 @@ func GetProductFromID (api router.API, id string) Items {
 			&result.Date_updated,
 			&result.Product_description,
 			&result.Product_rental_period_limit,
-			&result.Owner,
+			&useridtmp,
+			&image_filename,
 		)
-
 		if err != nil {
 			panic(err)
 		}
+		result.Image = GetImage(api, image_filename)
+
+		userid, err := strconv.Atoi(useridtmp)
+		if err != nil {
+			panic(err)
+		}
+		result.Owner = GetUser(api, getUsername(api, userid))
 		content = append(content, result)
 	}
 	if err = rows.Err(); err != nil {

@@ -1,6 +1,6 @@
 
 
-var domain = 'http://localhost:3000/api'
+var domain = 'http://192.168.1.99:3000/api'
 
 
 
