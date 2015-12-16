@@ -27,12 +27,12 @@ func GenConfig(path string) Config{
 	config:= Config{
 		Development: Properties{
 			Title: "Default Title",
-			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true?clientMultiResults=true?clientMultiResults=true",
 			Port: 3000,
 		},
 		Production: Properties{
 			Title: "Default Title",
-			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true?clientMultiResults=true?clientMultiResults=true",
 			Port: 80,
 		},
 	}

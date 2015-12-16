@@ -19,6 +19,53 @@ type Image struct {
 	File_location 	string 		`json:"file_location"`
 }
 
+func DoesImageExist(api router.API, code string) bool {
+	var exist bool
+	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM images WHERE file_name LIKE '%" + code + "%');").Scan(&exist)
+	if (err != nil) {
+		log.Println(err)
+	}
+	// If it exists return true
+	if exist {
+		return true
+	}
+	// Otherwise return false
+	return false
+
+/*
+
+		Replace with below when procedures as supported
+
+*/
+
+//	stmt, err := api.Context.Session.Prepare("CALL imageExists(?);")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	defer stmt.Close()
+//	rows, err := stmt.Query(code)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	defer rows.Close()
+//	var exist bool
+//	for rows.Next() {
+//
+//		err := rows.Scan(
+//			&exist,
+//		)
+//
+//		if err != nil {
+//			panic(err)
+//		}
+//
+//	}
+//	if err = rows.Err(); err != nil {
+//		log.Fatal(err)
+//	}
+//	return exist
+}
+
 func GetImage(api router.API, filename string) Images {
 	var images = []Image{}
 	stmt, err := api.Context.Session.Prepare("SELECT file_name, title, date_added FROM images where file_name = ?")

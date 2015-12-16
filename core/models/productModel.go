@@ -40,7 +40,7 @@ func CreateProduct(api router.API, product_name string, product_description stri
 		return false
 	}
 
-	log.Println(res)
+	_ = res
 
 	defer stmt.Close()
 	return true

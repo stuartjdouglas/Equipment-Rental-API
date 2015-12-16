@@ -41,10 +41,16 @@ func generateProductRoutes (api router.API) {
 				panic(err)
 			}
 
-			filename := utils.RandomString(10) + path.Ext(header.Filename)
+			imageCode := utils.RandomString(10) // create random string
+
+			for models.DoesImageExist(api, imageCode) { // For each time the file exists
+				imageCode = utils.RandomString(10)	// create new random string
+			}
+
+			filename := imageCode + path.Ext(header.Filename)
 
 			// If write is success then add image details to db
-			if utils.Write(file, filename) {
+			if utils.WriteImage(file, header.Header, imageCode, path.Ext(header.Filename)) {
 				models.AddImageLocationToDb(api, filename, header.Filename, header.Filename, token)
 			} else {
 				// Otherwise we should call is nil
