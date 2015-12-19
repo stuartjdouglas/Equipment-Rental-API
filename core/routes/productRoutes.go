@@ -41,10 +41,16 @@ func generateProductRoutes (api router.API) {
 				panic(err)
 			}
 
-			filename := utils.RandomString(10) + path.Ext(header.Filename)
+			imageCode := utils.RandomString(10) // create random string
+
+			for models.DoesImageExist(api, imageCode) { // For each time the file exists
+				imageCode = utils.RandomString(10)	// create new random string
+			}
+
+			filename := imageCode + path.Ext(header.Filename)
 
 			// If write is success then add image details to db
-			if utils.Write(file, filename) {
+			if utils.WriteImage(file, header.Header, imageCode, path.Ext(header.Filename)) {
 				models.AddImageLocationToDb(api, filename, header.Filename, header.Filename, token)
 			} else {
 				// Otherwise we should call is nil
@@ -62,17 +68,41 @@ func generateProductRoutes (api router.API) {
 
 	//	Get all Products
 	api.Router.Get("/p", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		result := models.GetProducts(api)
-		data, err := json.Marshal(result)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
+
+		if (r.Header.Get("Start") != ""|| r.Header.Get("Count") != "") {
+			step, err :=  strconv.Atoi(r.Header.Get("Start"))
+			count, err :=  strconv.Atoi(r.Header.Get("Count"))
+
+			result := models.GetProductsPaging(api, step, count)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
 		}
 
-		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(200)
-		res.Write(data)
+
+
 	})
+
+
+
+
 
 	api.Router.Get("/products/:username", func (c web.C, res http.ResponseWriter, r *http.Request) {
 

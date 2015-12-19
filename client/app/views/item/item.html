@@ -3,9 +3,9 @@
         <h3><b>{{product.title}}</b></h3>
     </div>
 </div>
-
-<div class="image" ng-repeat="image in product.image.images">
-    <img src="{{image.file_location}}"/>
+<!--data.item[0].image.file_location-->
+<div class="image" >
+    <img src="{{product.image.size.large}}" width="100%" height="auto"/>
 </div>
 
 <div class="row">

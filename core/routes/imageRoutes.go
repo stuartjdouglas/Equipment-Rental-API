@@ -10,6 +10,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/utils"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
+	"log"
 )
 
 type Error struct {
@@ -47,14 +48,9 @@ func generateImageRoutes(api router.API) {
 			res.WriteHeader(http.StatusOK)
 			res.Write(data)
 		} else {
-//			res.Header().Set("Content-Type", "application/json")
-							res.WriteHeader(http.StatusUnauthorized)
-//							res.Write(data)
+			res.WriteHeader(http.StatusUnauthorized)
 		}
 
-//		res.Header().Set("Content-Type", "application/json")
-						res.WriteHeader(http.StatusInternalServerError)
-//						res.Write(data)
 	})
 
 
@@ -68,9 +64,18 @@ func generateImageRoutes(api router.API) {
 					panic(err)
 				}
 
-				// TODO Check if it already exists
-				filename := utils.RandomString(10) + path.Ext(header.Filename)
-				if utils.Write(file, filename) {
+				imagecode := utils.RandomString(20)
+
+				for !models.DoesImageExist(api, imagecode) {
+					log.Println("creating new code")
+					imagecode = utils.RandomString(20)
+				}
+
+				filename := imagecode + path.Ext(header.Filename)
+
+
+
+				if utils.WriteImage(file, header.Header, imagecode, path.Ext(header.Filename)) {
 					models.AddImageLocationToDb(api, filename, header.Filename, header.Filename, token)
 
 					result := models.GetImage(api, filename)
