@@ -4,35 +4,32 @@ import (
 	. "github.com/franela/goblin"
 )
 
-const CONF_FILE = "./../../config.json"
+const CONF_FILE = "./../../../config.json"
 
 
 func TestConfig(t *testing.T) {
 	g := Goblin(t)
 	g.Describe("Development config", func() {
 		g.It("Should have title ", func() {
-			g.Assert(LoadConfig(CONF_FILE, true).Title == "").IsFalse()
+			g.Assert(LoadConfig(CONF_FILE, true).Development.Title == "").IsFalse()
 		})
 		g.It("Should have database url", func() {
-			g.Assert(LoadConfig(CONF_FILE, true).DbUrl == "").IsFalse()
+			g.Assert(LoadConfig(CONF_FILE, true).Development.DbUrl == "").IsFalse()
 		})
 		g.It("Should have port number", func() {
-			g.Assert(LoadConfig(CONF_FILE, true).Port == 0).IsFalse()
+			g.Assert(LoadConfig(CONF_FILE, true).Development.Port == 0).IsFalse()
 		})
-//		g.It("port number should be int", func() {
-//			g.Assert(LoadConfig(CONF_FILE, true).Port == reflect.Int ).IsTrue()
-//		})
 	})
 
 	g.Describe("Production config", func() {
 		g.It("Should have title ", func() {
-			g.Assert(LoadConfig(CONF_FILE, false).Title == "").IsFalse()
+			g.Assert(LoadConfig(CONF_FILE, false).Production.Title == "").IsFalse()
 		})
 		g.It("Should have database url", func() {
-			g.Assert(LoadConfig(CONF_FILE, false).DbUrl == "").IsFalse()
+			g.Assert(LoadConfig(CONF_FILE, false).Production.DbUrl == "").IsFalse()
 		})
 		g.It("Should have port number", func() {
-			g.Assert(LoadConfig(CONF_FILE, false).Port == 0).IsFalse()
+			g.Assert(LoadConfig(CONF_FILE, false).Production.Port == 0).IsFalse()
 		})
 	})
 }

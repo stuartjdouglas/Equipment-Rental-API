@@ -1,15 +1,26 @@
 {
     "development": {
+        "type": "",
         "title": "Default Title",
         "port": 3000,
-        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true"
+        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+        "email": {
+            "hostname": "smtp.mailgun.org",
+            "login": "postmaster@sandbox6deed7b9beee474a9f5a1fa1a29edcf2.mailgun.org",
+            "password": "4b32a58c252ebea54d6a74646323e8db",
+            "port": "465"
+        }
     },
     "production": {
+        "type": "",
         "title": "Default Title",
-        "port": 3000,
-        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true"
+        "port": 80,
+        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+        "email": {
+            "hostname": "smtp.mailgun.org",
+            "login": "postmaster@sandbox6deed7b9beee474a9f5a1fa1a29edcf2.mailgun.org",
+            "password": "4b32a58c252ebea54d6a74646323e8db",
+            "port": "465"
+        }
     }
-
 }
-
-

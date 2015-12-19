@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"os"
 	"os/exec"
 	"log"
@@ -20,8 +19,9 @@ func main() {
 	// Create the server and give it the config values
 	settings := config.LoadConfig(confFile, true)
 
-	fmt.Println(">>>>>>>>>" + settings.Title + ": " + settings.DbUrl + ": " + strconv.Itoa(settings.Port))
 	args := os.Args
+
+
 
 	if len(args) > 1 {
 		if args[1] == "--install" {
@@ -34,7 +34,7 @@ func main() {
 		}
 
 	} else {
-		server.Start(settings, database.Connection(settings.DbUrl))
+		server.Start(settings, database.Connection(settings.Production.DbUrl))
 
 	}
 }

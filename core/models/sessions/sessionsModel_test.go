@@ -13,7 +13,7 @@ const CONF_FILE = "./../../config.json"
 func TestAuthModel(t *testing.T) {
 g := Goblin(t)
 
-router := router.API{Context: database.Connection(config.LoadConfig(CONF_FILE, true).DbUrl)}
+router := router.API{Context: database.Connection(config.LoadConfig(CONF_FILE, true).Production.DbUrl)}
 
 g.Describe("Sessions", func() {
 //		TODO get token from a login
