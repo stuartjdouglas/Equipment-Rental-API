@@ -27,7 +27,7 @@
                     <td>{{session.idenf}}</td>
                     <td><span am-time-ago="session.date_generated"></span></td>
                     <td><span am-time-ago="session.date_expires"></span></td>
-                    <td><a href="#" ng-show="session.active">Disable</a>
+                    <td><a ng-show="session.active" ng-click="disable(session.idenf)">Disable</a>
                 </tr>
                 <tr>
                 </tbody>

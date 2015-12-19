@@ -22,6 +22,11 @@ type Sessions struct {
 	Total		int            `json:"total"`
 }
 
+type removalRes	struct {
+	ID string `json:"id"`
+	Message string `json:"message"`
+}
+
 func IsSessionValid(api router.API, token string) bool {
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM tokens WHERE token = ? AND active = 1 AND NOW() <= date_expires)", token).Scan(&exist)
@@ -38,21 +43,21 @@ func IsSessionValid(api router.API, token string) bool {
 }
 
 func DisableToken(api router.API, token string) bool {
-	stmt, err := api.Context.Session.Prepare("UPDATE tokens SET active =? WHERE token =?")
+	stmt, err := api.Context.Session.Prepare("UPDATE tokens SET active =? WHERE idenf =? AND active =?")
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-
-	res , err := stmt.Exec(0, token)
-	if (err != nil) {
-		log.Println(err)
-		return false
-	}
-
-	res.RowsAffected()
 
 	defer stmt.Close()
+	rows, err := stmt.Exec(0, token, 1)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows.RowsAffected()
+
+
 	return true
 }
 
