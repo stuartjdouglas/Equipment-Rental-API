@@ -12,7 +12,14 @@ angular.module('app.sessions', ['ngRoute'])
     ])
     .controller('SessionsCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
         if ($rootScope.loggedIn) {
-            console.log("hello");
+            getSessions();
+
+
+        } else {
+            $scope.view = false;
+        }
+
+        function getSessions() {
             $http({
                 url: backend + "/profile/sessions",
                 method: 'GET',
@@ -20,16 +27,27 @@ angular.module('app.sessions', ['ngRoute'])
                     'token': window.sessionStorage.token
                 }
             }).success(function(data, status, headers, config) {
-                console.log(data);
                 $scope.sessions = data;
             }).
             error(function(data, status, headers, config) {
                 $scope.error = true;
             });
+        }
 
-
-        } else {
-            $scope.view = false;
+        $scope.disable = function(index) {
+            $http({
+                url: backend + "/session",
+                method: 'DELETE',
+                headers: {
+                    'token': window.sessionStorage.token,
+                    'id': index
+                }
+            }).success(function(data, status, headers, config) {
+                getSessions()
+            }).
+            error(function(data, status, headers, config) {
+                $scope.error = true;
+            });
         }
 
 
