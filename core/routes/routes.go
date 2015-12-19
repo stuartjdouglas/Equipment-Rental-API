@@ -7,6 +7,7 @@ import (
 	"github.com/zenazn/goji/web"
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/utils/email"
 )
 
 
@@ -43,6 +44,7 @@ func CreateRoutes (api router.API) {
 		message := hello{
 			Message: fmt.Sprintf("こんにちは, %s!", c.URLParams["name"]),
 		}
+		email.SendEmail(api, "remonasebi@gmail.com", "hello", "<h1>" + message.Message + "</h1>")
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		json.NewEncoder(res).Encode(message)

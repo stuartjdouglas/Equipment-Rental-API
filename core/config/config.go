@@ -17,23 +17,41 @@ type Properties struct {
 	Title 	string 	`json:"title"`
 	Port 	int 	`json:"port"`
 	DbUrl 	string 	`json:"dburl"`
+	Email   Email	`json:"email"`
+}
+
+type Email struct {
+	Hostname string `json:"hostname"`
+	Login string `json:"login"`
+	Password string `json:"password"`
+	Port string `json:"port"`
 }
 
 
 // Generates a template JSON file, writes it to file and returns the struct
 func GenConfig(path string) Config{
 	log.Println("Configuration file is missing; generating....")
+
+	email := Email{
+		Hostname:"smtp.mailgun.org",
+		Login:"postmaster@sandbox6deed7b9beee474a9f5a1fa1a29edcf2.mailgun.org",
+		Password:"4b32a58c252ebea54d6a74646323e8db",
+		Port:"465",
+	}
+
 	// Create default configuration struct
 	config:= Config{
 		Development: Properties{
 			Title: "Default Title",
 			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
 			Port: 3000,
+			Email: email,
 		},
 		Production: Properties{
 			Title: "Default Title",
 			DbUrl: "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
 			Port: 80,
+			Email:email,
 		},
 	}
 
@@ -54,7 +72,7 @@ func GenConfig(path string) Config{
 }
 
 // Loads the config from config.json, if not existing create one and return config struct
-func LoadConfig(path string, devMode bool) Properties{
+func LoadConfig(path string, devMode bool) Config {
 	// Read in the file
 	file, e := ioutil.ReadFile(path)
 	// Create the empty struct
@@ -68,20 +86,15 @@ func LoadConfig(path string, devMode bool) Properties{
 	}
 
 	//	If the operator has defined to use devMode use development values otherwise set to Production values
-	if devMode {
-		return Properties{
-			Type:	"Development",
-			Title: 	config.Development.Title,
-			DbUrl: 	config.Development.DbUrl,
-			Port: 	config.Development.Port,
-		}
-	}
+//	if devMode {
+//		return Properties{
+//			Type:	"Development",
+//			Title: 	config.Development.Title,
+//			DbUrl: 	config.Development.DbUrl,
+//			Port: 	config.Development.Port,
+//		}
+//	}
 
 	//	Always fall back to production values
-	return Properties{
-		Type:	"Production",
-		Title: config.Development.Title,
-		DbUrl: config.Development.DbUrl,
-		Port: config.Development.Port,
-	}
+	return config
 }

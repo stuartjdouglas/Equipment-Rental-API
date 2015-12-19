@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"strconv"
 	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
@@ -12,10 +11,11 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/config/database"
 	"github.com/remony/Equipment-Rental-API/core/routes"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"log"
 )
 // Start handles all route configuration and starts the http server
-func Start(settings config.Properties, context database.Context) {
-	fmt.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Port))
+func Start(settings config.Config, context database.Context) {
+	log.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Production.Port))
 
     // Create the main router
 	masterRouter := web.New()
@@ -28,7 +28,7 @@ func Start(settings config.Properties, context database.Context) {
 
 	//Create subroutes
 	apiRouter 		:= web.New()
-	angularRouter 	:= web.New()
+	angularRouter 		:= web.New()
 	imageRouter		:= web.New()
 
 	// Assign sub routes to handle certain path requests
@@ -57,11 +57,11 @@ func Start(settings config.Properties, context database.Context) {
 	masterRouter.Use(c.Handler)
 
 	// Create the routes
-	routes.CreateRoutes(router.API{Router:apiRouter, Context:context})
+	routes.CreateRoutes(router.API{Router:apiRouter, Context:context, Config:settings})
 
 	// Gracefully Serve
-	if portIsFree(settings.Port) {
-		err := graceful.ListenAndServe(":" + strconv.Itoa(settings.Port), masterRouter)
+	if portIsFree(settings.Production.Port) {
+		err := graceful.ListenAndServe(":" + strconv.Itoa(settings.Production.Port), masterRouter)
 		if err != nil {
 			//		If an error occurs, normally is port is already in use
 
