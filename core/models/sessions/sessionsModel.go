@@ -137,6 +137,35 @@ func GetSessions(api router.API, token string) Sessions {
 	return Sessions{Sessions:result, Total: len(result)}
 }
 
+func GetUserNameFromToken(api router.API, token string) string {
+	stmt, err := api.Context.Session.Prepare("CALL getUsername(?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var username string
+
+	for rows.Next() {
+		err := rows.Scan(
+			&username,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return username;
+}
+
 func GetUserIdFromToken(api router.API, token string) int {
 	stmt, err := api.Context.Session.Prepare("SELECT user_id FROM tokens where token=?")
 	if err != nil {

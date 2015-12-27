@@ -264,18 +264,39 @@ CREATE PROCEDURE getPagedProducts (step INT, count INT)
   END;
 
 DROP PROCEDURE getRentedProducts;
-CALL getRentedProducts("remon");
+CALL getRentedProducts("remon", 0, 1);
 
-CREATE PROCEDURE getRentedProducts (username VARCHAR(240))
+CREATE PROCEDURE getRentedProducts (username VARCHAR(240), step INT, count INT)
   BEGIN
     select product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from user_rent_product
-      LEFT OUTER JOIN products ON user_rent_product.products_id = products.id;
+    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+    WHERE user_rent_product.date_due < NOW()
+    ORDER BY products.date_updated DESC LIMIT step, count;
   END;
 
-select id from users where username = 'remon';
+DROP PROCEDURE getCurrentlyRentingProducts;
+CALL getCurrentlyRentingProducts("remon", 0, 1);
 
-SELECT
-  *
-FROM
-  products
-  JOIN has ON users.id = has.products_id;
+CREATE PROCEDURE getCurrentlyRentingProducts (username VARCHAR(240), step INT, count INT)
+  BEGIN
+    select product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from user_rent_product
+    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+    WHERE user_rent_product.date_due > NOW()
+    ORDER BY products.date_updated DESC LIMIT step, count;
+  END;
+
+
+DROP PROCEDURE getUsername;
+CALL getUsername("94a17bfa-6c49-4398-8155-137f07612f7d");
+
+CREATE PROCEDURE getUsername (usrtoken VARCHAR(240))
+  BEGIN
+    DECLARE userid INT;
+    SELECT user_id INTO userid FROM tokens WHERE token = usrtoken;
+    SELECT username FROM users WHERE id = userid;
+  END;
+
+DROP PROCEDURE getCurrentlyRentingProducts;
+CALL getCurrentlyRentingProducts("remon", 0, 1);
+
+SELECT user_id from tokens where token = "94a17bfa-6c49-4398-8155-137f07612f7d";
