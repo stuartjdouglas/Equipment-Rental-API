@@ -196,7 +196,7 @@ CREATE PROCEDURE createProduct (product_name VARCHAR(240), product_id VARCHAR(24
 
 INSERT INTO has (users_id, products_id, status) VALUES (1, 1, 0);
 
-call createProduct("item","something","2015-12-16","2015-12-16","something",7,0,1);
+call createProduct("item3","something3","2015-12-27","2015-12-27","something",7,0,1);
 
 INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id)
 values ("item","something3","2015-12-27","2015-12-27","something",7,0,1);
@@ -253,13 +253,14 @@ BEGIN
   END;
 
 DROP PROCEDURE getPagedProducts;
-CALL getPagedProducts(0, 2);
+CALL getPagedProducts(0, 1);
 
 CREATE PROCEDURE getPagedProducts (step INT, count INT)
   BEGIN
-    SELECT product_id as id, product_name as name, product_description as description, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from has
+    SELECT product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from has
     LEFT OUTER JOIN products ON has.products_id = products.id
-    LEFT OUTER JOIN users ON has.users_id = users.id;
+    LEFT OUTER JOIN users ON has.users_id = users.id
+    ORDER BY products.date_updated DESC LIMIT step, count;
   END;
 
 DROP PROCEDURE getRentedProducts;
@@ -267,7 +268,7 @@ CALL getRentedProducts("remon");
 
 CREATE PROCEDURE getRentedProducts (username VARCHAR(240))
   BEGIN
-    select product_id as id, product_name as name, product_description as description, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from user_rent_product
+    select product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from user_rent_product
       LEFT OUTER JOIN products ON user_rent_product.products_id = products.id;
   END;
 

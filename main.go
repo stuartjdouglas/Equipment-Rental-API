@@ -34,6 +34,7 @@ func main() {
 		}
 
 	} else {
+
 		server.Start(settings, database.Connection(settings.Production.DbUrl))
 
 	}

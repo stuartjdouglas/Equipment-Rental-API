@@ -3,7 +3,7 @@ package database
 import (
 	"log"
  "database/sql"
-_ "github.com/go-sql-driver/mysql"
+_ "github.com/cxflag203/mysql"
 	"fmt"
 )
 
