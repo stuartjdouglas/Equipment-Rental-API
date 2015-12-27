@@ -16,6 +16,7 @@ angular.module('app', [
     'app.item',
     'app.items',
     'app.sessions',
+    'app.myItems',
   // Directives
   'app.loginPanel',
   'app.registerPanel',
