@@ -33,13 +33,13 @@ func CreateProduct(api router.API, product_name string, product_description stri
 	userid := sessions.GetUserIdFromToken(api, token)
 	product_id := utils.GenerateUUID();
 
-	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, product_rented_to, users_id, owner_id) values (?,?,?,?,?,?,?,?,?,?)")
+	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id) values (?,?,?,?,?,?,?,?)")
 
 	if err != nil {
 		panic(err)
 	}
 
-	res, err:= stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, userid, userid)
+	res, err:= stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid)
 	if (err != nil) {
 		log.Println(err)
 		return false
