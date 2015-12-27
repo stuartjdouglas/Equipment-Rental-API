@@ -24,7 +24,7 @@
         <td><a href="#/p/{{product.id}}">{{product.title}}</a></td>
         <td><a href="#/p/{{product.id}}">{{product.description}}</a></td>
         <td><a href="#/p/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>
-        <td>Available!</td>
+        <td><availability datasource="{{product.id}}")></availability></td>
     </tr>
     </tbody>
 </table>

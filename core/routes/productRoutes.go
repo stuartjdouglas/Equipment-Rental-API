@@ -168,21 +168,21 @@ func generateProductRoutes (api router.API) {
 
 	//	Get all Currently Rented Products
 	api.Router.Get("/p/rent/past", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("token")
+//		token := r.Header.Get("token")
 		if (r.Header.Get("Step") != ""|| r.Header.Get("Count") != "") {
-			step, err :=  strconv.Atoi(r.Header.Get("Step"))
-			count, err :=  strconv.Atoi(r.Header.Get("Count"))
+//			step, err :=  strconv.Atoi(r.Header.Get("Step"))
+//			count, err :=  strconv.Atoi(r.Header.Get("Count"))
 
-			result := models.GetPastRentedProducts(api, token, step, count)
-			data, err := json.Marshal(result)
-			if err != nil {
-				http.Error(res, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(200)
-			res.Write(data)
+//			result := models.GetPastRentedProducts(api, token, step, count)
+//			data, err := json.Marshal(result)
+//			if err != nil {
+//				http.Error(res, err.Error(), http.StatusInternalServerError)
+//				return
+//			}
+//
+//			res.Header().Set("Content-Type", "application/json")
+//			res.WriteHeader(200)
+//			res.Write(data)
 		} else {
 			result := models.GetProducts(api)
 			data, err := json.Marshal(result)
@@ -195,8 +195,20 @@ func generateProductRoutes (api router.API) {
 			res.WriteHeader(200)
 			res.Write(data)
 		}
+	})
 
+	api.Router.Get("/p/:id/availability", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
+		result := models.GetAvailability(api, c.URLParams["id"])
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
 
 	})
 

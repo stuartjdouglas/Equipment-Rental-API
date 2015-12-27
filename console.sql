@@ -240,11 +240,18 @@ SELECT id FROM products WHERE product_id = "something" LIMIT 1;
 select product_rental_period_limit from products where product_id = "something";
 
 DROP PROCEDURE checkItemAvailability;
+CALL checkItemAvailability("something3", "remon");
 
-CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240))
+CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(240))
 BEGIN
-    DECLARE due_date DATETIME;
-    select date_due into due_date from user_rent_product where products_id = 7;
+  DECLARE due_date DATETIME;
+
+  SELECT date_due INTO due_date FROM user_rent_product
+    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+    LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    WHERE products.product_id = product
+    ORDER BY products.date_updated DESC;
+
     if (due_date < NOW()) THEN
       select TRUE , due_date;
       ELSE
@@ -275,7 +282,7 @@ CREATE PROCEDURE getRentedProducts (username VARCHAR(240), step INT, count INT)
   END;
 
 DROP PROCEDURE getCurrentlyRentingProducts;
-CALL getCurrentlyRentingProducts("remon", 0, 1);
+CALL getCurrentlyRentingProducts("remon", 0, 2);
 
 CREATE PROCEDURE getCurrentlyRentingProducts (username VARCHAR(240), step INT, count INT)
   BEGIN
@@ -300,3 +307,23 @@ DROP PROCEDURE getCurrentlyRentingProducts;
 CALL getCurrentlyRentingProducts("remon", 0, 1);
 
 SELECT user_id from tokens where token = "94a17bfa-6c49-4398-8155-137f07612f7d";
+
+DROP PROCEDURE checkProductAvailability;
+CALL checkProductAvailability("something3");
+
+CREATE PROCEDURE `checkProductAvailability`(product VARCHAR(240))
+BEGIN
+  DECLARE due_date DATETIME;
+
+  SELECT date_due INTO due_date FROM user_rent_product
+    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+    LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    WHERE products.product_id = product
+    ORDER BY products.date_updated DESC;
+
+    if (due_date > NOW()) THEN
+        select FALSE, due_date;
+      ELSE
+        select TRUE, NOW();
+    END IF;
+  END;

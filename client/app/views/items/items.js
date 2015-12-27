@@ -24,7 +24,7 @@ angular.module('app.items', ['ngRoute'])
 
 
     if ($rootScope.loggedIn) {
-        updateResults();
+        //updateResults();
     } else {
         $scope.view = false;
     }

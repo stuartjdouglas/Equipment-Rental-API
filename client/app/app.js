@@ -22,6 +22,7 @@ angular.module('app', [
   'app.registerPanel',
     'app.imageUploadForm',
     'app.rlabel',
+    'app.availability',
   // Factories
   'app.config',
   //  Dependencies
