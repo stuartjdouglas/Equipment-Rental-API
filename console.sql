@@ -225,16 +225,30 @@ SELECT * from has
 call RentItem ("something3", "remon");
 DROP PROCEDURE RentItem;
 
-CREATE PROCEDURE RentItem (product VARCHAR(240), username VARCHAR(240))
+CREATE PROCEDURE RentItem (product VARCHAR(240), usrname VARCHAR(240))
   BEGIN
     DECLARE userid INT;
     DECLARE days INT;
     DECLARE productid INT;
 
-    SELECT id INTO userid FROM users WHERE username = username LIMIT 1;
+    SELECT id INTO userid FROM users WHERE username = usrname;
     SELECT id, product_rental_period_limit INTO productid, days FROM products WHERE product_id = product LIMIT 1;
 
     INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(CURDATE(), INTERVAL days DAY), TRUE);
+  END;
+
+DROP PROCEDURE ReturnItem;
+call ReturnItem ("something3",1);
+call RentItem ("something3", "remon");
+call RentItem ("something2", "remon");
+CREATE PROCEDURE ReturnItem (product VARCHAR(240), userid INT)
+  BEGIN
+    DECLARE productid INT;
+
+    SELECT id INTO productid FROM products WHERE product_id = product;
+#     UPDATE user_rent_product SET active = 0 WHERE users_id = userid AND products_id = productid;
+    DELETE FROM user_rent_product WHERE users_id = userid AND products_id = productid;
+#     INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(CURDATE(), INTERVAL days DAY), TRUE);
   END;
 
 
@@ -243,7 +257,7 @@ SELECT id FROM products WHERE product_id = "something" LIMIT 1;
 select product_rental_period_limit from products where product_id = "something";
 
 DROP PROCEDURE checkItemAvailability;
-CALL checkItemAvailability("something3", "remon");
+CALL checkItemAvailability("something4", "remon");
 
 CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(240))
 BEGIN
@@ -313,21 +327,54 @@ CALL getCurrentlyRentingProducts("remon", 0, 1);
 SELECT user_id from tokens where token = "94a17bfa-6c49-4398-8155-137f07612f7d";
 
 DROP PROCEDURE checkProductAvailability;
-CALL checkProductAvailability("something3");
+CALL checkProductAvailability("something4");
 
 CREATE PROCEDURE `checkProductAvailability`(product VARCHAR(240))
 BEGIN
   DECLARE due_date DATETIME;
+  DECLARE active_state BOOLEAN;
 
-  SELECT date_due INTO due_date FROM user_rent_product
+  SELECT date_due, active INTO due_date, active_state FROM user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
     LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
     WHERE products.product_id = product
     ORDER BY products.date_updated DESC;
 
-    if (due_date > NOW()) THEN
-        select FALSE, due_date;
+    if (active_state = 1) THEN
+      if (due_date > NOW()) THEN
+        select FALSE as available, due_date as due_date;
       ELSE
-        select TRUE, NOW();
+        select TRUE as available, NOW() as due_date;
+      END IF;
+    ELSE
+      select TRUE as available, NOW() as due_date;
+    END IF;
+  END;
+
+DROP PROCEDURE checkAuthedProductAvailability;
+CALL checkAuthedProductAvailability("something4");
+
+CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
+BEGIN
+  DECLARE due_date DATETIME;
+  DECLARE taken_date DATETIME;
+  DECLARE user_name VARCHAR(240);
+  DECLARE active_state BOOLEAN;
+
+  SELECT date_due, date_received, username, active INTO due_date, taken_date, user_name, active_state FROM user_rent_product
+    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+    LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    WHERE products.product_id = product
+    ORDER BY products.date_updated DESC;
+
+    if (active_state = 1) THEN
+      if (due_date > NOW()) THEN
+        select FALSE as available, due_date, taken_date, user_name as username;
+      ELSE
+        select TRUE as available, NOW() as due_date, NOW() as taken_date, user_name as username;
+      END IF;
+    ELSE
+      SET user_name = "nil";
+      select TRUE as available, NOW() as due_date, NOW() as taken_date, user_name as username;
     END IF;
   END;

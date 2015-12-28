@@ -98,3 +98,16 @@ header ul li a:hover {
   border-radius: 100%;
 
 }
+
+
+.rent_status.owner {
+  background-color:#ECEFF1;
+  padding:10px;
+  width:200px;
+  margin:10px;
+  border-radius: 5px;
+}
+
+.rent_status.owner p {
+
+}

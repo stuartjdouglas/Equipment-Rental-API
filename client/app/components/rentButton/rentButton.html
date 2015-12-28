@@ -1,1 +1,7 @@
 <button ng-class="rentButtonClass" id="rentButton" ng-click="click('something')">{{availability}}</button>
+
+<div class="rent_status owner" ng-show="owner">
+    <p>Due in <span am-time-ago="result.date_due"></span></p>
+    <p>You rented <span am-time-ago="result.date_taken"></span></p>
+    <button ng-click="return(datasource.id)">Return</button>
+</div>

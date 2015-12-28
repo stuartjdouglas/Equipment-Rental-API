@@ -9,6 +9,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/utils"
 	"strconv"
 	"path"
+	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
 type Product struct {
@@ -198,17 +199,128 @@ func generateProductRoutes (api router.API) {
 	})
 
 	api.Router.Get("/p/:id/availability", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("token")
+		log.Println(token)
+		if token != "" {
+			// Check that the token is a valid token
+			if sessions.IsSessionValid(api, token) {
+				result := models.GetAuthedAvailability(api, c.URLParams["id"], token)
+				data, err := json.Marshal(result)
+				if err != nil {
+					http.Error(res, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(200)
+				res.Write(data)
+			}
+		} else {
+			result := models.GetAvailability(api, c.URLParams["id"])
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+//		log.Println(token)
+
+
+	})
+
+	api.Router.Post("/p/:id/rent", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetAvailability(api, c.URLParams["id"])
-		data, err := json.Marshal(result)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
+		token := r.Header.Get("token")
+
+
+
+		if result.Available {
+			if token != "" {
+				if (sessions.IsSessionValid(api, token)) {
+
+					//Rent the product
+					log.Println(token)
+					models.RentItem(api, c.URLParams["id"], token)
+
+				} else {
+					log.Println("invalid, expired token")
+					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
+				}
+
+
+			} else {
+				http.Error(res, "Unauthorized: missing token", http.StatusInternalServerError)
+			}
+		} else {
+			// Return nil
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusConflict)
+
+			res.Write(data)
+
 		}
 
-		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(200)
-		res.Write(data)
+
+
+
+
+
+	})
+
+	api.Router.Post("/p/:id/return", func (c web.C, res http.ResponseWriter, r *http.Request) {
+
+		result := models.GetAvailability(api, c.URLParams["id"])
+		token := r.Header.Get("token")
+
+
+
+		if !result.Available {
+			if token != "" {
+				if (sessions.IsSessionValid(api, token)) {
+
+					//Rent the product
+					log.Println(token)
+					models.ReturnItem(api, c.URLParams["id"], token)
+
+				} else {
+					log.Println("invalid, expired token")
+					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
+				}
+
+
+			} else {
+				http.Error(res, "Unauthorized: missing token", http.StatusInternalServerError)
+			}
+		} else {
+			// Return nil
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusConflict)
+
+			res.Write(data)
+
+		}
+
+
+
+
+
 
 	})
 
