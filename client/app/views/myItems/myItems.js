@@ -4,7 +4,7 @@ angular.module('app.myItems', ['ngRoute'])
 
     .config(['$routeProvider',
         function($routeProvider) {
-            $routeProvider.when('/my/items', {
+            $routeProvider.when('/my/items/current', {
                 templateUrl: 'views/myItems/myItems.html',
                 controller: 'myItemsCtrl'
             });
@@ -59,7 +59,7 @@ angular.module('app.myItems', ['ngRoute'])
 
         function updateResults() {
             $http({
-                url: backend + "/p",
+                url: backend + "/p/rent/current",
                 method: 'GET',
                 headers: {
                     'Start':$scope.start,

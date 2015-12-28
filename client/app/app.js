@@ -22,12 +22,15 @@ angular.module('app', [
   'app.registerPanel',
     'app.imageUploadForm',
     'app.rlabel',
+    'app.availability',
+    'app.rentButton',
   // Factories
   'app.config',
   //  Dependencies
     'ngFileUpload',
     'ngStorage',
-    'angularMoment'
+    'angularMoment',
+    'ui-notification'
 ]).
 config(['$routeProvider','$locationProvider', function($routeProvider, $locationProvider) {
 	$routeProvider.otherwise({redirectTo: '/home'});

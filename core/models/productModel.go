@@ -6,6 +6,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/utils"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"strconv"
+
 )
 
 type Items struct {
@@ -157,6 +158,120 @@ func GetProductsPaging (api router.API, step int, count int) Result {
 	return Result{Results:items, Total:total}
 }
 
+func GetCurrentlyRentedProducts (api router.API, token string, step int, count int) Result {
+
+	var content = []Item{}
+	username := sessions.GetUserNameFromToken(api, token)
+	//	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products ORDER BY date_added DESC LIMIT ?, ?")
+	stmt, err := api.Context.Session.Prepare("CALL getCurrentlyRentingProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(username, step, count)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+
+	for rows.Next() {
+		var result Item
+		var image_filename string
+		var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_filename,
+			&tmpuserid,
+		)
+
+		result.Image = GetImage(api, image_filename)
+		//		userid, err := strconv.Atoi(tmpuserid)
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+		//		result.Owner = GetUser(api, getUsername(api, userid))
+		//
+		//		if err != nil {
+		//			panic(err)
+		//		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Item = content
+	items.Total = len(content)
+	total := getCount(api, "all")
+	return Result{Results:items, Total:total}
+}
+
+//func GetAvailability (api router.API, token string, step int, count int) Result {
+//
+//	var content = []Item{}
+//	username := sessions.GetUserNameFromToken(api, token)
+//	//	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products ORDER BY date_added DESC LIMIT ?, ?")
+//	stmt, err := api.Context.Session.Prepare("CALL getRentedProducts(?, ?, ?)")
+//	if err != nil {
+//		log.Println(err)
+//	}
+//	defer stmt.Close()
+//	rows, err := stmt.Query(username, step, count)
+//	if err != nil {
+//		log.Println(err)
+//	}
+//	defer rows.Close()
+//
+//
+//	for rows.Next() {
+//		var result Item
+//		var image_filename string
+//		var tmpuserid string
+//		err := rows.Scan(
+//			&result.Product_id,
+//			&result.Product_name,
+//			&result.Product_description,
+//			&result.Date_added,
+//			&result.Date_updated,
+//			&result.Product_rental_period_limit,
+//			&image_filename,
+//			&tmpuserid,
+//		)
+//
+//		result.Image = GetImage(api, image_filename)
+//		//		userid, err := strconv.Atoi(tmpuserid)
+//		if err != nil {
+//			log.Println("Getting paged results error scanning")
+//			panic(err)
+//		}
+//		//		result.Owner = GetUser(api, getUsername(api, userid))
+//		//
+//		//		if err != nil {
+//		//			panic(err)
+//		//		}
+//		content = append(content, result)
+//	}
+//	if err = rows.Err(); err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	var items Items
+//
+//	items.Item = content
+//	items.Total = len(content)
+//	total := getCount(api, "all")
+//	return Result{Results:items, Total:total}
+//}
+
 func getCount(api router.API, query string) int {
 	count := 0;
 	if (query == "all") {
@@ -290,4 +405,166 @@ func GetProductFromID (api router.API, id string) Items {
 	return Items{Item: content, Total: len(content)}
 }
 
+type Availability struct {
+	Available bool `json:"available"`
+	Date time.Time `json:"date"`
+}
+
+type RentalStatus struct {
+	Owner		bool  	    `json:"owner"`
+	Available	bool        `json:"available"`
+	Date_taken	time.Time   `json:"date_taken"`
+	Date_due	time.Time   `json:"date_due"`
+}
+
+func GetAvailability (api router.API, product string) Availability {
+
+	stmt, err := api.Context.Session.Prepare("CALL checkProductAvailability(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(product)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+
+	var result Availability
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Available,
+			&result.Date,
+		)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result;
+}
+
+func GetAuthedAvailability (api router.API, product string, token string) RentalStatus {
+	var currentProductRenter string
+	var available bool
+
+	username := sessions.GetUserNameFromToken(api, token)
+
+	stmt, err := api.Context.Session.Prepare("CALL checkAuthedProductAvailability(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(product)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var result RentalStatus
+
+	for rows.Next() {
+		err := rows.Scan(
+			&available,
+			&result.Date_due,
+			&result.Date_taken,
+			&currentProductRenter,
+		)
+
+		if err != nil {
+			log.Println("Getting Authed availability scanning")
+			panic(err)
+		}
+		result.Available = available
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	if username != currentProductRenter {
+		result.Owner = false;
+		result.Date_taken = time.Now()
+	} else {
+		result.Owner = true;
+	}
+
+
+	return result
+
+
+}
+
+func RentItem (api router.API, product string, token string) Availability {
+	username := sessions.GetUserNameFromToken(api, token)
+	stmt, err := api.Context.Session.Prepare("CALL RentItem(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(product, username)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+
+	var result Availability
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Available,
+			&result.Date,
+		)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result;
+}
+
+func ReturnItem (api router.API, product string, token string) Availability {
+	username := sessions.GetUserIdFromToken(api, token)
+	stmt, err := api.Context.Session.Prepare("CALL ReturnItem(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(product, username)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+
+	var result Availability
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Available,
+			&result.Date,
+		)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result;
+}
 
