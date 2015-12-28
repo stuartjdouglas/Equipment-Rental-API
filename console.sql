@@ -133,11 +133,14 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`has` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+DROP TABLE user_rent_product;
+
 CREATE TABLE IF NOT EXISTS `honoursproject`.`user_rent_product` (
   `users_id` INT NOT NULL COMMENT '',
   `products_id` INT NOT NULL COMMENT '',
   `date_received` DATETIME NOT NULL COMMENT '',
   `date_due` DATETIME NOT NULL COMMENT '',
+  `active` BOOLEAN NOT NULL COMMENT '',
   PRIMARY KEY (`users_id`, `products_id`)  COMMENT '',
   INDEX `fk_users_has_products_products2_idx` (`products_id` ASC)  COMMENT '',
   INDEX `fk_users_has_products_users2_idx` (`users_id` ASC)  COMMENT '',
@@ -219,7 +222,7 @@ SELECT * from has
   LEFT OUTER JOIN users ON has.users_id = users.id
   GROUP BY users.username;
 
-call RentItem ("somethin2g", "remon");
+call RentItem ("something3", "remon");
 DROP PROCEDURE RentItem;
 
 CREATE PROCEDURE RentItem (product VARCHAR(240), username VARCHAR(240))
@@ -229,9 +232,9 @@ CREATE PROCEDURE RentItem (product VARCHAR(240), username VARCHAR(240))
     DECLARE productid INT;
 
     SELECT id INTO userid FROM users WHERE username = username LIMIT 1;
-    SELECT id, product_rental_period_limit INTO productid, days FROM products WHERE product_id = product;
+    SELECT id, product_rental_period_limit INTO productid, days FROM products WHERE product_id = product LIMIT 1;
 
-    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due) VALUES (productid, userid, NOW(), DATE_ADD(CURDATE(), INTERVAL days DAY));
+    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(CURDATE(), INTERVAL days DAY), TRUE);
   END;
 
 
@@ -245,17 +248,18 @@ CALL checkItemAvailability("something3", "remon");
 CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(240))
 BEGIN
   DECLARE due_date DATETIME;
+  DECLARE activestate BOOLEAN;
 
-  SELECT date_due INTO due_date FROM user_rent_product
+  SELECT date_due, active INTO due_date, activestate FROM user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
     LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
     WHERE products.product_id = product
     ORDER BY products.date_updated DESC;
 
-    if (due_date < NOW()) THEN
-      select TRUE , due_date;
+    if (due_date > NOW() || activestate) THEN
+      select FALSE , due_date;
       ELSE
-        select FALSE as Available, due_date as date_;
+        select TRUE as Available, NOW();
     END IF;
   END;
 

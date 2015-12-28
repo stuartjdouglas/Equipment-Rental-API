@@ -20,6 +20,7 @@
     "angular-moment": "~0.10.3",
     "cryptojslib": "~3.1.2",
     "material-design-lite": "~1.0.6",
-    "pure": "~0.6.0"
+    "pure": "~0.6.0",
+    "angular-ui-notification": "~0.1.0"
   }
 }
