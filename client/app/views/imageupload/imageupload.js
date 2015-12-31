@@ -10,29 +10,29 @@ angular.module('app.imageupload', ['ngRoute'])
             });
         }
     ])
-    .controller('ImageUploadCtrl', ['$routeParams', '$scope', '$http', '$cookies', function($routeParams, $scope, $http, $cookies) {
+    .controller('ImageUploadCtrl', ['$routeParams', '$scope', '$http', function($routeParams, $scope, $http) {
 
-        if ($cookies.get('token')) {
-            $scope.view = true;
-
-            //$http({
-            //    url: backend + "/images",
-            //    method: 'GET',
-            //    headers: {
-            //        'Content-Type': 'multipart/form-data',
-            //        'token': $cookies.get('token')
-            //    }
-            //}).success(function(data, status, headers, config) {
-            //    $scope.images = data;
-            //    console.log(data);
-            //}).
-            //    error(function(data, status, headers, config) {
-            //        console.log(data);
-            //
-            //
-            //
-            //    });
-        } else {
-            $scope.view = false;
-        }
+        //if ($cookies.get('token')) {
+        //    $scope.view = true;
+        //
+        //    //$http({
+        //    //    url: backend + "/images",
+        //    //    method: 'GET',
+        //    //    headers: {
+        //    //        'Content-Type': 'multipart/form-data',
+        //    //        'token': $cookies.get('token')
+        //    //    }
+        //    //}).success(function(data, status, headers, config) {
+        //    //    $scope.images = data;
+        //    //    console.log(data);
+        //    //}).
+        //    //    error(function(data, status, headers, config) {
+        //    //        console.log(data);
+        //    //
+        //    //
+        //    //
+        //    //    });
+        //} else {
+        //    $scope.view = false;
+        //}
     }]);

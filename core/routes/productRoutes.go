@@ -8,8 +8,9 @@ import (
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/utils"
 	"strconv"
-	"path"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
+	"encoding/base64"
+	"strings"
 )
 
 type Product struct {
@@ -33,14 +34,24 @@ func generateProductRoutes (api router.API) {
 				Title:r.FormValue("title"),
 				Description:r.FormValue("description"),
 				Rental_period_limit:limit,
+				Image:r.FormValue("image"),
 			}
+
+			log.Println(product.Title)
+			log.Println(product.Description)
+			log.Println(product.Rental_period_limit)
+			log.Println(product.Image)
 
 			_ = product
 
-			file, header, err:= r.FormFile("image")
-			if err != nil {
-				panic(err)
-			}
+//			file, header, err:= r.FormFile("image")
+//			if err != nil {
+//				panic(err)
+//			}
+			file := base64.NewDecoder(base64.StdEncoding, strings.NewReader(product.Image))
+
+
+
 
 			imageCode := utils.RandomString(10) // create random string
 
@@ -48,11 +59,11 @@ func generateProductRoutes (api router.API) {
 				imageCode = utils.RandomString(10)	// create new random string
 			}
 
-			filename := imageCode + path.Ext(header.Filename)
-
+			fileExt := ".jpg"
+			filename := imageCode + fileExt
 			// If write is success then add image details to db
-			if utils.WriteImage(file, header.Header, imageCode, path.Ext(header.Filename)) {
-				models.AddImageLocationToDb(api, filename, header.Filename, header.Filename, token)
+			if utils.WriteBase64Image(file, nil, imageCode, fileExt) {
+				models.AddImageLocationToDb(api, filename, filename, filename, token)
 			} else {
 				// Otherwise we should call is nil
 				filename = "nil"
