@@ -226,7 +226,7 @@ func RegisterUser(api router.API, username string, password string, email string
 	}
 
 
-	res, err:= stmt.Exec(username,  utils.Sha512Me([]byte(password)), email, "first_name", "last_name", "location", time.Now())
+	res, err:= stmt.Exec(username, password, email, "first_name", "last_name", "location", time.Now())
 	if (err != nil) {
 		panic(err)
 		return false;

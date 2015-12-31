@@ -278,7 +278,7 @@ BEGIN
   END;
 
 DROP PROCEDURE getPagedProducts;
-CALL getPagedProducts(0, 1);
+CALL getPagedProducts(0, 6);
 
 CREATE PROCEDURE getPagedProducts (step INT, count INT)
   BEGIN

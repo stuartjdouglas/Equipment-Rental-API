@@ -11,7 +11,34 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
 )
+
+func WriteBase64Image (filez io.Reader, header textproto.MIMEHeader, filename string, extension string) bool {
+	file, err := jpeg.Decode(filez)
+	filetype := "image/jpeg"
+	if err != nil {
+		log.Println(err)
+	}
+	// Write original
+	Write(file, filename + extension, filetype)
+	// Write Large
+	largeImage := ResizeImage(file, 1000)
+	Write(largeImage, filename + "_large" + extension, filetype)
+
+	// Write medium
+	mediumImage := ResizeImage(file, 600)
+	Write(mediumImage, filename + "_medium" + extension, filetype)
+
+	// Write small
+	smallImage := ResizeImage(file, 300)
+	Write(smallImage, filename + "_small" + extension, filetype)
+
+	// Write thumbnail
+	thumbnail := ResizeImage(file, 150)
+	Write(thumbnail, filename + "_thumb" + extension, filetype)
+	return true;
+}
 
 func WriteImage (file multipart.File, header textproto.MIMEHeader, filename string, extension string) bool {
 	filetype := header.Get("Content-Type")
@@ -88,7 +115,29 @@ func WriteImage (file multipart.File, header textproto.MIMEHeader, filename stri
 		thumbnail := ResizeImage(file, 150)
 		Write(thumbnail, filename + "_thumb" + extension, filetype)
 	} else {
-		return false;
+		file, err := jpeg.Decode(file)
+		if err != nil {
+			log.Println(err)
+		}
+
+
+		// Write original
+		Write(file, filename + extension, filetype)
+		// Write Large
+		largeImage := ResizeImage(file, 1000)
+		Write(largeImage, filename + "_large" + extension, filetype)
+
+		// Write medium
+		mediumImage := ResizeImage(file, 600)
+		Write(mediumImage, filename + "_medium" + extension, filetype)
+
+		// Write small
+		smallImage := ResizeImage(file, 300)
+		Write(smallImage, filename + "_small" + extension, filetype)
+
+		// Write thumbnail
+		thumbnail := ResizeImage(file, 150)
+		Write(thumbnail, filename + "_thumb" + extension, filetype)
 	}
 
 	return true
