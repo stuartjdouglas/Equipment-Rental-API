@@ -8,6 +8,9 @@
     "beforeEach": false,
     "afterEach": false,
     "module": false,
-    "inject": false
+    "inject": false,
+    "window": true,
+    "CryptoJS": true,
+    "Backend": true
   }
 }

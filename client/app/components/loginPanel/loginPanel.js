@@ -8,7 +8,7 @@ angular.module('app.loginPanel', ['app.config'])
                 datasource: '='
             },
             templateUrl: 'components/loginPanel/loginPanel.html',
-            controller: function($scope, $http, $rootScope,$sessionStorage, $location) {
+            controller: function($scope, $http, $rootScope, $location) {
                 
                 $scope.login = function(user) {
 
