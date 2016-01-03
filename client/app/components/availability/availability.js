@@ -14,7 +14,7 @@ angular.module('app.availability', ['app.config'])
                         if ($attrs.datasource != "{{product.id}}") {
                             $scope.showLoading = false;
                             //$scope.datasource =  $attrs.datasource;
-                            console.log('/p/' + $attrs.datasource + '/availability');
+                            // console.log('/p/' + $attrs.datasource + '/availability');
                             $http({
                                 url: backend + '/p/' + $attrs.datasource + '/availability',
                                 method: 'GET',

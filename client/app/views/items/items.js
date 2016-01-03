@@ -4,7 +4,7 @@ angular.module('app.items', ['ngRoute'])
 
 .config(['$routeProvider',
     function($routeProvider) {
-        $routeProvider.when('/p', {
+        $routeProvider.when('/listing', {
             templateUrl: 'views/items/items.html',
             controller: 'itemsCtrl'
         });
@@ -30,7 +30,6 @@ angular.module('app.items', ['ngRoute'])
     }
 
     $scope.$watch("count", function(newValue) {
-        console.log(newValue);
         window.localStorage.setItem("product_count", newValue);
         updateResults();
     });
@@ -66,7 +65,6 @@ angular.module('app.items', ['ngRoute'])
                 'Count':$scope.count
             }
         }).success(function(data, status, headers, config) {
-            console.log(data);
             $scope.products = data;
         }).
         error(function(data, status, headers, config) {

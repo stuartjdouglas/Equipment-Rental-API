@@ -9,33 +9,46 @@ angular.module('app.registerPanel', ['app.config'])
             },
             templateUrl: 'components/registerPanel/registerPanel.html',
             controller: function($scope, $http) {
+              $scope.$watch(
+                "user.email",
+                function handleFooChange( newValue, oldValue ) {
+                  var hash = CryptoJS.MD5(newValue);
+                  $scope.gravatar = hash.toString();
+                }
+              );
                 $scope.register = function(user) {
                     console.log(user);
-                    var hash = CryptoJS.SHA512(user.password).toString();
+                    if (user.username != "" && user.email != "" && user.password != "" &&
+                    user.username != " " && user.email != " " && user.password.length < 6) {
+                        var hash = CryptoJS.SHA512(user.password).toString();
 
-                    $http({
-                        url: backend + "/user/register",
-                        method: 'POST',
-                        data: {
-                            'username': user.name,
-                            'password': hash,
-                            'email':user.email
-                        },
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                            
-                        }
-                    }).success(function(data, status, headers, config) {
+                        $http({
+                            url: backend + "/user/register",
+                            method: 'POST',
+                            data: {
+                                'username': user.name,
+                                'password': hash,
+                                'email':user.email
+                            },
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
 
-                          $scope.error = false;
-                        console.log(data);
-                    }).
-                    error(function(data, status, headers, config) {
-                        console.log(data);
-                        $scope.error = data.message;
+                            }
+                        }).success(function(data, status, headers, config) {
+
+                            $scope.error = false;
+                            console.log(data);
+                        }).
+                        error(function(data, status, headers, config) {
+                            console.log(data);
+                            $scope.error = data.message;
 
 
-                    });
+                        });
+                    }
+
+                    console.log(user);
+
 
                 }
             },

@@ -17,6 +17,7 @@ angular.module('app', [
   'app.items',
   'app.sessions',
   'app.myItems',
+  'app.creator',
 
   // Directives
   'app.loginPanel',
@@ -29,7 +30,8 @@ angular.module('app', [
   'app.config',
   //  Dependencies
   'angularMoment',
-  'ui-notification'
+  'ui-notification',
+  'naif.base64'
 ]).
 config(['$routeProvider','$locationProvider', function($routeProvider, $locationProvider) {
 	$routeProvider.otherwise({redirectTo: '/home'});

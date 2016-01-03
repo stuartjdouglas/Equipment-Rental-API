@@ -18,6 +18,7 @@ type Product struct {
 	Description		string	`json:"description"`
 	Rental_period_limit 	int 	`json:"rental_period_limit"`
 	Image			string 	`json:"image"`
+	Filetype		string 	`json:"filetype"`
 }
 
 func generateProductRoutes (api router.API) {
@@ -35,19 +36,9 @@ func generateProductRoutes (api router.API) {
 				Description:r.FormValue("description"),
 				Rental_period_limit:limit,
 				Image:r.FormValue("image"),
+				Filetype:r.FormValue("filetype"),
 			}
 
-			log.Println(product.Title)
-			log.Println(product.Description)
-			log.Println(product.Rental_period_limit)
-			log.Println(product.Image)
-
-			_ = product
-
-//			file, header, err:= r.FormFile("image")
-//			if err != nil {
-//				panic(err)
-//			}
 			file := base64.NewDecoder(base64.StdEncoding, strings.NewReader(product.Image))
 
 
@@ -59,10 +50,19 @@ func generateProductRoutes (api router.API) {
 				imageCode = utils.RandomString(10)	// create new random string
 			}
 
-			fileExt := ".jpg"
+			var fileExt string
+
+			if (product.Filetype == "image/jpeg") {
+				fileExt = ".jpg"
+			} else if (product.Filetype == "image/gif") {
+				fileExt = ".gif"
+			} else if (product.Filetype == "image/png") {
+				fileExt = ".png"
+			}
+
 			filename := imageCode + fileExt
 			// If write is success then add image details to db
-			if utils.WriteBase64Image(file, nil, imageCode, fileExt) {
+			if utils.WriteBase64Image(file, product.Filetype, imageCode, fileExt) {
 				models.AddImageLocationToDb(api, filename, filename, filename, token)
 			} else {
 				// Otherwise we should call is nil
@@ -86,7 +86,9 @@ func generateProductRoutes (api router.API) {
 			count, err :=  strconv.Atoi(r.Header.Get("Count"))
 
 			result := models.GetProductsPaging(api, step, count)
+
 			data, err := json.Marshal(result)
+
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
 				return
@@ -211,7 +213,6 @@ func generateProductRoutes (api router.API) {
 
 	api.Router.Get("/p/:id/availability", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
-		log.Println(token)
 		if token != "" {
 			// Check that the token is a valid token
 			if sessions.IsSessionValid(api, token) {
@@ -238,7 +239,6 @@ func generateProductRoutes (api router.API) {
 			res.WriteHeader(200)
 			res.Write(data)
 		}
-//		log.Println(token)
 
 
 	})
@@ -253,13 +253,8 @@ func generateProductRoutes (api router.API) {
 		if result.Available {
 			if token != "" {
 				if (sessions.IsSessionValid(api, token)) {
-
-					//Rent the product
-					log.Println(token)
 					models.RentItem(api, c.URLParams["id"], token)
-
 				} else {
-					log.Println("invalid, expired token")
 					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
 				}
 
@@ -299,13 +294,9 @@ func generateProductRoutes (api router.API) {
 		if !result.Available {
 			if token != "" {
 				if (sessions.IsSessionValid(api, token)) {
-
-					//Rent the product
-					log.Println(token)
 					models.ReturnItem(api, c.URLParams["id"], token)
 
 				} else {
-					log.Println("invalid, expired token")
 					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
 				}
 

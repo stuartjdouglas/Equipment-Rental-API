@@ -4,13 +4,14 @@ angular.module('app.item', ['ngRoute'])
 
 .config(['$routeProvider',
     function($routeProvider) {
-        $routeProvider.when('/p/:id', {
+        $routeProvider.when('/listing/:id', {
             templateUrl: 'views/item/item.html',
             controller: 'itemCtrl'
         });
     }
 ])
 .controller('itemCtrl', ['$rootScope', '$scope', '$http', '$routeParams', function($rootScope, $scope, $http, $routeParams) {
+  console.log("hello");
     if ($rootScope.loggedIn) {
         $http({
             url: backend + "/product/" + $routeParams.id,

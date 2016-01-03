@@ -42,6 +42,7 @@ type Auth struct {
 }
 
 type userProfile struct {
+	ID int `json:"id"`
 	Username 		string 		`json:"username"`
 	Email			string 		`json:"email"`
 	First_name		string 		`json:"first_name"`
@@ -176,7 +177,7 @@ func GetUser(api router.API, username string) user {
 	defer stmt.Close()
 	rows, err := stmt.Query(username)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 
@@ -189,14 +190,14 @@ func GetUser(api router.API, username string) user {
 		)
 
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 		user.Username = result.Username
 		sum := md5.Sum([]byte(result.Email))
 		user.Gravatar = hex.EncodeToString(sum[:])
 	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+	if err != nil {
+		log.Println(err)
 	}
 	return user;
 }
@@ -320,7 +321,7 @@ func GetProfile(api router.API, token string) profile {
 	}
 	sum := md5.Sum([]byte(user.Email))
 	user.Gravatar = hex.EncodeToString(sum[:])
-
+	user.ID = 0;
 
 	return profile{Profile:user};
 }

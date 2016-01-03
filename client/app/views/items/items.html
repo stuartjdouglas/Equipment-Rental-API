@@ -20,10 +20,10 @@
     </thead>
     <tbody>
     <tr ng-repeat="product in products.results.item">
-        <td><a href="#/p/{{product.id}}"><img src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
-        <td><a href="#/p/{{product.id}}">{{product.title}}</a></td>
-        <td><a href="#/p/{{product.id}}">{{product.description}}</a></td>
-        <td><a href="#/p/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>
+        <td><a href="#/listing/{{product.id}}"><img src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
+        <td><a href="#/listing/{{product.id}}">{{product.title}}</a></td>
+        <td><a href="#/listing/{{product.id}}">{{product.description}}</a></td>
+        <td><a href="#/listing/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>
         <td><availability datasource="{{product.id}}")></availability></td>
     </tr>
     </tbody>

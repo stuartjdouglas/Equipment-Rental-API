@@ -33,20 +33,38 @@
 <header ng-controller="AuthCtrl">
     <div class="navigation">
         <nav>
-            <ul>
+          <ul>
                 <li><a href="#/"><i class="fa fa-lemon-o"></i> <b>{{site.title}}</b></a></li>
                 <li><a href="#/home"><i class="fa fa-home"></i> Home</a></li>
-                <li><a href="#/users" ng-show="loggedIn"><i class="fa fa-users"></i> Users</a></li>
-                <li><a href="#/p" ng-show="loggedIn"><i class="fa fa-cubes"></i> Items</a></li>
+                <!-- <li><a href="#/users"><i class="fa fa-users"></i> Users</a></li> -->
+                <li><a href="#/listing"><i class="fa fa-cubes"></i> Listing</a></li>
                 <!--<li><a href="#/images">Images</a></li>-->
                 <!--<li><a href="#/profile" ng-show="loggedIn">Profile</a></li>-->
                 <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
                 <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
-                <li class=""><a href="#/logout" ng-show="loggedIn"><i class="fa fa-power-off"></i> Logout</a></li>
-                <li class="right"ng-show="loggedIn"><a href="#/profile" ng-show="loggedIn">
+                <li class="right sub-menu" ng-click="profileNav = !profileNav">
+                  <a href="" ng-show="loggedIn">
                     @{{auth.username}}
                     <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{auth.gravatar}}?s=90&d=identicon"/>
-                </a></li>
+                  </a>
+                  <ul ng-show="profileNav">
+                    <li>
+                      <a href='#/user/{{auth.username}}'>
+                        <i class="fa fa-user"></i> View profile
+                      </a>
+                    </li>
+                    <li>
+                      <a href='#'>
+                        <i class="fa fa-cog"></i> Account Settings
+                      </a>
+                    </li>
+                    <li>
+                      <a href='#'>
+                        <i class="fa fa-power-off"></i> Sign off
+                      </a>
+                    </li>
+                  </ul>
+                </li>
             </ul>
         </nav>
     </div>
@@ -73,11 +91,11 @@
 <script src="bower_components/angular-route/angular-route.min.js"></script>
 <script src="bower_components/angular-animate/angular-animate.min.js"></script>
 <!-- views -->
-<script src="app.js"></script>
+<script src="app.min.js"></script>
 <script src="home/home.js"></script>
 <script src="login/login.js"></script>
 <script src="views/logout/logout.js"></script>
-<script src="views/profile/profile.js"></script>
+<script src="views/profile/profile.min.js"></script>
 <script src="views/register/register.js"></script>
 <script src="views/users/users.js"></script>
 <script src="views/user/user.js"></script>
@@ -87,6 +105,8 @@
 <script src="views/item/item.js"></script>
 <script src="views/items/items.js"></script>
 <script src="views/myItems/myItems.js"></script>
+<script src="views\item\creator\creator.js"></script>
+
 <!-- Settings -->
 <script src="views\settings\sessions\sessions.js"></script>
 <!-- Factories -->
@@ -101,11 +121,13 @@
 
 <!-- Imports -->
 <script src="bower_components/cryptojslib/rollups/sha512.js"></script>
+<script src="bower_components/cryptojslib/rollups/MD5.js"></script>
 
 <!--<script src="/bower_components/angular-cookies/angular-cookies.min.js"></script>-->
 <!--<script src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>-->
 <!--<script src="bower_components/angular-toastr/dist/angular-toastr.min.js"></script>-->
 <!--<script src="bower_components/ngstorage/ngStorage.min.js"></script>-->
+<script src="bower_components\angular-base64-upload\dist\angular-base64-upload.min.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
 <script src="bower_components/angular-moment/angular-moment.min.js"></script>
 <script src="bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>

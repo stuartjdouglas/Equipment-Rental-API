@@ -43,7 +43,11 @@ func Start(settings config.Config, context database.Context) {
 	imageRouter.Use(middleware.SubRouter)
 
 	// Serve the static files in the client app directory (this is to host the angular app)
-	angularRouter.Use(gojistatic.Static("client/app/", gojistatic.StaticOptions{
+//	angularRouter.Use(gojistatic.Static("client/app/", gojistatic.StaticOptions{
+//		SkipLogging: true,
+//		Expires: nil,
+//	}))
+	angularRouter.Use(gojistatic.Static("client/app", gojistatic.StaticOptions{
 		SkipLogging: true,
 		Expires: nil,
 	}))

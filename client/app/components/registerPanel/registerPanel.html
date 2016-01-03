@@ -7,37 +7,36 @@
 	padding-bottom:20px;
 }
 </style>
-<form ng-submit="register(user)">
-<div class="row wrapper" >
 
-<div class="four columns makemered" ng-show="error">
-  		<p>{{error}}</p>
-  	</div>
-  	<div class="row" >
-  	
-  </div>
-  	
-    <div class="two columns">
-      <label for="exampleEmailInput">Username</label>
-      <input class="u-full-width" ng-model="user.name" type="text" placeholder="Lemon" id="">
+<div class="login">
+    <div class="login Aligner-item">
+        <h1>Register</h1>
     </div>
-    <div class="two columns">
-     <label for="exampleEmailInput">Email</label>
-      <input class="u-full-width" ng-model="user.email" type="email" placeholder="lemon@lemondev.xyz" id="">
-    </div>
-    <div class="two columns">
-     <label for="exampleEmailInput">Password</label>
-      <input class="u-full-width" ng-model="user.password" type="password" placeholder="********" id="">
-    </div>
-  </div>
-  <div class="row" >
-  	
-  <div class="two columns">
-  <p></p>
-  </div>
-  <div class="one columns">
-  <input class="button-primary" type="submit" value="Submit" >
+</div>
 
-  </div>
-  </div>
-</form>
+<div class="login aligner-item--bottom">
+    <form ng-submit="register(user)">
+
+        <p>{{error}}</p>
+
+        <br><br>
+				<div class="login aligner-item--bottom">
+        	<img ng-cloak height="100%" width="auto" ng-src="https://secure.gravatar.com/avatar/{{gravatar}}?s=90&d=identicon" width="100%" height="auto"/>
+      	</div>
+				<br>
+
+        <label for="">Username</label>
+        <input class="u-full-width" ng-model="user.name" type="text" placeholder="Lemon" id="">
+        <br><br>
+
+        <label for="">Email</label>
+        <input class="u-full-width" ng-model="user.email" type="email" placeholder="lemon@lemondev.xyz" id="">
+        <br><br>
+        <label for="">Password</label>
+        <input class="u-full-width" ng-model="user.password" type="password" placeholder="********" id="">
+        <br>
+        <br>
+        <input class="button-primary" type="submit" value="Submit" >
+
+    </form>
+</div>

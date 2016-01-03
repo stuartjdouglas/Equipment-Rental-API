@@ -30,12 +30,9 @@ func generateQrRoutes(api router.API) {
 
 		switch(c.URLParams["type"]) {
 		case "user":
-
 			qr.Code = string('@') + qr.Code
 			break;
-
 		}
-
 
 		if len(qr.Code) < 0 || qr.Height <= 0 || qr.Width < 0 {
 			qr = QRcode{
