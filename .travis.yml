@@ -5,6 +5,7 @@ go:
 install:
   - "go get"
   - "go get github.com/franela/goblin"
+  - "go get github.com/go-gomail/gomail"
 script:
   - "go env"
   - "go test -v ./..."
