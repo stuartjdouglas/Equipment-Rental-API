@@ -257,7 +257,7 @@ SELECT id FROM products WHERE product_id = "something" LIMIT 1;
 select product_rental_period_limit from products where product_id = "something";
 
 DROP PROCEDURE checkItemAvailability;
-CALL checkItemAvailability("something4", "remon");
+CALL checkItemAvailability("works so well", "remon");
 
 CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(240))
 BEGIN
