@@ -19,6 +19,7 @@ angular.module('app.availability', ['app.config'])
                                 url: backend + '/p/' + $attrs.datasource + '/availability',
                                 method: 'GET',
                             }).success(function(data, status, headers, config) {
+                              console.log(data)
                                 if (data.available) {
                                     $scope.availability = "Available";
                                 } else {

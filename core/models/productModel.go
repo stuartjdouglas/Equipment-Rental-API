@@ -414,6 +414,7 @@ type RentalStatus struct {
 }
 
 func GetAvailability (api router.API, product string) Availability {
+	log.Println(product)
 
 	stmt, err := api.Context.Session.Prepare("CALL checkProductAvailability(?)")
 	if err != nil {

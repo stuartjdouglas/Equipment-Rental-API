@@ -327,7 +327,7 @@ CALL getCurrentlyRentingProducts("remon", 0, 1);
 SELECT user_id from tokens where token = "94a17bfa-6c49-4398-8155-137f07612f7d";
 
 DROP PROCEDURE checkProductAvailability;
-CALL checkProductAvailability("something4");
+CALL checkProductAvailability("works so well");
 
 CREATE PROCEDURE `checkProductAvailability`(product VARCHAR(240))
 BEGIN
@@ -352,21 +352,23 @@ BEGIN
   END;
 
 DROP PROCEDURE checkAuthedProductAvailability;
-CALL checkAuthedProductAvailability("something4");
+CALL checkAuthedProductAvailability("40cdb44f-3bf4-4d71-9299-0f0887417731");
+CALL checkAuthedProductAvailability("Windos");
 
 CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
 BEGIN
-  DECLARE due_date DATETIME;
-  DECLARE taken_date DATETIME;
-  DECLARE user_name VARCHAR(240);
-  DECLARE active_state BOOLEAN;
+    DECLARE due_date DATETIME;
+    DECLARE taken_date DATETIME;
+    DECLARE user_name VARCHAR(240);
+    DECLARE active_state BOOLEAN;
 
   SELECT date_due, date_received, username, active INTO due_date, taken_date, user_name, active_state FROM user_rent_product
-    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
-    LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    LEFT JOIN products ON user_rent_product.products_id = products.id
+    LEFT JOIN users ON user_rent_product.users_id = users.id
     WHERE products.product_id = product
-    ORDER BY products.date_updated DESC;
-
+    ORDER BY date_received DESC
+    LIMIT 1;
+if (user_name) THEN
     if (active_state = 1) THEN
       if (due_date > NOW()) THEN
         select FALSE as available, due_date, taken_date, user_name as username;
@@ -377,4 +379,7 @@ BEGIN
       SET user_name = "nil";
       select TRUE as available, NOW() as due_date, NOW() as taken_date, user_name as username;
     END IF;
+ELSE
+  select FALSE as available, due_date, taken_date, user_name as username;
+END IF;
   END;
