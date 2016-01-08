@@ -17,7 +17,6 @@ type Image struct {
 	Title 		string 		`json:"title"`
 	Location 	string 		`json:"location"`
 	Date_added 	time.Time 	`json:"date_added"`
-	File_location 	string 		`json:"file_location"`
 	Size		size        	`json:"size"`
 }
 
@@ -99,7 +98,6 @@ func GetImage(api router.API, filename string) Image {
 		if err != nil {
 			panic(err)
 		}
-		image.File_location = "/data/" + image.Location
 
 		values := strings.Split(image.Location, ".")
 
@@ -142,7 +140,6 @@ func GetAllImages(api router.API) Images {
 		if err != nil {
 			panic(err)
 		}
-		image.File_location = "/data/" + image.Location
 		values := strings.Split(image.Location, ".")
 
 		image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]

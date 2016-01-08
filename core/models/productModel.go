@@ -21,7 +21,7 @@ type Item struct {
 	Date_updated			time.Time 	`json:"date_updated"`
 	Product_description		string		`json:"description"`
 	Product_rental_period_limit	int64 		`json:"product_rental_period_limit"`
-	Owner 				user    		`json:"owner"`
+	Owner 				User   		`json:"owner"`
 	Image				Image           `json:"image"`
 }
 
@@ -154,9 +154,25 @@ func GetProductsPaging (api router.API, step int, count int) Result {
 	return Result{Results:items, Total:total}
 }
 
-func GetCurrentlyRentedProducts (api router.API, token string, step int, count int) Result {
+type RentItems struct {
+	ID 		string 		`json:"id"`
+	Title 		string 		`json:"title"`
+	Description 	string 		`json:"description"`
+	Due 		time.Time 	`json:"due"`
+	Received 	time.Time 	`json:"received"`
+	Images 		Image 		`json:"images"`
+	Owner 		User 		`json:"owner"`
+}
 
-	var content = []Item{}
+type RentResult struct {
+	Items []RentItems 	`json:"items"`
+	Total int 		`json:"total"`
+}
+
+
+func GetCurrentlyRentedProducts (api router.API, token string, step int, count int) RentResult {
+
+	var content = []RentItems{}
 	username := sessions.GetUserNameFromToken(api, token)
 	//	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products ORDER BY date_added DESC LIMIT ?, ?")
 	stmt, err := api.Context.Session.Prepare("CALL getCurrentlyRentingProducts(?, ?, ?)")
@@ -170,45 +186,41 @@ func GetCurrentlyRentedProducts (api router.API, token string, step int, count i
 	}
 	defer rows.Close()
 
-
 	for rows.Next() {
-		var result Item
+		var result RentItems
 		var image_filename string
-		var tmpuserid string
+		var username string
 		err := rows.Scan(
-			&result.Product_id,
-			&result.Product_name,
-			&result.Product_description,
-			&result.Date_added,
-			&result.Date_updated,
-			&result.Product_rental_period_limit,
+			&result.ID,
+			&result.Title,
+			&result.Description,
+			&result.Due,
+			&result.Received,
 			&image_filename,
-			&tmpuserid,
+			&username,
 		)
 
-		result.Image = GetImage(api, image_filename)
+		result.Images = GetImage(api, image_filename)
 		//		userid, err := strconv.Atoi(tmpuserid)
 		if err != nil {
 			log.Println("Getting paged results error scanning")
 			panic(err)
 		}
-		//		result.Owner = GetUser(api, getUsername(api, userid))
-		//
-		//		if err != nil {
-		//			panic(err)
-		//		}
+		result.Owner = GetUser(api, username)
+
+		if err != nil {
+			panic(err)
+		}
 		content = append(content, result)
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	var items Items
-
-	items.Item = content
-	items.Total = len(content)
-	total := getCount(api, "all")
-	return Result{Results:items, Total:total}
+	return RentResult{
+		Items: content,
+		Total: len(content),
+	}
 }
 
 //func GetAvailability (api router.API, token string, step int, count int) Result {
@@ -414,8 +426,6 @@ type RentalStatus struct {
 }
 
 func GetAvailability (api router.API, product string) Availability {
-	log.Println(product)
-
 	stmt, err := api.Context.Session.Prepare("CALL checkProductAvailability(?)")
 	if err != nil {
 		log.Println(err)
