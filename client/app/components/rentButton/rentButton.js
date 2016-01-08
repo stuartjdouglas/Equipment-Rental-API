@@ -22,7 +22,7 @@ angular.module('app.rentButton', ['app.config'])
                             if ($scope.datasource.id != undefined) {
                                 $scope.showLoading = false;
                                 //console.log(">>> " + $scope.datasource)
-                                var headers = {};
+                                // var headers = {};
                                 // Check if we are a logged in user or not
                                 getRentalStatus();
 
@@ -86,7 +86,7 @@ angular.module('app.rentButton', ['app.config'])
                         $http({
                             url: backend + '/p/' + $scope.datasource.id + '/availability',
                             method: 'GET',
-                            header: headers,
+                            // header: headers,
                         }).success(function (data, status, headers, config) {
                             $scope.gotRes = true;
                             $scope.rentButtonClass.splice("", 0);

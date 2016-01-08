@@ -11,20 +11,19 @@ angular.module('app.item', ['ngRoute'])
     }
 ])
 .controller('itemCtrl', ['$rootScope', '$scope', '$http', '$routeParams', function($rootScope, $scope, $http, $routeParams) {
-  console.log("hello");
-    if ($rootScope.loggedIn) {
+  console.log( $routeParams.id);
         $http({
             url: backend + "/product/" + $routeParams.id,
             method: 'GET',
         }).success(function(data, status, headers, config) {
+          console.log(data);
             $scope.product = data.item[0];
         }).
         error(function(data, status, headers, config) {
+          console.log('error');
             $scope.error = true;
         });
-    } else {
-        $scope.view = false;
-    }
+    
 
 
 }]);
