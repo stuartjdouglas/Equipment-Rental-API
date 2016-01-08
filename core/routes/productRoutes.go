@@ -114,10 +114,6 @@ func generateProductRoutes (api router.API) {
 
 	})
 
-
-
-
-
 	api.Router.Get("/products/:username", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetProductFromOwner(api, c.URLParams["username"])

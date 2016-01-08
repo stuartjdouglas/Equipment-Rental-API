@@ -11,7 +11,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
-type user struct {
+type User struct {
 	Username 	string 	`json:"username"`
 	Gravatar	string  `json:"gravatar"`
 }
@@ -41,7 +41,7 @@ type Auth struct {
 	Expiry		time.Time   	`json:"expiry"`
 }
 
-type userProfile struct {
+type UserProfile struct {
 	ID int `json:"id"`
 	Username 		string 		`json:"username"`
 	Email			string 		`json:"email"`
@@ -53,9 +53,9 @@ type userProfile struct {
 }
 
 type profile struct {
-	Profile	userProfile    `json:"profile"`
+	Profile	UserProfile    `json:"profile"`
 }
-// Logins in the user and returns an access token
+// Logins in the User and returns an access token
 func LoginUser(api router.API, username string, password string) Auth {
 	var login Auth
 	if getAuthUser(api, username, password) {
@@ -124,7 +124,7 @@ func getGravatarString(api router.API, token string) string {
 	}
 	defer rows.Close()
 
-	user := user{}
+	User := User{}
 
 	for rows.Next() {
 		var result tempUser
@@ -140,18 +140,18 @@ func getGravatarString(api router.API, token string) string {
 
 		sum := md5.Sum([]byte(result.Email))
 		gravatar := hex.EncodeToString(sum[:])
-		user.Username = result.Username;
-		user.Gravatar = gravatar;
+		User.Username = result.Username;
+		User.Gravatar = gravatar;
 
 	}
 
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return user.Gravatar;
+	return User.Gravatar;
 }
 
-// Checks if a user has given the correct details or not
+// Checks if a User has given the correct details or not
 // TODO change name
 func getAuthUser(api router.API, username string, password string) bool {
 	var exist bool
@@ -167,9 +167,9 @@ func getAuthUser(api router.API, username string, password string) bool {
 }
 
 
-// Returns user information when given a username
+// Returns User information when given a username
 //noinspection GoUnusedFunction
-func GetUser(api router.API, username string) user {
+func GetUser(api router.API, username string) User {
 	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users WHERE username = ?")
 	if err != nil {
 		log.Fatal(err)
@@ -181,7 +181,7 @@ func GetUser(api router.API, username string) user {
 	}
 	defer rows.Close()
 
-	var user user;
+	var User User;
 	for rows.Next() {
 		var result tempUser
 		err := rows.Scan(
@@ -192,17 +192,17 @@ func GetUser(api router.API, username string) user {
 		if err != nil {
 			log.Println(err)
 		}
-		user.Username = result.Username
+		User.Username = result.Username
 		sum := md5.Sum([]byte(result.Email))
-		user.Gravatar = hex.EncodeToString(sum[:])
+		User.Gravatar = hex.EncodeToString(sum[:])
 	}
 	if err != nil {
 		log.Println(err)
 	}
-	return user;
+	return User;
 }
 
-// Checks if a user already exists
+// Checks if a User already exists
 func CheckIfUserExists(api router.API, username string) bool {
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE username = ?)", username).Scan(&exist)
@@ -217,7 +217,7 @@ func CheckIfUserExists(api router.API, username string) bool {
 }
 
 
-// Registers the user
+// Registers the User
 func RegisterUser(api router.API, username string, password string, email string) bool {
 	stmt, err := api.Context.Session.Prepare("INSERT INTO users (username, password, email, first_name, last_name, location, date_registered) VALUES (?,?,?,?,?,?,?)")
 
@@ -242,7 +242,7 @@ func RegisterUser(api router.API, username string, password string, email string
 
 
 //noinspection GoUnusedFunction
-func GetUsers(api router.API) []user{
+func GetUsers(api router.API) []User{
 //	SELECT username, bio FROM users;
 	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users")
 	if err != nil {
@@ -255,7 +255,7 @@ func GetUsers(api router.API) []user{
 	}
 	defer rows.Close()
 
-	users := []user{}
+	users := []User{}
 
 	for rows.Next() {
 		var result tempUser
@@ -270,7 +270,7 @@ func GetUsers(api router.API) []user{
 
 		sum := md5.Sum([]byte(result.Email))
 		gravatar := hex.EncodeToString(sum[:])
-		users = append(users, user{
+		users = append(users, User{
 			Username:result.Username,
 			Gravatar:gravatar,
 		})
@@ -299,16 +299,16 @@ func GetProfile(api router.API, token string) profile {
 	}
 	defer rows.Close()
 
-	user := userProfile{}
+	User := UserProfile{}
 
 	for rows.Next() {
 		err := rows.Scan(
-			&user.Username,
-			&user.Email,
-			&user.First_name,
-			&user.Last_name,
-			&user.Location,
-			&user.Date_registered,
+			&User.Username,
+			&User.Email,
+			&User.First_name,
+			&User.Last_name,
+			&User.Location,
+			&User.Date_registered,
 		)
 
 
@@ -319,11 +319,11 @@ func GetProfile(api router.API, token string) profile {
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-	sum := md5.Sum([]byte(user.Email))
-	user.Gravatar = hex.EncodeToString(sum[:])
-	user.ID = 0;
+	sum := md5.Sum([]byte(User.Email))
+	User.Gravatar = hex.EncodeToString(sum[:])
+	User.ID = 0;
 
-	return profile{Profile:user};
+	return profile{Profile:User};
 }
 
 type hello struct {

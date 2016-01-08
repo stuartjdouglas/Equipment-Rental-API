@@ -304,7 +304,7 @@ CALL getCurrentlyRentingProducts("remon", 0, 2);
 
 CREATE PROCEDURE getCurrentlyRentingProducts (username VARCHAR(240), step INT, count INT)
   BEGIN
-    select product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from user_rent_product
+    select product_id as id, product_name as name, product_description as description, date_due as due_date, date_received as received_date, product_image_id as image_id, username as owner from user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
     WHERE user_rent_product.date_due > NOW()
     ORDER BY products.date_updated DESC LIMIT step, count;

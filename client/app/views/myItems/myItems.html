@@ -14,17 +14,19 @@
         <th></th>
         <th>Title</th>
         <th>Description</th>
-        <th>Availablity Length</th>
-        <th>Available</th>
+        <th>Date received</th>
+        <th>Due in</th>
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="product in products.results.item">
-        <td><a href="#/p/{{product.id}}"><img src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
+    <tr ng-repeat="product in products.items">
+        {{product}}
+        <td><a href="#/p/{{product.id}}"><img src="{{product.images.size.thumb}}" class="thumb circle"/></a></td>
         <td><a href="#/p/{{product.id}}">{{product.title}}</a></td>
         <td><a href="#/p/{{product.id}}">{{product.description}}</a></td>
-        <td><a href="#/p/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>
-        <td>Available!</td>
+        <td><a href="#/p/{{product.id}}">{{product.received | amCalendar}}</a></td>
+        <td><a href="#/p/{{product.id}}">{{product.due | amCalendar}}</a></td>
+
     </tr>
     </tbody>
 </table>
