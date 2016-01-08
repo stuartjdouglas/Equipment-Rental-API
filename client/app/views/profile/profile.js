@@ -14,7 +14,7 @@ angular.module('app.profile', ['ngRoute'])
     if ($rootScope.loggedIn) {
 
         $http({
-            url: backend + "/profile",
+            url: backend + '/profile',
             method: 'GET',
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -27,7 +27,6 @@ angular.module('app.profile', ['ngRoute'])
                 url: backend + "/identify/qr/user",
                 method: 'GET',
                 headers: {
-                    'token': window.sessionStorage.token,
                     'width': 300,
                     'height': 300,
                     'code': data.profile.username

@@ -18,6 +18,11 @@ type QRcode struct {
 	Width 	int 	`json:"width"`
 	Height 	int 	`json:"height"`
 }
+//
+//type Code struct {
+//	Mobile	string `json:"mobile"`
+//	Website string `json:"website"`
+//}
 
 func generateQrRoutes(api router.API) {
 	api.Router.Get("/identify/qr/:type", func (c web.C, res http.ResponseWriter, req *http.Request) {
@@ -27,10 +32,12 @@ func generateQrRoutes(api router.API) {
 		qr.Width, _ = strconv.Atoi(req.Header.Get("width"))
 
 
-
 		switch(c.URLParams["type"]) {
 		case "user":
 			qr.Code = string('@') + qr.Code
+			break;
+		case "product":
+			qr.Code = string('#') + qr.Code
 			break;
 		}
 

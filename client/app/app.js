@@ -26,6 +26,7 @@ angular.module('app', [
   'app.rlabel',
   'app.availability',
   'app.rentButton',
+  'app.qrcode',
   // Factories
   'app.config',
   //  Dependencies
