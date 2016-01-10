@@ -19,11 +19,11 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="product in products.results.items">
-        <td><a href="#/listing/{{product.id}}"><img ng-src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
-        <td><a href="#/listing/{{product.id}}">{{product.title}}</a></td>
-        <td><a href="#/listing/{{product.id}}">{{product.description}}</a></td>
-        <td><a href="#/listing/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>
+    <tr ng-repeat="product in products.items">
+        <td><a href="#/owner/listing/{{product.id}}"><img src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
+        <td><a href="#/owner/listing/{{product.id}}">{{product.title}}</a></td>
+        <td><a href="#/owner/listing/{{product.id}}">{{product.description}}</a></td>
+        <td><a href="#/owner/listing/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>
         <td><availability datasource="{{product.id}}")></availability></td>
     </tr>
     </tbody>

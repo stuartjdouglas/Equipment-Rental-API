@@ -18,6 +18,8 @@ angular.module('app', [
   'app.sessions',
   'app.myItems',
   'app.creator',
+  'app.ownerItems',
+  'app.ownerItem',
 
   // Directives
   'app.loginPanel',
@@ -26,6 +28,7 @@ angular.module('app', [
   'app.rlabel',
   'app.availability',
   'app.rentButton',
+  'app.rentButtonOwner',
   'app.qrcode',
   // Factories
   'app.config',

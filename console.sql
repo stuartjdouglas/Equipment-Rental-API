@@ -204,18 +204,6 @@ call createProduct("item3","something3","2015-12-27","2015-12-27","something",7,
 INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id)
 values ("item","something3","2015-12-27","2015-12-27","something",7,0,1);
 
-DROP PROCEDURE getOwnerProducts;
-
-CREATE PROCEDURE getOwnerProducts(username VARCHAR(240))
-  BEGIN
-    SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, username as owner from has
-      LEFT OUTER JOIN products ON has.products_id = products.id
-      LEFT OUTER JOIN users ON has.users_id = users.id
-      where users.username = username
-      AND has.status = 0;
-  END;
-
-call getOwnerProducts("remon");
 
 SELECT * from has
   LEFT OUTER JOIN products ON has.products_id = products.id
@@ -238,17 +226,53 @@ CREATE PROCEDURE RentItem (product VARCHAR(240), usrname VARCHAR(240))
   END;
 
 DROP PROCEDURE ReturnItem;
-call ReturnItem ("something3",1);
-call RentItem ("something3", "remon");
-call RentItem ("something2", "remon");
-CREATE PROCEDURE ReturnItem (product VARCHAR(240), userid INT)
+
+CALL ReturnItem("5f7f2bfb-c8f8-44e6-b05d-f8e59adc1722", "2d85d358-736a-405a-b6ac-9c0fe5af29ff");
+
+CREATE PROCEDURE ReturnItem (o_token VARCHAR(240), product VARCHAR(240))
   BEGIN
     DECLARE productid INT;
+    DECLARE u_id VARCHAR(240);
+    DECLARE tmp_u_id VARCHAR(240);
+
+     select user_id into tmp_u_id from tokens
+      where token = o_token;
+
+    select users_id INTO u_id from user_rent_product
+    LEFT JOIN products ON user_rent_product.products_id = products.id
+    LEFT JOIN users ON owner_id = users.id
+    WHERE users_id = tmp_u_id AND product_id = product;
 
     SELECT id INTO productid FROM products WHERE product_id = product;
-#     UPDATE user_rent_product SET active = 0 WHERE users_id = userid AND products_id = productid;
-    DELETE FROM user_rent_product WHERE users_id = userid AND products_id = productid;
-#     INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(CURDATE(), INTERVAL days DAY), TRUE);
+    DELETE FROM user_rent_product WHERE users_id = u_id AND products_id = productid;
+  END;
+
+select user_id from tokens
+    left JOIN users ON tokens.user_id = users.id
+    where token = "43c4a78f-7fb2-449d-8011-7914926e4cc3";
+
+DROP PROCEDURE ReturnItemAsOwner;
+CALL ReturnItemAsOwner("43c4a78f-7fb2-449d-8011-7914926e4cc3", "2d85d358-736a-405a-b6ac-9c0fe5af29ff");
+
+CREATE PROCEDURE ReturnItemAsOwner (o_token VARCHAR(240), product VARCHAR(240))
+  BEGIN
+    DECLARE productid INT;
+    DECLARE tmp_u_id INT;
+    DECLARE u_id VARCHAR(240);
+
+    select user_id into tmp_u_id from tokens
+    where token = o_token;
+
+#     select tmp_u_id;
+
+    select users_id INTO u_id from user_rent_product
+    LEFT JOIN products ON user_rent_product.products_id = products.id
+    LEFT JOIN users ON owner_id = users.id
+    WHERE owner_id = tmp_u_id AND product_id = product;
+
+    SELECT id INTO productid FROM products WHERE product_id = product;
+
+    DELETE FROM user_rent_product WHERE users_id = u_id AND products_id = productid;
   END;
 
 
@@ -382,4 +406,97 @@ if (user_name) THEN
 ELSE
   select FALSE as available, due_date, taken_date, user_name as username;
 END IF;
+  END;
+
+DROP PROCEDURE  getOwnerProducts;
+CALL getOwnerProducts("94a17bfa-6c49-4398-8155-137f07612f7d", 0, 15);
+
+CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
+BEGIN
+  DECLARE usrname VARCHAR(240);
+  SELECT username into usrname from tokens
+  LEFT OUTER JOIN users on tokens.user_id = users.id
+  where token = u_token;
+  select  product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      where users.username = usrname
+      ORDER BY date_updated DESC
+      LIMIT step, count;
+  END;
+
+DROP PROCEDURE CheckProductAvailabilityOwner;
+CALL CheckProductAvailabilityOwner("94a17bfa-6c49-4398-8155-137f07612f7d", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
+
+CREATE PROCEDURE CheckProductAvailabilityOwner(o_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE due_date DATETIME;
+    DECLARE active_state BOOLEAN;
+
+    SELECT date_due, active INTO due_date, active_state FROM user_rent_product
+    LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+    LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    WHERE products.product_id = p_id
+    ORDER BY products.date_updated DESC;
+
+    if (active_state = 1) THEN
+      if (due_date > NOW()) THEN
+        select FALSE as available, due_date as due_date;
+      ELSE
+        select TRUE as available, NOW() as due_date;
+      END IF;
+    ELSE
+      select TRUE as available, NOW() as due_date;
+    END IF;
+  END;
+
+
+DROP PROCEDURE isOwner;
+CALL isOwner("94a17bfa-6c49-4398-8155-137f07612f7d", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
+
+CREATE PROCEDURE isOwner(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE u_id INT;
+    SELECT user_id INTO u_id FROM tokens
+    WHERE token = u_token;
+
+    SELECT EXISTS(
+      SELECT * FROM has
+      LEFT JOIN users ON has.users_id = users.id
+      LEFT JOIN products ON has.products_id = products.id
+      WHERE product_id = p_id AND users_id = u_id) as owner;
+  END;
+
+DROP PROCEDURE ownerProductStatus;
+CALL ownerProductStatus("194b1286-4585-4ce6-8897-94c3cd9473e9", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
+
+CREATE PROCEDURE ownerProductStatus(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE isOwner BOOL;
+    DECLARE u_id INT;
+
+
+    SELECT user_id INTO u_id FROM tokens
+    WHERE token = u_token;
+
+    SELECT EXISTS(
+      SELECT * FROM has
+      LEFT JOIN users ON has.users_id = users.id
+      LEFT JOIN products ON has.products_id = products.id
+      WHERE product_id = p_id AND users_id = u_id) INTO isOwner;
+
+    IF (isOwner) THEN
+      CALL checkAuthedProductAvailability(p_id);
+    ELSE
+      SELECT "Failed";
+    END IF;
+  END;
+
+DROP PROCEDURE getUserIDofToken;
+CALL getUserIDofToken("94a17bfa-6c49-4398-8155-137f07612f7d");
+
+CREATE PROCEDURE getUserIDofToken(u_token VARCHAR(240))
+  BEGIN
+  SELECT user_id FROM tokens
+  WHERE token = u_token;
   END;

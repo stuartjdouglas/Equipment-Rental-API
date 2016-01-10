@@ -42,6 +42,16 @@
                 <!--<li><a href="#/profile" ng-show="loggedIn">Profile</a></li>-->
                 <li><a href="#/login" ng-hide="loggedIn">Login</a></li>
                 <li><a href="#/register" ng-hide="loggedIn">Register</a></li>
+                <li class="sub-menu" ng-click="ownerNav = !ownerNav">
+                  <a href="" ng-show="loggedIn">Owner</a>
+                  <ul ng-show="ownerNav">
+                    <li>
+                      <a href='#/owner/listing'>
+                        <i class="fa fa-user"></i> My Items
+                      </a>
+                    </li>
+                  </ul>
+                </li>
                 <li class="right sub-menu" ng-click="profileNav = !profileNav">
                   <a href="" ng-show="loggedIn">
                     @{{auth.username}}
@@ -59,7 +69,7 @@
                       </a>
                     </li>
                     <li>
-                      <a href='#'>
+                      <a href='#/logout'>
                         <i class="fa fa-power-off"></i> Sign off
                       </a>
                     </li>
@@ -105,10 +115,12 @@
 <script src="views/item/item.js"></script>
 <script src="views/items/items.js"></script>
 <script src="views/myItems/myItems.js"></script>
-<script src="views\item\creator\creator.js"></script>
+<script src="views/item/creator/creator.js"></script>
+<script src="views/owner/items/items.js"></script>
+<script src="views/owner/item/item.js"></script>
 
 <!-- Settings -->
-<script src="views\settings\sessions\sessions.js"></script>
+<script src="views/settings/sessions/sessions.js"></script>
 <!-- Factories -->
 <script src="config.js"></script>
 <!-- Directives -->
@@ -118,6 +130,7 @@
 <script src="components/rLabel/rLabel.js"></script>
 <script src="components/availability/availability.js"></script>
 <script src="components/rentButton/rentButton.js"></script>
+<script src="components/rentButtonOwner/rentButton.js"></script>
 <script src="components/qrcode/qrcode.js"></script>
 
 <!-- Imports -->

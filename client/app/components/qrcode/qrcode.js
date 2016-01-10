@@ -17,20 +17,20 @@ angular.module('app.qrcode', ['app.config'])
         $scope.$watch(
           "source",
           function handleFooChange() {
-            if ($attrs.source != "{{product}}" && $attrs.source != undefined) {
+            if ($attrs.source != "{{product}}" && $attrs.source != 'undefined' && $attrs.source != '') {
+              var value = JSON.parse($attrs.source);
               $scope.showLoading = false;
               $http({
                 url: backend + '/identify/qr/' + $attrs.type,
                 method: 'GET',
                 headers: {
-                  'code': JSON.parse($attrs.source).id,
+                  'code': value.id,
                   'height': $attrs.height,
                   'width': $attrs.width
                 }
               }).success(function(data, status, headers, config) {
                 $scope.qr = data;
-              }).
-              error(function(data, status, headers, config) {
+              }).error(function(data, status, headers, config) {
                 $scope.error = true;
               });
             } else {

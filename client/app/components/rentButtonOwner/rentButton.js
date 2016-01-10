@@ -1,28 +1,26 @@
 'use strict';
 
-angular.module('app.rentButton', ['app.config'])
-    .directive('rentButton', function() {
+angular.module('app.rentButtonOwner', ['app.config'])
+    .directive('rentButtonOwner', function() {
         return {
             restrict: 'AEC',
             scope: {
                 datasource: '='
             },
-            templateUrl: 'components/rentButton/rentButton.html',
+            templateUrl: 'components/rentButtonOwner/rentButton.html',
             controller: function($scope, $http, $rootScope, $location, $attrs, Notification) {
                 //$scope.datasource =  $attrs.datasource;
                 $scope.availability = "Loading.....";
                 $scope.rentButtonClass = [];
+                //$scope.rentButtonClass.push('fa fa-spinner');
+
                 $scope.$watch(
                     "datasource",
                     function handleFooChange(oldValue, newValue) {
                         if ($scope.datasource != undefined) {
                             if ($scope.datasource.id != undefined) {
                                 $scope.showLoading = false;
-                                // var headers = {};
-                                // Check if we are a logged in user or not
                                 getRentalStatus();
-
-
                             } else {
                                 $scope.showLoading = true;
                             }
@@ -41,15 +39,16 @@ angular.module('app.rentButton', ['app.config'])
 
                 function getRentalStatus() {
                     if ($rootScope.loggedIn) {
+                        console.log( window.sessionStorage.token);
                         $http({
-                            url: backend + '/p/' + $scope.datasource.id + '/availability',
+                            url: backend + '/owner/products/' + $scope.datasource.id + '/availability',
                             method: 'GET',
                             headers: {
                                 'token': window.sessionStorage.token
                             },
                         }).success(function (data, status, headers, config) {
                             $scope.result = data;
-
+                            console.log(data);
                             $scope.gotRes = true;
                             $scope.rentButtonClass.splice("", 0);
                             if (data.available) {
@@ -60,12 +59,12 @@ angular.module('app.rentButton', ['app.config'])
                             } else {
                                 if (!data.available) {
                                     if ($scope.gotRes) {
+                                        console.log(data.owner);
                                         if (data.owner) {
                                             $scope.owner = true;
-                                            $scope.availability = 'You current own this';
+                                            $scope.availability = 'Has been rented';
                                         } else {
                                             $scope.availability = "Unavailable";
-
                                         }
 
                                     }
@@ -76,6 +75,7 @@ angular.module('app.rentButton', ['app.config'])
                             $scope.error = true;
                         });
                     } else {
+                        console.log("unlogged in user");
                         $http({
                             url: backend + '/p/' + $scope.datasource.id + '/availability',
                             method: 'GET',
@@ -117,11 +117,17 @@ angular.module('app.rentButton', ['app.config'])
                         $scope.rentButtonClass = [];
                     }).
                     error(function (data, status, headers, config) {
+                      if (status === 409) {
+                        Notification.error({message: '<i class="fa fa-paper-plane"></i> Sorry.... ' + $scope.datasource.title + ' has just been rented. :(', positionY: 'bottom', positionX: 'center'});
+                      } else {
+                        Notification.error({message: '<i class="fa fa-paper-plane"></i> Sorry.... something unexpected happened...', positionY: 'bottom', positionX: 'center'});
+                      }
                         $scope.error = true;
                     });
                 }
 
                 $scope.return = function(id) {
+                    console.log(id);
                     $http({
                         url: backend + '/p/' + $scope.datasource.id + '/return',
                         method: 'POST',

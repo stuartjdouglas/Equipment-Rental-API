@@ -114,6 +114,26 @@ func generateProductRoutes (api router.API) {
 
 	})
 
+	api.Router.Get("/owner/products", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		token :=  req.Header.Get("token")
+		step, err :=  strconv.Atoi(req.Header.Get("step"))
+		count, err :=  strconv.Atoi(req.Header.Get("count"))
+
+		result := models.GetOwnerProductsPaging(api, token, step, count)
+
+		data, err := json.Marshal(result)
+
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+
+	})
+
 	api.Router.Get("/products/:username", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetProductFromOwner(api, c.URLParams["username"])
@@ -235,6 +255,38 @@ func generateProductRoutes (api router.API) {
 			res.WriteHeader(200)
 			res.Write(data)
 		}
+	})
+
+	api.Router.Get("/owner/products/:id/availability", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("token")
+		if token != "" {
+			// Check that the token is a valid token
+			if sessions.IsSessionValid(api, token) {
+				result := models.GetOwnerProductAvailability(api, c.URLParams["id"], token)
+				data, err := json.Marshal(result)
+				if err != nil {
+					http.Error(res, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(200)
+				res.Write(data)
+			} else {
+				http.Error(res, "", http.StatusUnauthorized)
+			}
+		} else {
+			result := models.GetAvailability(api, c.URLParams["id"])
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
 
 
 	})
@@ -290,7 +342,11 @@ func generateProductRoutes (api router.API) {
 		if !result.Available {
 			if token != "" {
 				if (sessions.IsSessionValid(api, token)) {
-					models.ReturnItem(api, c.URLParams["id"], token)
+					if (models.IsOwner(api, token, c.URLParams["id"])) {
+						models.ReturnItemAsOwner(api, c.URLParams["id"], token)
+					} else {
+						models.ReturnItem(api, c.URLParams["id"], token)
+					}
 
 				} else {
 					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
