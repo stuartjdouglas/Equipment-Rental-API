@@ -12,12 +12,13 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/routes"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
+	"net/http"
 )
 // Start handles all route configuration and starts the http server
 func Start(settings config.Config, context database.Context) {
 	log.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Production.Port))
 
-    // Create the main router
+	// Create the main router
 	masterRouter := web.New()
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -28,29 +29,17 @@ func Start(settings config.Config, context database.Context) {
 
 	//Create subroutes
 	apiRouter 		:= web.New()
-	angularRouter 		:= web.New()
 	imageRouter		:= web.New()
 
 	// Assign sub routes to handle certain path requests
 
 	masterRouter.Handle("/api/*", apiRouter)
 	masterRouter.Handle("/data/*", imageRouter)
-	masterRouter.Handle("/*", angularRouter)
+	masterRouter.Handle("/*", http.FileServer(http.Dir("./client/app")))
 
 	// Apply SubRouter middleware to allow sub routing
 	apiRouter.Use(middleware.SubRouter)
-	angularRouter.Use(middleware.SubRouter)
 	imageRouter.Use(middleware.SubRouter)
-
-	// Serve the static files in the client app directory (this is to host the angular app)
-//	angularRouter.Use(gojistatic.Static("client/app/", gojistatic.StaticOptions{
-//		SkipLogging: true,
-//		Expires: nil,
-//	}))
-	angularRouter.Use(gojistatic.Static("client/app", gojistatic.StaticOptions{
-		SkipLogging: true,
-		Expires: nil,
-	}))
 
 	imageRouter.Use(gojistatic.Static("data/images/", gojistatic.StaticOptions{
 		SkipLogging: true,
@@ -77,12 +66,11 @@ func Start(settings config.Config, context database.Context) {
 
 // Checks if a port is free
 func portIsFree(port int) bool {
-//	If the port is being used
+	//	If the port is being used
 
-//	Return false
+	//	Return false
 
-//	if not in use
+	//	if not in use
 	return true
 }
-
 
