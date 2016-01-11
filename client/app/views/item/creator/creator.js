@@ -110,11 +110,11 @@ angular.module('app.creator', ['ngRoute'])
                   'token': window.sessionStorage.token,
                 }
               }).success(function (data, status, headers, config) {
-                $scope.message.button = $scope.uploadSuccess = true;
-                $scope.success = true;
+                // $scope.message.button = $scope.uploadSuccess = true;
+                // $scope.success = true;
               }).error(function (data, status, headers, config) {
 
-                $scope.success = false;
+                // $scope.success = false;
 
               });
             }

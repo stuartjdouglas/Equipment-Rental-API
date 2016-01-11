@@ -11,6 +11,8 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"encoding/base64"
 	"strings"
+	"io"
+	"bytes"
 )
 
 type Product struct {
@@ -39,8 +41,7 @@ func generateProductRoutes (api router.API) {
 				Filetype:r.FormValue("filetype"),
 			}
 
-			file := base64.NewDecoder(base64.StdEncoding, strings.NewReader(product.Image))
-
+			var file io.Reader
 
 
 
@@ -48,6 +49,25 @@ func generateProductRoutes (api router.API) {
 
 			for models.DoesImageExist(api, imageCode) { // For each time the file exists
 				imageCode = utils.RandomString(10)	// create new random string
+			}
+
+			if (product.Filetype != "") {
+				file = base64.NewDecoder(base64.StdEncoding, strings.NewReader(product.Image))
+			} else {
+				mime := strings.SplitN(product.Image, ",", 2)
+				mime = strings.SplitN(string(mime[0]), ":", 2)
+				mime = strings.SplitN(mime[1], ";", 2)
+				product.Filetype = mime[0]
+				//product.Image =  strings.SplitAfterN(product.Image, ",", 2)[1]
+
+				b64data := product.Image[strings.IndexByte(product.Image, ',')+1:]
+
+				data, err := base64.StdEncoding.DecodeString(b64data)
+				if err != nil {
+					log.Println("error:", err)
+				}
+
+				file = bytes.NewReader(data)
 			}
 
 			var fileExt string

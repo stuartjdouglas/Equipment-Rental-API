@@ -313,7 +313,7 @@ CREATE PROCEDURE getPagedProducts (step INT, count INT)
   END;
 
 DROP PROCEDURE getRentedProducts;
-CALL getRentedProducts("remon", 0, 1);
+CALL getRentedProducts("lemon", 0, 3);
 
 CREATE PROCEDURE getRentedProducts (username VARCHAR(240), step INT, count INT)
   BEGIN
@@ -324,13 +324,14 @@ CREATE PROCEDURE getRentedProducts (username VARCHAR(240), step INT, count INT)
   END;
 
 DROP PROCEDURE getCurrentlyRentingProducts;
-CALL getCurrentlyRentingProducts("remon", 0, 2);
+CALL getCurrentlyRentingProducts("remon", 0, 3);
 
-CREATE PROCEDURE getCurrentlyRentingProducts (username VARCHAR(240), step INT, count INT)
+CREATE PROCEDURE getCurrentlyRentingProducts (u_name VARCHAR(240), step INT, count INT)
   BEGIN
     select product_id as id, product_name as name, product_description as description, date_due as due_date, date_received as received_date, product_image_id as image_id, username as owner from user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
-    WHERE user_rent_product.date_due > NOW()
+      LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    WHERE user_rent_product.date_due > NOW() AND username = u_name
     ORDER BY products.date_updated DESC LIMIT step, count;
   END;
 
