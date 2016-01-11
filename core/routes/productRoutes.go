@@ -352,6 +352,7 @@ func generateProductRoutes (api router.API) {
 
 	})
 
+
 	api.Router.Post("/p/:id/return", func (c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetAvailability(api, c.URLParams["id"])

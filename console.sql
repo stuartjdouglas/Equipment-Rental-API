@@ -469,7 +469,7 @@ CREATE PROCEDURE isOwner(u_token VARCHAR(240), p_id VARCHAR(240))
   END;
 
 DROP PROCEDURE ownerProductStatus;
-CALL ownerProductStatus("194b1286-4585-4ce6-8897-94c3cd9473e9", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
+CALL ownerProductStatus("899a7b0b-2e51-4488-a99a-b51b0e76f856", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
 
 CREATE PROCEDURE ownerProductStatus(u_token VARCHAR(240), p_id VARCHAR(240))
   BEGIN
@@ -489,7 +489,7 @@ CREATE PROCEDURE ownerProductStatus(u_token VARCHAR(240), p_id VARCHAR(240))
     IF (isOwner) THEN
       CALL checkAuthedProductAvailability(p_id);
     ELSE
-      SELECT "Failed";
+      CALL checkProductAvailability(p_id);
     END IF;
   END;
 
