@@ -10,7 +10,7 @@ angular.module('app.myItems', ['ngRoute'])
             });
         }
     ])
-    .controller('myItemsCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http, $watch) {
+    .controller('myItemsCtrl', ['$rootScope', '$scope', '$http', 'authFactory', function($rootScope, $scope, $http, authFactory, $watch) {
         if (window.localStorage.getItem("product_count")) {
             $scope.count = parseInt(window.localStorage.getItem("product_count"));
         } else {
@@ -30,7 +30,6 @@ angular.module('app.myItems', ['ngRoute'])
         }
 
         $scope.$watch("count", function(newValue) {
-            console.log(newValue);
             window.localStorage.setItem("product_count", newValue);
             updateResults();
         });
@@ -63,10 +62,10 @@ angular.module('app.myItems', ['ngRoute'])
                 method: 'GET',
                 headers: {
                     'Start':$scope.start,
-                    'Count':$scope.count
+                    'Count':$scope.count,
+                    'token': authFactory.getToken()
                 }
             }).success(function(data, status, headers, config) {
-                console.log(data);
                 $scope.products = data;
             }).
             error(function(data, status, headers, config) {

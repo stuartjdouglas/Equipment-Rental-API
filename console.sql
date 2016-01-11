@@ -222,7 +222,7 @@ CREATE PROCEDURE RentItem (product VARCHAR(240), usrname VARCHAR(240))
     SELECT id INTO userid FROM users WHERE username = usrname;
     SELECT id, product_rental_period_limit INTO productid, days FROM products WHERE product_id = product LIMIT 1;
 
-    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(CURDATE(), INTERVAL days DAY), TRUE);
+    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY), TRUE);
   END;
 
 DROP PROCEDURE ReturnItem;

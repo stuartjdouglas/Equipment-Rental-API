@@ -8,7 +8,7 @@ angular.module('app.rentButtonOwner', ['app.config'])
                 datasource: '='
             },
             templateUrl: 'components/rentButtonOwner/rentButton.html',
-            controller: function($scope, $http, $rootScope, $location, $attrs, Notification) {
+            controller: function($scope, $http, $rootScope, $location, $attrs, Notification, authFactory) {
                 //$scope.datasource =  $attrs.datasource;
                 $scope.availability = "Loading.....";
                 $scope.rentButtonClass = [];
@@ -39,12 +39,12 @@ angular.module('app.rentButtonOwner', ['app.config'])
 
                 function getRentalStatus() {
                     if ($rootScope.loggedIn) {
-                        console.log( window.sessionStorage.token);
+                        console.log( authFactory.getToken());
                         $http({
                             url: backend + '/owner/products/' + $scope.datasource.id + '/availability',
                             method: 'GET',
                             headers: {
-                                'token': window.sessionStorage.token
+                                'token': authFactory.getToken()
                             },
                         }).success(function (data, status, headers, config) {
                             $scope.result = data;
@@ -108,7 +108,7 @@ angular.module('app.rentButtonOwner', ['app.config'])
                         url: backend + '/p/' + $scope.datasource.id + '/rent',
                         method: 'POST',
                         headers: {
-                            'token': window.sessionStorage.token
+                            'token': authFactory.getToken()
                         },
                     }).success(function (data, status, headers, config) {
                         Notification.success({message: '<i class="fa fa-paper-plane"></i> ' + $scope.datasource.title + ' has just been rented. :)', positionY: 'bottom', positionX: 'center'});
@@ -132,7 +132,7 @@ angular.module('app.rentButtonOwner', ['app.config'])
                         url: backend + '/p/' + $scope.datasource.id + '/return',
                         method: 'POST',
                         headers: {
-                            'token': window.sessionStorage.token
+                            'token': authFactory.getToken()
                         },
                     }).success(function (data, status, headers, config) {
                         getRentalStatus();

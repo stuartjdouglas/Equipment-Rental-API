@@ -20,7 +20,8 @@
     </thead>
     <tbody>
     <tr ng-repeat="product in products.results.items">
-        <td><a href="#/listing/{{product.id}}"><img ng-src="{{product.image.size.thumb}}" class="thumb circle"/></a></td>
+        <td><limage image='{{product}}' height='100' width='100' preview=true></limage></td>
+        <!-- <td><a href="#/listing/{{product.id}}"><img ng-src="{{product.image.size.thumb}}" class="thumb circle"/></a></td> -->
         <td><a href="#/listing/{{product.id}}">{{product.title}}</a></td>
         <td><a href="#/listing/{{product.id}}">{{product.description}}</a></td>
         <td><a href="#/listing/{{product.id}}">{{product.product_rental_period_limit}} days.</a></td>

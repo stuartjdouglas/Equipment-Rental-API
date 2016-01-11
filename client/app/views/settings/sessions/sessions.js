@@ -10,7 +10,7 @@ angular.module('app.sessions', ['ngRoute'])
             });
         }
     ])
-    .controller('SessionsCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
+    .controller('SessionsCtrl', ['$rootScope', '$scope', '$http', 'authFactory', function($rootScope, $scope, $http, authFactory) {
         if ($rootScope.loggedIn) {
             getSessions();
 
@@ -24,7 +24,7 @@ angular.module('app.sessions', ['ngRoute'])
                 url: backend + "/profile/sessions",
                 method: 'GET',
                 headers: {
-                    'token': window.sessionStorage.token
+                    'token': authFactory.getToken()
                 }
             }).success(function(data, status, headers, config) {
                 $scope.sessions = data;
@@ -39,7 +39,7 @@ angular.module('app.sessions', ['ngRoute'])
                 url: backend + "/session",
                 method: 'DELETE',
                 headers: {
-                    'token': window.sessionStorage.token,
+                    'token': authFactory.getToken(),
                     'id': index
                 }
             }).success(function(data, status, headers, config) {

@@ -10,7 +10,7 @@ angular.module('app.creator', ['ngRoute'])
         });
     }
 ])
-.controller('itemCreatorCtrl', ['$rootScope', '$scope', '$http', '$routeParams', function($rootScope, $scope, $http, $routeParams) {
+.controller('itemCreatorCtrl', ['$rootScope', '$scope', '$http', '$routeParams', 'authFactory', '$location', function($rootScope, $scope, $http, $routeParams, authFactory, $location) {
   $scope.product = {};
   $scope.message = {
     button: 'Create',
@@ -107,11 +107,10 @@ angular.module('app.creator', ['ngRoute'])
                 transformRequest: angular.identity,
                 headers: {
                   'Content-Type': undefined,
-                  'token': window.sessionStorage.token,
+                  'token': authFactory.getToken(),
                 }
               }).success(function (data, status, headers, config) {
-                // $scope.message.button = $scope.uploadSuccess = true;
-                // $scope.success = true;
+                $location.path('/listing/' + data.items[0].id);
               }).error(function (data, status, headers, config) {
 
                 // $scope.success = false;

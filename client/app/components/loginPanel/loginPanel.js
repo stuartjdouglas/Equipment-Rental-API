@@ -8,8 +8,8 @@ angular.module('app.loginPanel', ['app.config'])
                 datasource: '='
             },
             templateUrl: 'components/loginPanel/loginPanel.html',
-            controller: function($scope, $http, $rootScope, $location) {
-                
+            controller: function($scope, $http, $rootScope, $location, authFactory) {
+
                 $scope.login = function(user) {
 
                     var hash = CryptoJS.SHA512(user.password).toString();
@@ -26,10 +26,9 @@ angular.module('app.loginPanel', ['app.config'])
 
                         }
                     }).success(function(data, status, headers, config) {
-                        //$sessionStorage.token = data.token;
-                        window.sessionStorage.token = data.token;
-                        window.localStorage.username = data.username;
-                        window.localStorage.gravatar = data.gravatar;
+                        console.log(data);
+                        authFactory.setAuth(data.token, data.username, data.gravatar, Date.parse(data.expiry))
+                        $rootScope.auth = authFactory.getAuth();
                         $scope.error = false;
                         $rootScope.loggedIn = true;
                         $location.path( "/home");

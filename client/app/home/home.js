@@ -9,7 +9,7 @@ angular.module('app.home', ['ngRoute'])
   });
 }])
 
-.controller('HomeCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
+.controller('HomeCtrl', ['$rootScope', '$scope', '$http', 'authFactory', function($rootScope, $scope, $http, authFactory) {
 	if ($rootScope.loggedIn) {
         	$scope.view = true;
 
@@ -18,16 +18,12 @@ angular.module('app.home', ['ngRoute'])
                 method: 'GET',
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'token': window.sessionStorage.token
+                    'token': authFactory.getToken()
                 }
             }).success(function(data, status, headers, config) {
             	$scope.message = data.message;
-                console.log(data);
             }).
             error(function(data, status, headers, config) {
-                console.log(data);
-
-
 
             });
         } else {

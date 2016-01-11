@@ -14,8 +14,8 @@ angular.module('app.items', ['ngRoute'])
     if (window.localStorage.getItem("product_count")) {
         $scope.count = parseInt(window.localStorage.getItem("product_count"));
     } else {
-        window.localStorage.setItem("product_count", 2);
-        $scope.count = 2;
+        window.localStorage.setItem("product_count", 10);
+        $scope.count = 10;
     }
 
 

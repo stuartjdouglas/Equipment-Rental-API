@@ -30,8 +30,10 @@ angular.module('app', [
   'app.rentButton',
   'app.rentButtonOwner',
   'app.qrcode',
+  'app.limage',
   // Factories
   'app.config',
+  'app.auth',
   //  Dependencies
   'angularMoment',
   'ui-notification',
@@ -42,12 +44,10 @@ config(['$routeProvider','$locationProvider', function($routeProvider, $location
 	$locationProvider.html5Mode(false);
 }])
 
-.controller('AuthCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
-  $rootScope.loggedIn = window.sessionStorage.token !== undefined;
-  $rootScope.auth = {
-    username: window.localStorage.username,
-    gravatar: window.localStorage.gravatar
-  };
+.controller('AuthCtrl', ['$scope', '$rootScope', 'authFactory', function($scope, $rootScope, authFactory) {
+  $rootScope.loggedIn = authFactory.getAuth() !== undefined;
+  // console.log( authFactory.getToken);
+  $rootScope.auth = authFactory.getAuth();
 
   $rootScope.site = {
     title: "Site name"

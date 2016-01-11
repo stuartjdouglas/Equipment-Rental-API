@@ -8,7 +8,7 @@ angular.module('app.registerPanel', ['app.config'])
                 datasource: '='
             },
             templateUrl: 'components/registerPanel/registerPanel.html',
-            controller: function($scope, $http) {
+            controller: function($scope, $http, $location) {
               $scope.$watch(
                 "user.email",
                 function handleFooChange( newValue, oldValue ) {
@@ -17,7 +17,7 @@ angular.module('app.registerPanel', ['app.config'])
                 }
               );
                 $scope.register = function(user) {
-                    console.log(user);
+                    // console.log(user);
                     if (user.username != "" && user.email != "" && user.password != "" &&
                     user.username != " " && user.email != " " && user.password.length < 6) {
                         var hash = CryptoJS.SHA512(user.password).toString();
@@ -32,15 +32,12 @@ angular.module('app.registerPanel', ['app.config'])
                             },
                             headers: {
                                 'Content-Type': 'multipart/form-data'
-
                             }
                         }).success(function(data, status, headers, config) {
-
-                            $scope.error = false;
-                            console.log(data);
+                          $location.path('/login');
                         }).
                         error(function(data, status, headers, config) {
-                            console.log(data);
+                            // console.log(data);
                             $scope.error = data.message;
 
 

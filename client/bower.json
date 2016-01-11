@@ -22,6 +22,9 @@
     "material-design-lite": "~1.0.6",
     "pure": "~0.6.0",
     "angular-ui-notification": "~0.1.0",
-    "angular-base64-upload": "~0.1.13"
+    "angular-base64-upload": "~0.1.13",
+    "js-cookie": "~2.1.0",
+    "angular-cookies": "~1.4.8",
+    "semantic": "semantic-ui#~2.1.8"
   }
 }

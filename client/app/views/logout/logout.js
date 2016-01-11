@@ -9,11 +9,12 @@ angular.module('app.logout', ['ngRoute'])
         });
     }])
 
-    .controller('LogoutCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
+    .controller('LogoutCtrl', ['$scope', '$rootScope', 'authFactory', function($scope, $rootScope, authFactory) {
         $scope.view = $rootScope.loggedIn;
 
         if ($rootScope.loggedIn) {
-            window.sessionStorage.removeItem("token");
+            // window.sessionStorage.remov0eItem("token");
+            authFactory.killAuth();
             $rootScope.loggedIn = false;
         }
     }]);

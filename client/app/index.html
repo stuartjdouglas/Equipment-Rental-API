@@ -12,10 +12,12 @@
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
 <link rel="stylesheet" href="assets/css/skeleton.css">
-<link rel="stylesheet" href="bower_components/pure/pure-min.css">
+<link rel="stylesheet" href="assets/css/header.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<!-- <link rel="stylesheet" href="bower_components/pure/pure-min.css"> -->
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="bower_components/animate.css/animate.min.css">
-<link rel="stylesheet" href="bower_components/angular-toastr/dist/angular-toastr.min.css">
+<!-- <link rel="stylesheet" href="bower_components/angular-toastr/dist/angular-toastr.min.css"> -->
 <link rel="stylesheet" href="bower_components/angular-ui-notification/dist/angular-ui-notification.min.css">
 
 
@@ -64,6 +66,11 @@
                       </a>
                     </li>
                     <li>
+                      <a href='#/my/items/current'>
+                        <i class="fa fa-cog"></i> My Items
+                      </a>
+                    </li>
+                    <li>
                       <a href='#'>
                         <i class="fa fa-cog"></i> Account Settings
                       </a>
@@ -81,18 +88,8 @@
 </header>
 
 
-</div>
-<div class="row">
-    <div class="two columns">
-        <p></p>
-    </div>
-    <div class="eight columns">
-        <div ng-view class="wrapper"></div>
-    </div>
-    <div class="two columns">
-        <p></p>
-    </div>
-</div>
+<div ng-view class="ui raised very padded text container segment"></div>
+
 
 
 
@@ -123,6 +120,7 @@
 <script src="views/settings/sessions/sessions.js"></script>
 <!-- Factories -->
 <script src="config.js"></script>
+<script src="factory/auth.js"></script>
 <!-- Directives -->
 <script src="components/loginPanel/loginPanel.js"></script>
 <script src="components/registerPanel/registerPanel.js"></script>
@@ -132,12 +130,12 @@
 <script src="components/rentButton/rentButton.js"></script>
 <script src="components/rentButtonOwner/rentButton.js"></script>
 <script src="components/qrcode/qrcode.js"></script>
-
+<script src="components/image/image.js"></script>
 <!-- Imports -->
 <script src="bower_components/cryptojslib/rollups/sha512.js"></script>
 <script src="bower_components/cryptojslib/rollups/MD5.js"></script>
-
-<!--<script src="/bower_components/angular-cookies/angular-cookies.min.js"></script>-->
+<script src="bower_components/js-cookie/src/js.cookie.js"></script>
+<!-- <script src="/bower_components/angular-cookies/angular-cookies.min.js"></script> -->
 <!--<script src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>-->
 <!--<script src="bower_components/angular-toastr/dist/angular-toastr.min.js"></script>-->
 <!--<script src="bower_components/ngstorage/ngStorage.min.js"></script>-->

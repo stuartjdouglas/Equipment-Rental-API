@@ -88,8 +88,21 @@ func generateProductRoutes (api router.API) {
 				// Otherwise we should call is nil
 				filename = "nil"
 			}
+			product_id := utils.GenerateUUID();
+			models.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id)
 
-			models.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename)
+			result := models.GetProductFromID(api, product_id)
+
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+
 
 		} else {
 			http.Error(res, "", http.StatusUnauthorized)

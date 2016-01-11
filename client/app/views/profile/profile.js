@@ -10,7 +10,7 @@ angular.module('app.profile', ['ngRoute'])
         });
     }
 ])
-.controller('ProfileCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http) {
+.controller('ProfileCtrl', ['$rootScope', '$scope', '$http', 'authFactory', function($rootScope, $scope, $http, authFactory) {
     if ($rootScope.loggedIn) {
 
         $http({
@@ -18,7 +18,7 @@ angular.module('app.profile', ['ngRoute'])
             method: 'GET',
             headers: {
                 'Content-Type': 'multipart/form-data',
-                'token': window.sessionStorage.token
+                'token': authFactory.getToken()
             }
         }).success(function(data, status, headers, config) {
             $scope.profile = data.profile;
