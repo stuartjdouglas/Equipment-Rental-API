@@ -10,20 +10,21 @@ angular.module('app.item', ['ngRoute'])
         });
     }
 ])
-.controller('itemCtrl', ['$rootScope', '$scope', '$http', '$routeParams', function($rootScope, $scope, $http, $routeParams) {
-  console.log( $routeParams.id);
+.controller('itemCtrl', ['$rootScope', '$scope', '$http', '$routeParams', '$location', function($rootScope, $scope, $http, $routeParams, $location) {
         $http({
             url: backend + "/product/" + $routeParams.id,
             method: 'GET',
         }).success(function(data, status, headers, config) {
-          console.log(data);
-            $scope.product = data.item[0];
+          if (data.items[0].owner.username === $rootScope.auth.username) {
+            $location.path('/owner/listing/' + $routeParams.id);
+          }
+            $scope.product = data.items[0];
         }).
         error(function(data, status, headers, config) {
           console.log('error');
             $scope.error = true;
         });
-    
+
 
 
 }]);

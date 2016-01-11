@@ -100,11 +100,13 @@ func GetImage(api router.API, filename string) Image {
 		}
 
 		values := strings.Split(image.Location, ".")
+		if (len(values) == 2) {
+			image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]
+			image.Size.Medium = "/data/" +  values[0] + "_medium" + "." + values[1]
+			image.Size.Small = "/data/" +  values[0] + "_small" + "." + values[1]
+			image.Size.Thumb = "/data/" +  values[0] + "_thumb" + "." + values[1]
 
-		image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]
-		image.Size.Medium = "/data/" +  values[0] + "_medium" + "." + values[1]
-		image.Size.Small = "/data/" +  values[0] + "_small" + "." + values[1]
-		image.Size.Thumb = "/data/" +  values[0] + "_thumb" + "." + values[1]
+		}
 
 
 		images = image

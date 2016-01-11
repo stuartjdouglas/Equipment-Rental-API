@@ -10,7 +10,7 @@ import (
 )
 
 type Items struct {
-	Item []Item `json:"item"`
+	Items []Item `json:"items"`
 	Total int 	`json:"total"`
 }
 
@@ -98,7 +98,7 @@ func GetProducts (api router.API) Items {
 		log.Fatal(err)
 	}
 
-	return Items{Item: content, Total: len(content)}
+	return Items{Items: content, Total: len(content)}
 }
 
 func GetProductsPaging (api router.API, step int, count int) Result {
@@ -147,7 +147,7 @@ func GetProductsPaging (api router.API, step int, count int) Result {
 
 	var items Items
 
-	items.Item = content
+	items.Items = content
 	items.Total = len(content)
 	total := getCount(api, "all")
 
@@ -363,7 +363,7 @@ func GetProductFromOwner (api router.API, username string) Items {
 //		log.Fatal(err)
 //	}
 
-	return Items{Item: content, Total: len(content)}
+	return Items{Items: content, Total: len(content)}
 }
 
 func GetProductFromID (api router.API, id string) Items {
@@ -410,7 +410,7 @@ func GetProductFromID (api router.API, id string) Items {
 		log.Fatal(err)
 	}
 
-	return Items{Item: content, Total: len(content)}
+	return Items{Items: content, Total: len(content)}
 }
 
 type Availability struct {
@@ -423,6 +423,13 @@ type RentalStatus struct {
 	Available	bool        `json:"available"`
 	Date_taken	time.Time   `json:"date_taken"`
 	Date_due	time.Time   `json:"date_due"`
+}
+
+type OwnerRentalStatus struct {
+	Owner		string 		`json:"owner"`
+	Available	bool        	`json:"available"`
+	Date_taken	time.Time   	`json:"date_taken"`
+	Date_due	time.Time   	`json:"date_due"`
 }
 
 func GetAvailability (api router.API, product string) Availability {
@@ -543,13 +550,12 @@ func RentItem (api router.API, product string, token string) Availability {
 }
 
 func ReturnItem (api router.API, product string, token string) Availability {
-	username := sessions.GetUserIdFromToken(api, token)
 	stmt, err := api.Context.Session.Prepare("CALL ReturnItem(?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(product, username)
+	rows, err := stmt.Query(token, product)
 	if err != nil {
 		log.Println(err)
 	}
@@ -573,5 +579,146 @@ func ReturnItem (api router.API, product string, token string) Availability {
 	}
 
 	return result;
+}
+
+func ReturnItemAsOwner (api router.API, product string, token string) Availability {
+	stmt, err := api.Context.Session.Prepare("CALL ReturnItemAsOwner(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token, product)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+
+	var result Availability
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Available,
+			&result.Date,
+		)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result;
+}
+
+func IsOwner(api router.API, token string, product string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL isOwner(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token, product)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+
+	var result bool
+	for rows.Next() {
+		err := rows.Scan(
+			&result,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result;
+}
+
+// Returns products that belongs to the owner
+func GetOwnerProductsPaging (api router.API, token string, step int, count int) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getOwnerProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(token, step, count)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_filename string
+		var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_filename,
+			&tmpuserid,
+		)
+
+		result.Image = GetImage(api, image_filename)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return Items{Items:content, Total:len(content)}
+}
+
+func GetOwnerProductAvailability (api router.API, product string, token string) OwnerRentalStatus {
+	stmt, err := api.Context.Session.Prepare("CALL ownerProductStatus(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(token, product)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var result OwnerRentalStatus
+
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Available,
+			&result.Date_due,
+			&result.Date_taken,
+			&result.Owner,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	return result
 }
 
