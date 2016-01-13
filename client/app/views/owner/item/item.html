@@ -1,41 +1,80 @@
-<div class="row">
-    <div class="twelve columns">
-        <h3><b>{{product.title}}</b></h3>
-    </div>
-</div>
-<!--data.item[0].image.file_location-->
-<div class="image" >
-    <img ng-src="{{product.image.size.large}}" width="100%" height="auto"/>
-</div>
+<div class="itempreview">
+    <div class="content">
+        <div class="row">
+            <div class="four columns">
+                <div>
+                    <limage class="image" image='{{product}}' height='150' width='150'></limage>
+                </div>
+            </div>
+            <div class="eight columns">
+                <div class="row">
+                    <div class="title">
+                        {{product.title}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="description">
+                        {{product.description}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="subtitle">
+                <div class="row">
+                    <div class="two columns">
+                        <div class="icon">
+                            <i class="fa fa-info-circle"></i>
+                        </div>
+                    </div>
+                    <div class="ten columns">
+                        <div class="title">
+                            Information
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="information">
+                <div class="row">
+                    <div class="info">
+                        Available for {{product.product_rental_period_limit}} days.
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="six columns">
+                        <div class="rent">
+                            <rent-button datasource="product"></rent-button>
+                        </div>
+                    </div>
+                    <div class="six columns">
+                        <div class="profile">
+                            <h3>Owner</h3>
+                            <div class="row">
+                                <div class="six columns">
+                                    <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{product.owner.gravatar}}?s=90&d=identicon" width="50px" height="auto"/>
+                                </div>
+                                <div class="six columns">
+                                    <p>@{{product.owner.username}}</p>
+                                </div>
+                            </div>
+                            <div class="row dates">
+                                Last updated: {{product.date_updated | amCalendar}}
+                            </div>
+                            <div class="row">
+                                Date Added: {{product.date_added | amCalendar}}
+                            </div>
+                        </div>
+                    </div>
 
-<div class="row">
-    <h4>Description</h4>
-    <div class="twelve columns">{{product.description}}</div>
-
-    <h4>Information</h4>
-    <p>Available for <b>{{product.product_rental_period_limit}}</b> days.</p>
-    <button class="button" ng-click="showQR = !showQR">QR CODE</button>
-    <qrcode ng-show="showQR" class="qr" type="product" height=10 width=10 source={{product}}></qrcode>
-</div>
-
-
-<div class="row">
-    <div class="six columns">
-        <h4>Owner</h4>
-        <img ng-cloak ng-src="https://secure.gravatar.com/avatar/{{product.owner.gravatar}}?s=90&d=identicon" width="50px" height="auto"/>
-        <p>@{{product.owner.username}}</p>
-    </div>
-    <div class="six columns">
-        <rent-button-owner datasource="product"></rent-button-owner>
-    </div>
-</div>
-
-<div class="row">
-    <div class="six columns">
-    <i><b>Date Added: </b><span am-time-ago="product.date_added"></span></i>
-    </div>
-    <div class="six columns">
-    <i><b>Date Updated: </b><span am-time-ago="product.date_updated"></span></i>
+                </div>
+                <div class="row">
+                    <div class="qr">
+                        <qrcode class="code" type="product" height=100 width=100 source={{product}}></qrcode>
+                        <i class="info">Scan me</i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 </div>

@@ -1,3 +1,438 @@
-.container {
-  margin-top:60px!important;
-}
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none; }
+
+html, body {
+  height: 100%; }
+
+.wrapper {
+  margin-top: 50px;
+  height: 100%;
+  transition: 0.1s; }
+  @media screen and (min-width: 0px) {
+    .wrapper {
+      margin-top: 110px; } }
+  @media screen and (min-width: 300px) {
+    .wrapper {
+      padding-left: 0px;
+      padding-right: 0px;
+      margin-top: 105px; } }
+  @media screen and (min-width: 700px) {
+    .wrapper {
+      padding-left: 30px;
+      padding-right: 30px;
+      margin-top: 50px; } }
+  @media screen and (min-width: 900px) {
+    .wrapper {
+      padding-left: 100px;
+      padding-right: 100px;
+      margin-top: 50px; } }
+  @media screen and (min-width: 1200px) {
+    .wrapper {
+      padding-left: 200px;
+      padding-right: 200px;
+      margin-top: 50px; } }
+
+.footer {
+  width: 100%;
+  background-color: #e3e3e3;
+  margin-top: 100px;
+  height: 100px; }
+  .footer .content {
+    height: 100%; }
+
+.home {
+  height: 100%; }
+  .home .welcome {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; }
+    .home .welcome a {
+      width: 90%;
+      display: block;
+      margin: 0 auto; }
+    .home .welcome .column {
+      padding: 10px; }
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  padding: 30px; }
+  .login h1 {
+    text-align: center;
+    font-weight: 600; }
+
+.register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px; }
+  .register h1 {
+    text-align: center;
+    font-weight: 600; }
+  .register img {
+    width: 100px;
+    height: auto;
+    padding: 30px;
+    display: block;
+    margin: 0 auto; }
+
+.listing {
+  width: 100%;
+  text-align: center;
+  height: 50%; }
+  .listing .subheader {
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center; }
+    .listing .subheader .subtitle {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      font-weight: 600; }
+    .listing .subheader .options {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+      .listing .subheader .options input {
+        border: none;
+        padding: 0;
+        margin: 0;
+        border-bottom: 1px solid #e3e3e3;
+        margin-left: 20px;
+        text-align: center;
+        width: 50px; }
+  .listing .item {
+    border-bottom: 1px solid #e3e3e3; }
+    .listing .item .row {
+      width: 100%; }
+    .listing .item .title {
+      font-size: 2.6rem;
+      font-weight: bold; }
+    .listing .item .description {
+      font-size: 1.3rem; }
+    .listing .item .image {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .listing .item .status {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+      float: right;
+      margin-right: 1px; }
+      .listing .item .status .avail .text {
+        font-weight: bold;
+        text-align: center; }
+        @media screen and (min-width: 0px) {
+          .listing .item .status .avail .text {
+            padding-top: 10px; } }
+        .listing .item .status .avail .text .item {
+          margin: 0 auto;
+          width: 100%; }
+        @media screen and (min-width: 300px) {
+          .listing .item .status .avail .text {
+            text-align: center; }
+            .listing .item .status .avail .text .title {
+              padding-top: 10px; } }
+        @media screen and (min-width: 700px) {
+          .listing .item .status .avail .text {
+            text-align: left; }
+            .listing .item .status .avail .text .title {
+              padding-top: 0px; } }
+        @media screen and (min-width: 900px) {
+          .listing .item .status .avail .text {
+            text-align: left; } }
+        @media screen and (min-width: 1200px) {
+          .listing .item .status .avail .text {
+            text-align: left; }
+            .listing .item .status .avail .text .item {
+              margin: 0 auto;
+              width: 600px; } }
+        .listing .item .status .avail .text .Available {
+          color: #40C4FF; }
+        .listing .item .status .avail .text .Unavailable {
+          color: #E91E63; }
+  .listing .item:hover {
+    background: #ECEFF1; }
+  .listing .paging {
+    margin-top: 30px;
+    margin-bottom: 50px; }
+    .listing .paging .message {
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .listing .paging a {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+  @media screen and (min-width: 0px) {
+    .listing {
+      padding-top: 10px; } }
+  .listing .item {
+    margin: 0 auto;
+    width: 100%; }
+  @media screen and (min-width: 300px) {
+    .listing {
+      text-align: center; }
+      .listing .title {
+        padding-top: 10px; } }
+  @media screen and (min-width: 700px) {
+    .listing {
+      text-align: left; }
+      .listing .title {
+        padding-top: 0px; } }
+  @media screen and (min-width: 900px) {
+    .listing {
+      text-align: left; } }
+  @media screen and (min-width: 1200px) {
+    .listing {
+      text-align: left; }
+      .listing .item {
+        margin: 0 auto;
+        width: 600px; } }
+  .listing .message {
+    text-align: center; }
+    .listing .message .icon {
+      font-size: 6rem; }
+  @media screen and (min-width: 0px) {
+    .listing .title {
+      padding-top: 10px; }
+    .listing .item {
+      margin: 0 auto;
+      width: 100%; }
+      .listing .item .row {
+        padding-top: 30px; }
+      .listing .item .avail .text {
+        width: 100%; } }
+  @media screen and (min-width: 300px) {
+    .listing .title {
+      padding-top: 10px; }
+      .listing .title .avail .text {
+        width: 100%; } }
+  @media screen and (min-width: 700px) {
+    .listing .title {
+      padding-top: 0px; }
+      .listing .title .avail .text {
+        width: 100px; } }
+  @media screen and (min-width: 1200px) {
+    .listing .item {
+      margin: 0 auto;
+      width: 600px; } }
+
+.itempreview {
+  padding-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; }
+  .itempreview .content {
+    width: 100%; }
+    .itempreview .content .row .columns .image {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .itempreview .content .row .columns .row .title {
+      margin-top: 30px; }
+    .itempreview .content .row .subtitle {
+      margin-top: 30px; }
+      .itempreview .content .row .subtitle .columns {
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center; }
+        .itempreview .content .row .subtitle .columns .icon {
+          font-size: 5rem;
+          text-align: right; }
+        .itempreview .content .row .subtitle .columns .title {
+          font-align: left;
+          width: 100%; }
+    .itempreview .content .row .information .row .columns .rent {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100px;
+      width: 100%; }
+    .itempreview .content .row .information .row .columns .info {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .itempreview .content .row .information .row .columns .profile {
+      border: 1px solid #e3e3e3;
+      padding: 10px;
+      margin: 10px;
+      width: 100%; }
+    .itempreview .content .row .information .row .columns .dates {
+      margin-top: 20px; }
+  @media screen and (min-width: 0px) {
+    .itempreview .content .row .columns .row .description {
+      text-align: center; }
+    .itempreview .content .row .columns .title {
+      text-align: center;
+      margin-top: -60px; }
+    .itempreview .content .information .row .columns {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .itempreview .content .information .row .qr {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%; }
+    .itempreview .content .information .row .info {
+      text-align: center;
+      width: 100%; } }
+  @media screen and (min-width: 300px) {
+    .itempreview .content .row .columns .row .description {
+      text-align: center; }
+    .itempreview .content .row .columns .title {
+      margin-top: -60px;
+      text-align: center; } }
+  @media screen and (min-width: 700px) {
+    .itempreview .content .row .columns .row .description {
+      text-align: left; }
+    .itempreview .content .row .columns .title {
+      text-align: left;
+      margin-top: 0px; }
+    .itempreview .content .row .information .row .columns .qr {
+      width: 150px; }
+    .itempreview .content .row .information .row .info {
+      text-align: left;
+      width: 100%; } }
+  @media screen and (min-width: 1200px) {
+    .itempreview .content .row .columns .row .description {
+      text-align: left; }
+    .itempreview .content .row .title {
+      text-align: left;
+      margin-top: 0px; }
+    .itempreview .content .information .row .info {
+      text-align: left;
+      width: 100%; } }
+  .itempreview .row .title {
+    font-weight: 600;
+    font-size: 3rem; }
+  .itempreview .row .description {
+    font-weight: 400;
+    font-size: 2.3rem; }
+
+.user {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center; }
+  .user .profile .image {
+    display: flex;
+    justify-content: center;
+    align-items: center; }
+    .user .profile .image img {
+      width: 100px; }
+  .user .profile .columns {
+    height: 100%; }
+  .user .profile .context {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; }
+    .user .profile .context .username {
+      text-align: center;
+      font-weight: 600;
+      font-size: 3rem; }
+  .user .qr .code {
+    height: auto; }
+  @media screen and (min-width: 0px) {
+    .user .image {
+      height: 100px; }
+    .user .context {
+      height: 100px; }
+    .user .qr h2 {
+      text-align: center; }
+    .user .qr .code {
+      display: block;
+      margin: 0 auto;
+      width: 100px; } }
+  @media screen and (min-width: 300px) {
+    .user .image {
+      height: 100px; }
+    .user .context {
+      height: 100px; } }
+  @media screen and (min-width: 700px) {
+    .user .image {
+      height: 200px; }
+    .user .context {
+      height: 200px; }
+    .user .qr h2 {
+      text-align: center; }
+    .user .qr .code {
+      display: block;
+      margin: 0 auto;
+      width: 150px; } }
+  @media screen and (min-width: 1200px) {
+    .user .image {
+      height: 300px; }
+    .user .context {
+      height: 300px; }
+    .user .qr h2 {
+      text-align: center; }
+    .user .qr .code {
+      display: block;
+      margin: 0 auto;
+      width: 250px; } }
+
+.timeline .row .header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  width: 100%; }
+
+.timeline .row .content {
+  min-height: 400px; }
+
+.timeline .row .sidebar {
+  min-height: 400px;
+  width: 100%;
+  margin: 0; }
+  .timeline .row .sidebar .top {
+    border: 2px solid #333; }
+    .timeline .row .sidebar .top .title {
+      font-weight: 400;
+      font-size: 2.3rem;
+      text-align: center; }
+    .timeline .row .sidebar .top .description {
+      text-align: center;
+      font-size: 1.2rem; }
+  .timeline .row .sidebar .item {
+    min-height: 100px;
+    border-bottom: 2px solid #e3e3e3; }
+    .timeline .row .sidebar .item .three {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px; }
+    .timeline .row .sidebar .item .nine {
+      padding: 25px;
+      padding-left: 0; }
+      .timeline .row .sidebar .item .nine h5 {
+        margin: 0; }
+  .timeline .row .sidebar .item:hover {
+    background: #ECEFF1; }
+  .timeline .row .sidebar .empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; }
+
+.logout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; }

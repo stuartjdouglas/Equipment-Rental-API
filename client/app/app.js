@@ -37,19 +37,31 @@ angular.module('app', [
   //  Dependencies
   'angularMoment',
   'ui-notification',
-  'naif.base64'
+  'naif.base64',
+  'ngColorThief'
 ]).
 config(['$routeProvider','$locationProvider', function($routeProvider, $locationProvider) {
 	$routeProvider.otherwise({redirectTo: '/home'});
 	$locationProvider.html5Mode(false);
 }])
 
-.controller('AuthCtrl', ['$scope', '$rootScope', 'authFactory', function($scope, $rootScope, authFactory) {
+.controller('AuthCtrl', ['$scope', '$rootScope', 'authFactory', '$http', function($scope, $rootScope, authFactory, $http) {
   $rootScope.loggedIn = authFactory.getAuth() !== undefined;
   // console.log( authFactory.getToken);
   $rootScope.auth = authFactory.getAuth();
+    getSiteIndex()
 
-  $rootScope.site = {
-    title: "Site name"
-  };
+
+    function getSiteIndex() {
+        $http({
+            url: backend + "/",
+            method: 'GET',
+        }).success(function(data, status, headers, config) {
+            $rootScope.site = data;
+            $rootScope.title = current.$$route.title;
+        }).
+        error(function(data, status, headers, config) {
+            $rootScope.site = data;
+        });
+    }
 }]);

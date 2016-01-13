@@ -1,42 +1,25 @@
-<style>
-.makemered {
-	background-color:red;
-	color:white;
-	width:100%;
-	padding-top:20px;
-	padding-bottom:20px;
-}
-</style>
 
-<div class="login">
-    <div class="login Aligner-item">
+<div class="register">
+    <div class="form">
         <h1>Register</h1>
+        <form ng-submit="register(user)">
+            <div class="error">
+                {{error}}
+            </div>
+
+            <img ng-cloak height="100%" width="auto" ng-src="https://secure.gravatar.com/avatar/{{gravatar}}?s=90&d=identicon" width="100%" height="auto"/>
+
+            <label for="username">Username</label>
+            <input class="u-full-width" ng-model="user.name" type="text" placeholder="Lemon">
+
+            <label for="email">Email</label>
+            <input class="u-full-width" ng-model="user.email" type="email" placeholder="lemon@lemondev.xyz">
+
+            <label for="password">Password</label>
+            <input class="u-full-width" ng-model="user.password" type="password" placeholder="********">
+
+            <input class="button-primary" type="submit" value="Submit" >
+
+        </form>
     </div>
-</div>
-
-<div class="login aligner-item--bottom">
-    <form ng-submit="register(user)">
-
-        <p>{{error}}</p>
-
-        <br><br>
-				<div class="login aligner-item--bottom">
-        	<img ng-cloak height="100%" width="auto" ng-src="https://secure.gravatar.com/avatar/{{gravatar}}?s=90&d=identicon" width="100%" height="auto"/>
-      	</div>
-				<br>
-
-        <label for="">Username</label>
-        <input class="u-full-width" ng-model="user.name" type="text" placeholder="Lemon" id="">
-        <br><br>
-
-        <label for="">Email</label>
-        <input class="u-full-width" ng-model="user.email" type="email" placeholder="lemon@lemondev.xyz" id="">
-        <br><br>
-        <label for="">Password</label>
-        <input class="u-full-width" ng-model="user.password" type="password" placeholder="********" id="">
-        <br>
-        <br>
-        <input class="button-primary" type="submit" value="Submit" >
-
-    </form>
 </div>

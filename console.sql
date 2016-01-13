@@ -501,3 +501,15 @@ CREATE PROCEDURE getUserIDofToken(u_token VARCHAR(240))
   SELECT user_id FROM tokens
   WHERE token = u_token;
   END;
+
+DROP PROCEDURE getIndex;
+
+CREATE PROCEDURE getIndex()
+  BEGIN
+    SELECT Title as title, description as description FROM Site where id = 1;
+  END;
+
+CREATE PROCEDURE updateSite(s_title VARCHAR(240), s_description VARCHAR(240))
+  BEGIN
+
+  END;

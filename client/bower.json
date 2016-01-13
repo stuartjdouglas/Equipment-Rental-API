@@ -25,6 +25,7 @@
     "angular-base64-upload": "~0.1.13",
     "js-cookie": "~2.1.0",
     "angular-cookies": "~1.4.8",
-    "semantic": "semantic-ui#~2.1.8"
+    "semantic": "semantic-ui#~2.1.8",
+    "ngColorThief": "angular-colorthief#~0.1.0"
   }
 }

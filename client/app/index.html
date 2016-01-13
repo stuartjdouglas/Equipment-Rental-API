@@ -6,7 +6,7 @@
 
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>Equipment Rental</title>
+<title ng-bind="site.title">Loading....</title>
 <meta name="description" content="">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
@@ -27,7 +27,6 @@
 <base href="/">
 </head>
 <body ng-cloak>
-
 
 
 
@@ -88,9 +87,13 @@
 </header>
 
 
-<div ng-view class="ui raised very padded text container segment"></div>
+<div ng-view class="wrapper"></div>
 
-
+<!--<div class="footer">-->
+    <!--<div class="content">-->
+        <!--This is a footer-->
+    <!--</div>-->
+<!--</div>-->
 
 
 
@@ -133,13 +136,15 @@
 <script src="components/image/image.js"></script>
 <!-- Imports -->
 <script src="bower_components/cryptojslib/rollups/sha512.js"></script>
-<script src="bower_components/cryptojslib/rollups/MD5.js"></script>
+<script src="bower_components/cryptojslib/rollups/md5.js"></script>
 <script src="bower_components/js-cookie/src/js.cookie.js"></script>
 <!-- <script src="/bower_components/angular-cookies/angular-cookies.min.js"></script> -->
 <!--<script src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>-->
 <!--<script src="bower_components/angular-toastr/dist/angular-toastr.min.js"></script>-->
 <!--<script src="bower_components/ngstorage/ngStorage.min.js"></script>-->
-<script src="bower_components\angular-base64-upload\dist\angular-base64-upload.min.js"></script>
+<script src="bower_components/color-thief/dist/color-thief.min.js"></script>
+<script src="bower_components/ngColorThief/angular-colorthief.min.js"></script>
+<script src="bower_components/angular-base64-upload/dist/angular-base64-upload.min.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
 <script src="bower_components/angular-moment/angular-moment.min.js"></script>
 <script src="bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>

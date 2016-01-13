@@ -11,6 +11,10 @@
     "inject": false,
     "window": true,
     "CryptoJS": true,
-    "Backend": true
+    "Backend": true,
+    "backend": true,
+    "data": true,
+    "Image": true,
+    "setTimeout": true
   }
 }

@@ -11,10 +11,9 @@ angular.module('app.limage', ['app.config'])
         preview: '='
       },
       templateUrl: 'components/image/image.html',
-      controller: function($scope, $attrs) {
+      controller: function($scope, $colorThief) {
 
         $scope.tap = function() {
-          console.log("tapp")
           if ($scope.preview) {
             $scope.tapped = !$scope.tapped;
             var img = new Image();
@@ -56,27 +55,35 @@ angular.module('app.limage', ['app.config'])
           'background': 'url("") no-repeat center center',
           'background-size': 'cover',
           'border-radius':$scope.height + 'px',
-          'box-shadow': '0px 0px 5px 0px rgba(50, 50, 50, 0.75)'
         };
         $scope.$watch(
           "image",
           function handleFooChange() {
-            // console.log($scope.image)
+             console.log($scope.height)
 
-            $scope.data = JSON.parse($scope.image).image.size;
-            $scope.url = data + $scope.data.large
-            var url = data + $scope.data.thumb;
-            if ($scope.data != "{{product}}" && $scope.data != 'undefined' && $scope.data != '') {
+            if ($scope.image !== '{{product}}' && $scope.image !== 'undefined' && $scope.image !== '') {
+
+                $scope.data = JSON.parse($scope.image);
+                if ($scope.data.images !== undefined) {
+                    $scope.data = $scope.data.images.size;
+                } else {
+                    $scope.data = $scope.data.image.size;
+                }
+
+                $scope.url = data + $scope.data.large;
+                var url = data + $scope.data.thumb;
+
               // $scope.imageStyles.push('background-image': 'url(' + url + ')');
-              console.log(url);
+              //console.log(url);
               $scope.imageStyle['background-image'] = 'url(\"https://d13yacurqjgara.cloudfront.net/users/12755/screenshots/1037374/hex-loader2.gif\")';
 
               var img = new Image();
-
+            img.crossOrigin = "Anonymous"
               img.onload = function() {
                 setTimeout(function(){
                   $scope.imageStyle['background-image'] = 'url(\"' + url + '\")';
                   $scope.imageStyles['background-image'] = 'url(\"' + $scope.url + '\")';
+                    $scope.imageStyle.border = '3px solid rgb(' + $colorThief.getColor(img) +  ')';
                   $scope.$apply();
                 }, 1);
               }

@@ -10,12 +10,16 @@ angular.module('app.items', ['ngRoute'])
         });
     }
 ])
-.controller('itemsCtrl', ['$rootScope', '$scope', '$http', function($rootScope, $scope, $http, $watch) {
+.controller('itemsCtrl', ['$rootScope', '$scope', '$http', '$location', function($rootScope, $scope, $http, $location, $watch) {
     if (window.localStorage.getItem("product_count")) {
         $scope.count = parseInt(window.localStorage.getItem("product_count"));
     } else {
         window.localStorage.setItem("product_count", 10);
         $scope.count = 10;
+    }
+
+    $scope.goto = function(id) {
+        $location.path('/listing/' + id);
     }
 
 

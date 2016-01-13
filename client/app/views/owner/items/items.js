@@ -10,7 +10,7 @@ angular.module('app.ownerItems', ['ngRoute'])
             });
         }
     ])
-    .controller('ownerItemListingCtrl', ['$rootScope', '$scope', '$http', 'authFactory', function($rootScope, $scope, $http, authFactory, $watch) {
+    .controller('ownerItemListingCtrl', ['$rootScope', '$scope', '$http', 'authFactory', '$location', function($rootScope, $scope, $http, authFactory, $location, $watch) {
         if (window.localStorage.getItem("product_count")) {
             $scope.count = parseInt(window.localStorage.getItem("product_count"));
         } else {
@@ -21,7 +21,9 @@ angular.module('app.ownerItems', ['ngRoute'])
 
         $scope.start = 0;
 
-
+        $scope.goto = function(id) {
+            $location.path('/listing/' + id);
+        }
 
         if ($rootScope.loggedIn) {
             updateResults();
