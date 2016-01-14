@@ -436,3 +436,49 @@ html, body {
   justify-content: center;
   align-items: center;
   height: 100%; }
+
+.cookiedisplaybase {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: #3c5876;
+  width: 100%;
+  height: 50px;
+  color: #fff; }
+  .cookiedisplaybase a {
+    color: #fff;
+    padding-left: 100px; }
+  .cookiedisplaybase .tab {
+    min-width: 100px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    right: 0; }
+    .cookiedisplaybase .tab i {
+      padding-right: 10px; }
+    .cookiedisplaybase .tab .decline {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding-left: 10px;
+      padding-right: 10px;
+      background: #FF5722; }
+    .cookiedisplaybase .tab .decline:hover {
+      background: #bb2d00; }
+    .cookiedisplaybase .tab .agree {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      margin: 0;
+      padding-left: 10px;
+      padding-right: 10px;
+      background: #4CAF50; }
+    .cookiedisplaybase .tab .agree:hover {
+      background: #2d682f; }

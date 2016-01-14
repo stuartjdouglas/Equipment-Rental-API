@@ -10,6 +10,15 @@ angular.module('app.loginPanel', ['app.config'])
             templateUrl: 'components/loginPanel/loginPanel.html',
             controller: function($scope, $http, $rootScope, $location, authFactory) {
 
+                $rootScope.$watch('noCookieUsage', function() {
+                    $scope.disable = !$rootScope.noCookieUsage;
+                });
+
+                $scope.enableCookie = function() {
+                    console.log("enable cookies");
+                    $rootScope.enableCookieSession = true;
+                }
+
                 $scope.login = function(user) {
                     $scope.showError = false;
                     if (user !== undefined && user !== "" && user.name !== "" && user.password !== "") {

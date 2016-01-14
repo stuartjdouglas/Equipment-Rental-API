@@ -104,21 +104,25 @@ angular.module('app.rentButton', ['app.config'])
                 }
 
                 function rent(id) {
-                    $http({
-                        url: backend + '/p/' + $scope.datasource.id + '/rent',
-                        method: 'POST',
-                        headers: {
-                            'token': authFactory.getToken()
-                        },
-                    }).success(function (data, status, headers, config) {
-                        Notification.success({message: '<i class="fa fa-paper-plane"></i> ' + $scope.datasource.title + ' has just been rented. :)', positionY: 'bottom', positionX: 'center'});
-                        $scope.owner = true;
-                        getRentalStatus();
-                        $scope.rentButtonClass = [];
-                    }).
-                    error(function (data, status, headers, config) {
-                        $scope.error = true;
-                    });
+                    if ($rootScope.loggedIn) {
+                        $http({
+                            url: backend + '/p/' + $scope.datasource.id + '/rent',
+                            method: 'POST',
+                            headers: {
+                                'token': authFactory.getToken()
+                            },
+                        }).success(function (data, status, headers, config) {
+                            Notification.success({message: '<i class="fa fa-paper-plane"></i> ' + $scope.datasource.title + ' has just been rented. :)', positionY: 'bottom', positionX: 'center'});
+                            $scope.owner = true;
+                            getRentalStatus();
+                            $scope.rentButtonClass = [];
+                        }).
+                        error(function (data, status, headers, config) {
+                            $scope.error = true;
+                        });
+                    } else {
+                        Notification.error({message: 'You must be logged in', positionY: 'bottom', positionX: 'center'});
+                    }
                 }
 
                 $scope.return = function(id) {
