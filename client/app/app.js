@@ -20,6 +20,7 @@ angular.module('app', [
   'app.creator',
   'app.ownerItems',
   'app.ownerItem',
+    'app.cookie',
 
   // Directives
   'app.loginPanel',
@@ -31,6 +32,7 @@ angular.module('app', [
   'app.rentButtonOwner',
   'app.qrcode',
   'app.limage',
+'app.cookiedisplay',
   // Factories
   'app.config',
   'app.auth',
@@ -58,7 +60,6 @@ config(['$routeProvider','$locationProvider', function($routeProvider, $location
             method: 'GET',
         }).success(function(data, status, headers, config) {
             $rootScope.site = data;
-            $rootScope.title = current.$$route.title;
         }).
         error(function(data, status, headers, config) {
             $rootScope.site = data;

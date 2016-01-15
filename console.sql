@@ -32,17 +32,18 @@ DROP TABLE IF EXISTS `honoursproject`.`products` ;
 DROP TABLE IF EXISTS `honoursproject`.`users` ;
 
 CREATE TABLE IF NOT EXISTS `honoursproject`.`users` (
-  `id` INT NOT NULL AUTO_INCREMENT COMMENT '',
-  `username` VARCHAR(45) NOT NULL COMMENT '',
-  `password` VARCHAR(250) NOT NULL COMMENT '',
-  `email` VARCHAR(45) NOT NULL COMMENT '',
-  `first_name` VARCHAR(45) NULL DEFAULT 'first_name' COMMENT '',
-  `last_name` VARCHAR(45) NULL DEFAULT 'last_name' COMMENT '',
-  `location` VARCHAR(45) NULL DEFAULT 'unknown' COMMENT '',
-  `bio` VARCHAR(140) NULL DEFAULT 'Please describe me' COMMENT '',
-  `date_registered` DATE NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `username` (`username` ASC)  COMMENT '')
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(250) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `first_name` VARCHAR(45) NULL DEFAULT 'first_name',
+  `last_name` VARCHAR(45) NULL DEFAULT 'last_name',
+  `location` VARCHAR(45) NULL DEFAULT 'unknown',
+  `bio` VARCHAR(140) NULL DEFAULT 'Please describe me',
+  `date_registered` DATE NOT NULL,
+  `karma` INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  INDEX `username` (`username` ASC))
 ENGINE = InnoDB;
 
 
@@ -82,45 +83,51 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`posts` (
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `honoursproject`.`images` (
-  `id` INT NOT NULL AUTO_INCREMENT COMMENT '',
-  `file_name` VARCHAR(256) NOT NULL COMMENT '',
-  `title` VARCHAR(256) NOT NULL COMMENT '',
-  `date_added` DATETIME NOT NULL COMMENT '',
-  `original_name` VARCHAR(256) NOT NULL DEFAULT 'Null' COMMENT '',
-  `users_id` INT NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '',
-  INDEX `fk_images_users1_idx` (`users_id` ASC)  COMMENT '',
-  CONSTRAINT `fk_images_users1`
-    FOREIGN KEY (`users_id`)
-    REFERENCES `honoursproject`.`users` (`id`)
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `file_name` VARCHAR(256) NOT NULL,
+  `title` VARCHAR(256) NOT NULL,
+  `date_added` DATETIME NOT NULL,
+  `original_name` VARCHAR(256) NOT NULL DEFAULT 'Null',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_name` VARCHAR(240) NOT NULL,
+  `product_id` VARCHAR(240) NOT NULL,
+  `date_added` DATETIME NOT NULL,
+  `date_updated` DATETIME NOT NULL,
+  `product_description` VARCHAR(240) NOT NULL,
+  `product_rental_period_limit` VARCHAR(240) NOT NULL,
+  `ownerid` INT NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products_has_images` (
+  `products_id` INT NOT NULL,
+  `images_id` INT NOT NULL,
+  PRIMARY KEY (`products_id`, `images_id`),
+  INDEX `fk_products_has_images_images1_idx` (`images_id` ASC),
+  INDEX `fk_products_has_images_products1_idx` (`products_id` ASC),
+  CONSTRAINT `fk_products_has_images_products1`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_products_has_images_images1`
+    FOREIGN KEY (`images_id`)
+    REFERENCES `honoursproject`.`images` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
-
-
-
-CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
-  `id` INT NOT NULL AUTO_INCREMENT COMMENT '',
-  `product_name` VARCHAR(240) NOT NULL COMMENT '',
-  `product_id` VARCHAR(240) NOT NULL COMMENT '',
-  `date_added` DATETIME NOT NULL COMMENT '',
-  `date_updated` DATETIME NOT NULL COMMENT '',
-  `product_description` VARCHAR(240) NOT NULL COMMENT '',
-  `product_rental_period_limit` VARCHAR(240) NOT NULL COMMENT '',
-  `product_image_id` VARCHAR(240) NOT NULL COMMENT '',
-  `owner_id` INT NOT NULL COMMENT '',
-  PRIMARY KEY (`id`)  COMMENT '')
-ENGINE = InnoDB;
-
 CREATE TABLE IF NOT EXISTS `honoursproject`.`has` (
-  `users_id` INT NOT NULL COMMENT '',
-  `products_id` INT NOT NULL COMMENT '',
-  `status` INT NOT NULL DEFAULT 0 COMMENT '',
-  PRIMARY KEY (`users_id`, `products_id`)  COMMENT '',
-  INDEX `fk_users_has_products_products1_idx` (`products_id` ASC)  COMMENT '',
-  INDEX `fk_users_has_products_users1_idx` (`users_id` ASC)  COMMENT '',
+  `users_id` INT NOT NULL,
+  `products_id` INT NOT NULL,
+  `status` INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`users_id`, `products_id`),
+  INDEX `fk_users_has_products_products1_idx` (`products_id` ASC),
+  INDEX `fk_users_has_products_users1_idx` (`users_id` ASC),
   CONSTRAINT `fk_users_has_products_users1`
     FOREIGN KEY (`users_id`)
     REFERENCES `honoursproject`.`users` (`id`)
@@ -136,14 +143,13 @@ ENGINE = InnoDB;
 DROP TABLE user_rent_product;
 
 CREATE TABLE IF NOT EXISTS `honoursproject`.`user_rent_product` (
-  `users_id` INT NOT NULL COMMENT '',
-  `products_id` INT NOT NULL COMMENT '',
-  `date_received` DATETIME NOT NULL COMMENT '',
-  `date_due` DATETIME NOT NULL COMMENT '',
-  `active` BOOLEAN NOT NULL COMMENT '',
-  PRIMARY KEY (`users_id`, `products_id`)  COMMENT '',
-  INDEX `fk_users_has_products_products2_idx` (`products_id` ASC)  COMMENT '',
-  INDEX `fk_users_has_products_users2_idx` (`users_id` ASC)  COMMENT '',
+  `users_id` INT NOT NULL,
+  `products_id` INT NOT NULL,
+  `date_received` DATETIME NOT NULL,
+  `date_due` DATETIME NOT NULL,
+  PRIMARY KEY (`users_id`, `products_id`),
+  INDEX `fk_users_has_products_products2_idx` (`products_id` ASC),
+  INDEX `fk_users_has_products_users2_idx` (`users_id` ASC),
   CONSTRAINT `fk_users_has_products_users2`
     FOREIGN KEY (`users_id`)
     REFERENCES `honoursproject`.`users` (`id`)
@@ -156,6 +162,30 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`user_rent_product` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `honoursproject`.`tags` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `tag` VARCHAR(240) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `tag_UNIQUE` (`tag` ASC))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products_has_tags` (
+  `products_id` INT NOT NULL,
+  `tags_id` INT NOT NULL,
+  PRIMARY KEY (`products_id`, `tags_id`),
+  INDEX `fk_products_has_tags_tags1_idx` (`tags_id` ASC),
+  INDEX `fk_products_has_tags_products1_idx` (`products_id` ASC),
+  CONSTRAINT `fk_products_has_tags_products1`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_products_has_tags_tags1`
+    FOREIGN KEY (`tags_id`)
+    REFERENCES `honoursproject`.`tags` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `honoursproject`.`Site` (
   `id` INT NOT NULL COMMENT '',
@@ -164,13 +194,77 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`Site` (
   PRIMARY KEY (`id`)  COMMENT '')
 ENGINE = InnoDB;
 
+#
+#
+#
+#           Procedures
+#
+#
+#
 
-select * from images;
 
-select * from images where file_name = "15b2459a-705a-4831-92fb-d69cba3ed3eb.gif";
+#
+#     Register
+#
 
+DROP PROCEDURE register;
 
-select * from images ORDER BY date_added DESC;
+CALL register("lemon", "test", "lemon@lemondev.xyz", "lemon", "yamano");
+ CREATE PROCEDURE `register`(u_name VARCHAR(240), u_password VARCHAR(240), u_email VARCHAR(240), u_firstname VARCHAR(240), u_lastname VARCHAR(240))
+    BEGIN
+      INSERT INTO users (username, password, email, first_name, last_name, location, date_registered)
+      VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW());
+    END;
+
+select * from users;
+
+DROP PROCEDURE doesUserExist;
+
+CALL doesUserExist("lemon");
+
+CREATE PROCEDURE `doesUserExist` (u_name VARCHAR(240))
+  BEGIN
+    SELECT EXISTS(SELECT username from users WHERE username = u_name);
+  END;
+
+#
+#    Login
+#
+DROP PROCEDURE  login;
+CALL login('lemon', 'e904d2db7a1baad46a7809ab9ec3d261d1691bb7e0cfc83c5015b31ed93089bb34d0c71f423465e2e59276378247e3c1f0acd13ca2ddb10818c1502e7fc01028', 'bestToken', 'lookToken');
+
+CREATE PROCEDURE `login` (u_name VARCHAR(240), u_password VARCHAR(240), u_token VARCHAR(240), u_idenf VARCHAR(240))
+  BEGIN
+    DECLARE correctDetails BOOLEAN;
+    DECLARE userid int;
+
+    SELECT id INTO userid FROM users WHERE username = u_name;
+    SELECT EXISTS (SELECT username FROM users WHERE username = u_name AND password = u_password) INTO correctDetails;
+
+    if (correctDetails) THEN
+      INSERT INTO tokens (token, user_id, date_generated, date_expires, idenf, active)
+      VALUES(u_token, userid, NOW(), NOW() + INTERVAL 7 DAY, u_idenf, true);
+
+      select true as success, username, md5(email) as gravatar, u_token as token, NOW() + INTERVAL 7 DAY as expiry from users
+      WHERE username = u_name;
+    ELSE
+      select FALSE, username, md5(email), "null", NOW() from users
+      WHERE username = u_name;
+    END IF;
+  END;
+
+DROP PROCEDURE addImage;
+
+CALL addImage("image", "image", "image", "");
+CREATE PROCEDURE addImage(i_name VARCHAR(240), i_title VARCHAR(240), i_original VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE userid INT;
+    SELECT user_id into userid from tokens where token = u_token;
+    INSERT INTO images (file_name, title, date_added, original_name) values (i_name, i_title, NOW(), i_original);
+  END;
+#
+#   Image exists
+#
 
 DROP PROCEDURE imageExists;
 
@@ -181,34 +275,89 @@ DROP PROCEDURE imageExists;
 SELECT EXISTS (SELECT 1 FROM images WHERE file_name LIKE "%1OxlR3nLip%");
 CALL imageExists('1OxlR3nLip');
 
-select * from products;
-
-CREATE PROCEDURE helloWorld()
-  BEGIN
-    select * from users;
-  END;
+#
+# Create Product
+#
+SELECT id FROM images where file_name = 'EDH86AiKEx.jpg';
 
 DROP PROCEDURE createProduct;
+call createProduct("item3","something3","2015-12-27","2015-12-27","something",7,0,1);
 
 CREATE PROCEDURE createProduct (product_name VARCHAR(240), product_id VARCHAR(240), date_added DATETIME, date_updated DATETIME, product_description VARCHAR(240), product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT)
   BEGIN
-    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id)
-    values (product_name,product_id,date_added,date_updated,product_description,product_rental_period_limit,product_image_id,owner_id);
-    INSERT INTO has (users_id, products_id, status) VALUES (owner_id, LAST_INSERT_ID(), 0);
-  END;;
-
-INSERT INTO has (users_id, products_id, status) VALUES (1, 1, 0);
-
-call createProduct("item3","something3","2015-12-27","2015-12-27","something",7,0,1);
-
-INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id)
-values ("item","something3","2015-12-27","2015-12-27","something",7,0,1);
+    DECLARE imgid INT;
+    SELECT id INTO imgid FROM images where file_name = product_image_id ORDER BY date_added DESC;
+    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid)
+    values (product_name,product_id,date_added,date_updated,product_description,product_rental_period_limit,ownerid);
+    SET @last_id = LAST_INSERT_ID();
+    INSERT INTO has (users_id, products_id, status) VALUES (owner_id, @last_id, 0);
+    INSERT INTO products_has_images (products_id, images_id) VALUES(@last_id, imgid);
+  END;
 
 
-SELECT * from has
-  LEFT OUTER JOIN products ON has.products_id = products.id
-  LEFT OUTER JOIN users ON has.users_id = users.id
-  GROUP BY users.username;
+DROP PROCEDURE  removeProduct;
+CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "9cc7a542-c22a-4855-8cdf-cc4b5cd4a13a");
+
+CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE uid int;
+    DECLARE pid int;
+    DECLARE iid int;
+    select user_id into uid from tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+    select images_id into iid from products_has_images where products_id = pid;
+
+#     select iid;
+    DELETE from has where users_id = uid AND products_id = pid;
+    DELETE from products_has_images where products_id = pid;
+    DELETE from images where id = iid;
+    DELETE from has where products_id = pid;
+    DELETE from products where id = pid;
+    DELETE from user_rent_product where products_id = pid;
+
+  END;
+
+#
+#   Get Listing
+#
+DROP PROCEDURE  getListing;
+CALL getListing();
+
+CREATE PROCEDURE getListing()
+  BEGIN
+    SELECT ownerid as owner, product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, id as id FROM products
+    LEFT JOIN has ON products.id = has.products_id
+    ORDER BY date_updated DESC;
+  END;
+
+#
+# Get Product
+#
+DROP PROCEDURE getProduct;
+
+CREATE PROCEDURE getProduct(pid VARCHAR(240))
+  BEGIN
+    SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, username, products.id as id FROM has
+    LEFT JOIN users ON has.users_id = users.id
+    LEFT JOIN products ON has.products_id = products.id
+    where product_id = pid;
+  END;
+
+
+#
+#  Get Image
+#
+CALL getImage(6);
+
+CREATE PROCEDURE getImage(pid INT)
+  BEGIN
+    SELECT file_name, title, date_added FROM products_has_images
+    LEFT JOIN images ON products_has_images.images_id = images.id
+    WHERE products_id = pid;
+  END;
+#
+# Rent Item
+#
 
 call RentItem ("something3", "remon");
 DROP PROCEDURE RentItem;
@@ -222,8 +371,12 @@ CREATE PROCEDURE RentItem (product VARCHAR(240), usrname VARCHAR(240))
     SELECT id INTO userid FROM users WHERE username = usrname;
     SELECT id, product_rental_period_limit INTO productid, days FROM products WHERE product_id = product LIMIT 1;
 
-    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due, active) VALUES (productid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY), TRUE);
+    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due) VALUES (productid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY));
   END;
+
+#
+#   Return Item
+#
 
 DROP PROCEDURE ReturnItem;
 
@@ -240,45 +393,40 @@ CREATE PROCEDURE ReturnItem (o_token VARCHAR(240), product VARCHAR(240))
 
     select users_id INTO u_id from user_rent_product
     LEFT JOIN products ON user_rent_product.products_id = products.id
-    LEFT JOIN users ON owner_id = users.id
+    LEFT JOIN users ON ownerid = users.id
     WHERE users_id = tmp_u_id AND product_id = product;
 
     SELECT id INTO productid FROM products WHERE product_id = product;
     DELETE FROM user_rent_product WHERE users_id = u_id AND products_id = productid;
   END;
 
-select user_id from tokens
-    left JOIN users ON tokens.user_id = users.id
-    where token = "43c4a78f-7fb2-449d-8011-7914926e4cc3";
+
+#
+# Return Item As Owner
+#
 
 DROP PROCEDURE ReturnItemAsOwner;
-CALL ReturnItemAsOwner("43c4a78f-7fb2-449d-8011-7914926e4cc3", "2d85d358-736a-405a-b6ac-9c0fe5af29ff");
+CALL ReturnItemAsOwner("a208d08d-0ae1-4561-88e7-2e0bee21e121", "4c0bc251-bc9a-4a95-9612-a883bc6877ad");
 
 CREATE PROCEDURE ReturnItemAsOwner (o_token VARCHAR(240), product VARCHAR(240))
   BEGIN
-    DECLARE productid INT;
+    DECLARE pid INT;
+    DECLARE uid INT;
     DECLARE tmp_u_id INT;
-    DECLARE u_id VARCHAR(240);
 
     select user_id into tmp_u_id from tokens
     where token = o_token;
 
-#     select tmp_u_id;
-
-    select users_id INTO u_id from user_rent_product
+    select products_id, users_id INTO pid, uid FROM user_rent_product
     LEFT JOIN products ON user_rent_product.products_id = products.id
-    LEFT JOIN users ON owner_id = users.id
-    WHERE owner_id = tmp_u_id AND product_id = product;
-
-    SELECT id INTO productid FROM products WHERE product_id = product;
-
-    DELETE FROM user_rent_product WHERE users_id = u_id AND products_id = productid;
+    WHERE product_id = product and ownerid = tmp_u_id;
+# select pid;
+    DELETE FROM user_rent_product WHERE users_id = uid AND products_id = pid;
   END;
 
-
-SELECT id FROM products WHERE product_id = "something" LIMIT 1;
- SELECT product_rental_period_limit FROM products WHERE product_id = "something" LIMIT 1;
-select product_rental_period_limit from products where product_id = "something";
+#
+# Check Item Availabibility
+#
 
 DROP PROCEDURE checkItemAvailability;
 CALL checkItemAvailability("works so well", "remon");
@@ -301,16 +449,22 @@ BEGIN
     END IF;
   END;
 
+#
+# Get Paged Products
+#
+
 DROP PROCEDURE getPagedProducts;
 CALL getPagedProducts(0, 6);
 
 CREATE PROCEDURE getPagedProducts (step INT, count INT)
   BEGIN
-    SELECT product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from has
+    SELECT product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, products_id as image_id, username as owner from has
     LEFT OUTER JOIN products ON has.products_id = products.id
     LEFT OUTER JOIN users ON has.users_id = users.id
     ORDER BY products.date_updated DESC LIMIT step, count;
   END;
+
+# Get Rented Products
 
 DROP PROCEDURE getRentedProducts;
 CALL getRentedProducts("lemon", 0, 3);
@@ -323,18 +477,25 @@ CREATE PROCEDURE getRentedProducts (username VARCHAR(240), step INT, count INT)
     ORDER BY products.date_updated DESC LIMIT step, count;
   END;
 
+#
+# Get Currently Renting Products
+#
+
 DROP PROCEDURE getCurrentlyRentingProducts;
 CALL getCurrentlyRentingProducts("remon", 0, 3);
 
 CREATE PROCEDURE getCurrentlyRentingProducts (u_name VARCHAR(240), step INT, count INT)
   BEGIN
-    select product_id as id, product_name as name, product_description as description, date_due as due_date, date_received as received_date, product_image_id as image_id, username as owner from user_rent_product
+    select product_id as id, product_name as name, product_description as description, date_due as due_date, date_received as received_date, products_id as image_id, username as owner from user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
       LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
     WHERE user_rent_product.date_due > NOW() AND username = u_name
     ORDER BY products.date_updated DESC LIMIT step, count;
   END;
 
+#
+#  Get Username
+#
 
 DROP PROCEDURE getUsername;
 CALL getUsername("94a17bfa-6c49-4398-8155-137f07612f7d");
@@ -346,68 +507,68 @@ CREATE PROCEDURE getUsername (usrtoken VARCHAR(240))
     SELECT username FROM users WHERE id = userid;
   END;
 
-DROP PROCEDURE getCurrentlyRentingProducts;
-CALL getCurrentlyRentingProducts("remon", 0, 1);
 
-SELECT user_id from tokens where token = "94a17bfa-6c49-4398-8155-137f07612f7d";
+# Get Product Availability
 
 DROP PROCEDURE checkProductAvailability;
-CALL checkProductAvailability("works so well");
+CALL checkProductAvailability("4c0bc251-bc9a-4a95-9612-a883bc6877ad");
 
 CREATE PROCEDURE `checkProductAvailability`(product VARCHAR(240))
 BEGIN
   DECLARE due_date DATETIME;
   DECLARE active_state BOOLEAN;
 
-  SELECT date_due, active INTO due_date, active_state FROM user_rent_product
+  SELECT date_due INTO due_date FROM user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
     LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
     WHERE products.product_id = product
     ORDER BY products.date_updated DESC;
 
-    if (active_state = 1) THEN
+
       if (due_date > NOW()) THEN
         select FALSE as available, due_date as due_date;
       ELSE
         select TRUE as available, NOW() as due_date;
       END IF;
-    ELSE
-      select TRUE as available, NOW() as due_date;
-    END IF;
+
   END;
 
+
+#
+#  Check Authed Product Availability
+#
+
 DROP PROCEDURE checkAuthedProductAvailability;
-CALL checkAuthedProductAvailability("40cdb44f-3bf4-4d71-9299-0f0887417731");
-CALL checkAuthedProductAvailability("Windos");
+CALL checkAuthedProductAvailability("4c0bc251-bc9a-4a95-9612-a883bc6877ad");
 
 CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
 BEGIN
     DECLARE due_date DATETIME;
     DECLARE taken_date DATETIME;
     DECLARE user_name VARCHAR(240);
-    DECLARE active_state BOOLEAN;
 
-  SELECT date_due, date_received, username, active INTO due_date, taken_date, user_name, active_state FROM user_rent_product
+  SELECT date_due, date_received, username INTO due_date, taken_date, user_name FROM user_rent_product
     LEFT JOIN products ON user_rent_product.products_id = products.id
     LEFT JOIN users ON user_rent_product.users_id = users.id
     WHERE products.product_id = product
     ORDER BY date_received DESC
     LIMIT 1;
-if (user_name) THEN
-    if (active_state = 1) THEN
-      if (due_date > NOW()) THEN
-        select FALSE as available, due_date, taken_date, user_name as username;
-      ELSE
-        select TRUE as available, NOW() as due_date, NOW() as taken_date, user_name as username;
-      END IF;
+
+#   select due_date;
+    if (user_name != "") THEN
+          if (due_date > NOW()) THEN
+            select FALSE as available, due_date, taken_date, user_name as username;
+          ELSE
+            select TRUE as available, NOW() as due_date, NOW() as taken_date, user_name as username;
+          END IF;
     ELSE
-      SET user_name = "nil";
-      select TRUE as available, NOW() as due_date, NOW() as taken_date, user_name as username;
+      select TRUE as available, NOW(), NOW(), "null";
     END IF;
-ELSE
-  select FALSE as available, due_date, taken_date, user_name as username;
-END IF;
   END;
+
+#
+# Get owner products
+#
 
 DROP PROCEDURE  getOwnerProducts;
 CALL getOwnerProducts("94a17bfa-6c49-4398-8155-137f07612f7d", 0, 15);
@@ -418,13 +579,18 @@ BEGIN
   SELECT username into usrname from tokens
   LEFT OUTER JOIN users on tokens.user_id = users.id
   where token = u_token;
-  select  product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, product_image_id as image_id, username as owner from has
+  select  product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, products_id as image_id, username as owner from has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
       where users.username = usrname
       ORDER BY date_updated DESC
       LIMIT step, count;
   END;
+
+
+#
+#  Check Product Availability Owner
+#
 
 DROP PROCEDURE CheckProductAvailabilityOwner;
 CALL CheckProductAvailabilityOwner("94a17bfa-6c49-4398-8155-137f07612f7d", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
@@ -452,6 +618,10 @@ CREATE PROCEDURE CheckProductAvailabilityOwner(o_token VARCHAR(240), p_id VARCHA
   END;
 
 
+#
+#  is Owner
+#
+
 DROP PROCEDURE isOwner;
 CALL isOwner("94a17bfa-6c49-4398-8155-137f07612f7d", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
 
@@ -467,6 +637,11 @@ CREATE PROCEDURE isOwner(u_token VARCHAR(240), p_id VARCHAR(240))
       LEFT JOIN products ON has.products_id = products.id
       WHERE product_id = p_id AND users_id = u_id) as owner;
   END;
+
+
+#
+# Owner Product Status
+#
 
 DROP PROCEDURE ownerProductStatus;
 CALL ownerProductStatus("899a7b0b-2e51-4488-a99a-b51b0e76f856", "4ded9e43-174f-4203-a48b-58f34dc9b90b");
@@ -493,6 +668,10 @@ CREATE PROCEDURE ownerProductStatus(u_token VARCHAR(240), p_id VARCHAR(240))
     END IF;
   END;
 
+#
+# get User ID of Token
+#
+
 DROP PROCEDURE getUserIDofToken;
 CALL getUserIDofToken("94a17bfa-6c49-4398-8155-137f07612f7d");
 
@@ -501,6 +680,12 @@ CREATE PROCEDURE getUserIDofToken(u_token VARCHAR(240))
   SELECT user_id FROM tokens
   WHERE token = u_token;
   END;
+
+
+#
+#   Get Index
+#      Get the site index information
+#
 
 DROP PROCEDURE getIndex;
 

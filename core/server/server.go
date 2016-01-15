@@ -16,7 +16,7 @@ import (
 	"github.com/remony/lemonlog"
 )
 // Start handles all route configuration and starts the http server
-func Start(settings config.Config, context database.Context) {
+func Start(settings config.Config, context database.Context, mode int) {
 	log.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Production.Port))
 
 	// Create the main router
@@ -49,7 +49,9 @@ func Start(settings config.Config, context database.Context) {
 
 	// Apply the CORS options to the main route handler
 	masterRouter.Use(c.Handler)
-	masterRouter.Use(lemonlog.Logger)
+	if (mode == 1) {
+		masterRouter.Use(lemonlog.Logger)
+	}
 	// Create the routes
 	routes.CreateRoutes(router.API{Router:apiRouter, Context:context, Config:settings})
 

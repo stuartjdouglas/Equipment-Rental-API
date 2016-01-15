@@ -1,3 +1,4 @@
+'use strict'
 angular.module('app.auth', [])
 
 
@@ -21,6 +22,22 @@ angular.module('app.auth', [])
     },
     killAuth: function() {
       Cookies.remove('auth');
+    },
+    usingCookies: function() {
+      var cookie = Cookies.getJSON('cookie');
+      return cookie;
+    },
+    createCookieSess: function() {
+      Cookies.set('cookie', JSON.stringify({
+        active: true,
+        date_created:  new Date()
+      }));
+      var cookie = Cookies.getJSON('cookie');
+      return cookie;
+    },
+    RemoveSessCookie: function() {
+      Cookies.remove('cookie');
     }
+
   }
 });

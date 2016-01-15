@@ -15,9 +15,12 @@ angular.module('app.item', ['ngRoute'])
             url: backend + "/product/" + $routeParams.id,
             method: 'GET',
         }).success(function(data, status, headers, config) {
-          if (data.items[0].owner.username === $rootScope.auth.username) {
-            $location.path('/owner/listing/' + $routeParams.id);
-          }
+            if ($rootScope.loggedIn) {
+                if (data.items[0].owner.username === $rootScope.auth.username) {
+                    $location.path('/owner/listing/' + $routeParams.id);
+                }
+
+            }
             $scope.product = data.items[0];
         }).
         error(function(data, status, headers, config) {

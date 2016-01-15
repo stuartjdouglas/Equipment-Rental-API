@@ -3,7 +3,7 @@
         <div class="four columns">
             <h1>Login</h1>
         </div>
-        <div class="eight columns">
+        <div class="eight columns" ng-hide="disable">
             <form ng-submit="login(user)">
                 <div class="four columns makemered" ng-show="showError">
                     <p>{{error}}</p>
@@ -20,6 +20,13 @@
                 </div>
                 <input class="button-primary" type="submit" value="Submit" >
             </form>
+        </div>
+        <div class="eight columns noCookie" ng-show="disable">
+            <div class="row">
+                <i>Cookies must be enabled to login</i>
+                <button class="button" ng-click="enableCookie()">Enable Cookies</button>
+
+            </div>
         </div>
     </div>
 </div>

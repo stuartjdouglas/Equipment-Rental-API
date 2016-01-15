@@ -6,8 +6,8 @@ import(
 	"github.com/zenazn/goji/web"
 	"strings"
 	"github.com/remony/Equipment-Rental-API/core/router"
-	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
+	"github.com/remony/Equipment-Rental-API/core/database"
 )
 type tokenremoved struct {
 	ID	string `json:"id"`
@@ -39,8 +39,8 @@ func generateAuthRoutes(api router.API)	{
 			}
 		}
 
-		var login models.Auth
-		login = models.LoginUser(api, strings.ToLower(loginDetails.Username), loginDetails.Password)
+		var login database.Auth
+		login = database.LoginUser(api, strings.ToLower(loginDetails.Username), loginDetails.Password)
 
 		if(login.Success) {
 			data, err := json.Marshal(login)

@@ -15,6 +15,9 @@ Godeps/Readme
 data/images/*.jpg
 data/images/*.gif
 data/images/*.png
+data/images/bin/*.jpg
+data/images/bin/*.gif
+data/images/bin/*.png
 
 # Architecture specific extensions/prefixes
 *.[568vq]

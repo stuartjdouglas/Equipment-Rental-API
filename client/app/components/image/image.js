@@ -59,7 +59,7 @@ angular.module('app.limage', ['app.config'])
         $scope.$watch(
           "image",
           function handleFooChange() {
-             console.log($scope.height)
+             //console.log($scope.height)
 
             if ($scope.image !== '{{product}}' && $scope.image !== 'undefined' && $scope.image !== '') {
 

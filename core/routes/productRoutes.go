@@ -23,6 +23,10 @@ type Product struct {
 	Filetype		string 	`json:"filetype"`
 }
 
+type DeleteResponse struct {
+	message string
+}
+
 func generateProductRoutes (api router.API) {
 	api.Router.Post("/p", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
@@ -43,8 +47,6 @@ func generateProductRoutes (api router.API) {
 
 			var file io.Reader
 
-
-
 			imageCode := utils.RandomString(10) // create random string
 
 			for models.DoesImageExist(api, imageCode) { // For each time the file exists
@@ -58,7 +60,6 @@ func generateProductRoutes (api router.API) {
 				mime = strings.SplitN(string(mime[0]), ":", 2)
 				mime = strings.SplitN(mime[1], ";", 2)
 				product.Filetype = mime[0]
-				//product.Image =  strings.SplitAfterN(product.Image, ",", 2)[1]
 
 				b64data := product.Image[strings.IndexByte(product.Image, ',')+1:]
 
@@ -195,6 +196,34 @@ func generateProductRoutes (api router.API) {
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		res.Write(data)
+	})
+
+
+
+
+	api.Router.Delete("/product/:id/delete", func (c web.C, res http.ResponseWriter, req *http.Request) {
+		token := req.Header.Get("token")
+
+		if (models.IsOwner(api, token, c.URLParams["id"])) {
+			item := models.GetProductFromID(api, c.URLParams["id"])
+			models.RemoveProduct(api, c.URLParams["id"], token)
+			utils.BinFiles("image", item.Items[0].Image.Title)
+			result := DeleteResponse {
+				message: "Has been deleted",
+			}
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			http.Error(res, "", http.StatusUnauthorized)
+		}
+
 	})
 
 

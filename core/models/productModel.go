@@ -4,8 +4,6 @@ import (
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
-	"strconv"
-
 )
 
 type Items struct {
@@ -53,7 +51,7 @@ func CreateProduct(api router.API, product_name string, product_description stri
 
 func GetProducts (api router.API) Items {
 	var content = []Item{}
-	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products. ORDER BY date_updated DESC")
+	stmt, err := api.Context.Session.Prepare("CALL getListing()")
 
 	if err != nil {
 		log.Fatal(err)
@@ -68,25 +66,20 @@ func GetProducts (api router.API) Items {
 
 	for rows.Next() {
 		var result Item
-		var image_filename string
-		var tmpuserid string
+		var tmpuserid int
+		var postid int
 		err := rows.Scan(
+			&tmpuserid,
 			&result.Product_name,
 			&result.Product_id,
 			&result.Date_added,
 			&result.Date_updated,
 			&result.Product_description,
 			&result.Product_rental_period_limit,
-			&tmpuserid,
-			&image_filename,
 		)
 
-		result.Image = GetImage(api, image_filename)
-		userid, err := strconv.Atoi(tmpuserid)
-		if err != nil {
-			panic(err)
-		}
-		result.Owner = GetUser(api, getUsername(api, userid))
+		result.Image = GetImage(api, postid)
+		result.Owner = GetUser(api, getUsername(api, tmpuserid))
 
 		if err != nil {
 			panic(err)
@@ -118,7 +111,7 @@ func GetProductsPaging (api router.API, step int, count int) Result {
 
 	for rows.Next() {
 		var result Item
-		var image_filename string
+		var image_id int
 		var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
@@ -127,11 +120,11 @@ func GetProductsPaging (api router.API, step int, count int) Result {
 			&result.Date_added,
 			&result.Date_updated,
 			&result.Product_rental_period_limit,
-			&image_filename,
+			&image_id,
 			&tmpuserid,
 		)
 
-		result.Image = GetImage(api, image_filename)
+		result.Image = GetImage(api, image_id)
 
 			if err != nil {
 			log.Println("Getting paged results error scanning")
@@ -187,7 +180,7 @@ func GetCurrentlyRentedProducts (api router.API, token string, step int, count i
 
 	for rows.Next() {
 		var result RentItems
-		var image_filename string
+		var image_id int
 		var username string
 		err := rows.Scan(
 			&result.ID,
@@ -195,11 +188,11 @@ func GetCurrentlyRentedProducts (api router.API, token string, step int, count i
 			&result.Description,
 			&result.Due,
 			&result.Received,
-			&image_filename,
+			&image_id,
 			&username,
 		)
 
-		result.Images = GetImage(api, image_filename)
+		result.Images = GetImage(api, image_id)
 		//		userid, err := strconv.Atoi(tmpuserid)
 		if err != nil {
 			log.Println("Getting paged results error scanning")
@@ -367,7 +360,7 @@ func GetProductFromOwner (api router.API, username string) Items {
 
 func GetProductFromID (api router.API, id string) Items {
 	var content = []Item{}
-	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products where product_id=? ")
+	stmt, err := api.Context.Session.Prepare("Call getProduct(?)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -381,8 +374,8 @@ func GetProductFromID (api router.API, id string) Items {
 
 	for rows.Next() {
 		var result Item
-		var image_filename string
-		var useridtmp string
+		var imageid int
+		var username string
 		err := rows.Scan(
 			&result.Product_name,
 			&result.Product_id,
@@ -390,19 +383,18 @@ func GetProductFromID (api router.API, id string) Items {
 			&result.Date_updated,
 			&result.Product_description,
 			&result.Product_rental_period_limit,
-			&useridtmp,
-			&image_filename,
+			&username,
+			&imageid,
 		)
 		if err != nil {
 			panic(err)
 		}
-		result.Image = GetImage(api, image_filename)
 
-		userid, err := strconv.Atoi(useridtmp)
+		result.Image = GetImage(api, imageid)
 		if err != nil {
 			panic(err)
 		}
-		result.Owner = GetUser(api, getUsername(api, userid))
+		result.Owner = GetUser(api, username)
 		content = append(content, result)
 	}
 	if err = rows.Err(); err != nil {
@@ -642,6 +634,20 @@ func IsOwner(api router.API, token string, product string) bool {
 	return result;
 }
 
+func RemoveProduct(api router.API, pid string, token string) {
+	stmt, err := api.Context.Session.Prepare("CALL removeProduct(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(token, pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+}
+
 // Returns products that belongs to the owner
 func GetOwnerProductsPaging (api router.API, token string, step int, count int) Items {
 
@@ -661,7 +667,7 @@ func GetOwnerProductsPaging (api router.API, token string, step int, count int) 
 
 	for rows.Next() {
 		var result Item
-		var image_filename string
+		var image_id int
 		var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
@@ -670,11 +676,11 @@ func GetOwnerProductsPaging (api router.API, token string, step int, count int) 
 			&result.Date_added,
 			&result.Date_updated,
 			&result.Product_rental_period_limit,
-			&image_filename,
+			&image_id,
 			&tmpuserid,
 		)
 
-		result.Image = GetImage(api, image_filename)
+		result.Image = GetImage(api, image_id)
 
 		if err != nil {
 			log.Println("Getting paged results error scanning")

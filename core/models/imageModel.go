@@ -4,7 +4,6 @@ import (
 	"time"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
-	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"strings"
 )
 
@@ -74,14 +73,14 @@ func DoesImageExist(api router.API, code string) bool {
 //	return exist
 }
 
-func GetImage(api router.API, filename string) Image {
+func GetImage(api router.API, id int) Image {
 	var images = Image{}
-	stmt, err := api.Context.Session.Prepare("SELECT file_name, title, date_added FROM images where file_name = ?")
+	stmt, err := api.Context.Session.Prepare("CALL getImage(?)")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(filename)
+	rows, err := stmt.Query(id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,10 +100,18 @@ func GetImage(api router.API, filename string) Image {
 
 		values := strings.Split(image.Location, ".")
 		if (len(values) == 2) {
-			image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]
-			image.Size.Medium = "/data/" +  values[0] + "_medium" + "." + values[1]
-			image.Size.Small = "/data/" +  values[0] + "_small" + "." + values[1]
-			image.Size.Thumb = "/data/" +  values[0] + "_thumb" + "." + values[1]
+			if (values[1] != "gif") {
+				image.Size.Large = "/data/" +  values[0] + "_large" + "." + values[1]
+				image.Size.Medium = "/data/" +  values[0] + "_medium" + "." + values[1]
+				image.Size.Small = "/data/" +  values[0] + "_small" + "." + values[1]
+				image.Size.Thumb = "/data/" +  values[0] + "_thumb" + "." + values[1]
+			} else {
+				image.Size.Large = "/data/" +  values[0] + "." + values[1]
+				image.Size.Medium = "/data/" +  values[0] + "." + values[1]
+				image.Size.Small = "/data/" +  values[0] + "." + values[1]
+				image.Size.Thumb = "/data/" +  values[0]  + "." + values[1]
+			}
+
 
 		}
 
@@ -174,21 +181,20 @@ func IsImageAvailable(api router.API, token string) bool {
 }
 
 func AddImageLocationToDb (api router.API, filename string, title string, original_name string, token string) bool {
-	userid := sessions.GetUserIdFromToken(api, token)
+	stmt, err := api.Context.Session.Prepare("CALL addImage(?, ?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
 
-	stmt, err := api.Context.Session.Prepare("INSERT INTO images (file_name, title, date_added, original_name, users_id) values (?, ?, ?, ?, ?)")
+	rows, err := stmt.Query(filename, title, original_name, token)
 
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
+	defer rows.Close()
 
-	_, err = stmt.Exec(filename, title, time.Now(), original_name, userid)
-	if (err != nil) {
-		return false
-	}
-
-	defer stmt.Close()
-	return true
+	return true;
 }
 
 
