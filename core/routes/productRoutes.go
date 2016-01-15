@@ -60,7 +60,6 @@ func generateProductRoutes (api router.API) {
 				mime = strings.SplitN(string(mime[0]), ":", 2)
 				mime = strings.SplitN(mime[1], ";", 2)
 				product.Filetype = mime[0]
-				//product.Image =  strings.SplitAfterN(product.Image, ",", 2)[1]
 
 				b64data := product.Image[strings.IndexByte(product.Image, ',')+1:]
 
