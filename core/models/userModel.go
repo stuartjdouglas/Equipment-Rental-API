@@ -7,7 +7,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"github.com/remony/Equipment-Rental-API/core/router"
-	"github.com/remony/Equipment-Rental-API/core/utils"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 )
 
@@ -33,13 +32,7 @@ type fullUser struct {
 	Password 	string `json:"password", bson:"password"`
 }
 
-type Auth struct {
-	Success		bool 		`json:"success"`
-	Username 	string 		`json:"username"`
-	Gravatar	string      	`json:"gravatar"`
-	Token 		string 		`json:"token"`
-	Expiry		time.Time   	`json:"expiry"`
-}
+
 
 type UserProfile struct {
 	ID int `json:"id"`
@@ -55,21 +48,6 @@ type UserProfile struct {
 type profile struct {
 	Profile	UserProfile    `json:"profile"`
 }
-// Logins in the User and returns an access token
-func LoginUser(api router.API, username string, password string) Auth {
-	var login Auth
-	if getAuthUser(api, username, password) {
-		// Generate the token
-		token := utils.GenerateToken(username)
-		indef := utils.GenerateToken(username)
-		// Add the token to the database
-		return addUserToken(api, username, token, indef, true);
-
-	} else {
-		return login
-	}
-	return login
-}
 
 // Returns the userid when given a username
 func getUserID(api router.API, username string) int {
@@ -81,101 +59,15 @@ func getUserID(api router.API, username string) int {
 	return id
 }
 
-
-// Adds a token into the database
-func addUserToken(api router.API, username string, token string, idenf string, active bool) Auth {
-	var login Auth
-	userid := getUserID(api, username)
-	stmt, err := api.Context.Session.Prepare("INSERT INTO tokens (token, user_id, date_generated, date_expires, idenf, active) values (?, ?, ?, ?, ?, ?)")
-
-	if err != nil {
-		panic(err)
-	}
-
-	res, err:= stmt.Exec(token, userid, time.Now(), time.Now().AddDate(0, 0, 7), idenf, active)
-	if (err != nil) {
-		panic(err)
-	}
-
-	res.RowsAffected()
-
-	defer stmt.Close()
-	login.Success = true
-	login.Username = username
-	login.Token = token
-	login.Gravatar = getGravatarString(api, token)
-	login.Expiry = time.Now().AddDate(0, 0, 7);
-
-	return login;
-}
-
-func getGravatarString(api router.API, token string) string {
-	userid := sessions.GetUserIdFromToken(api, token)
-
-	stmt, err := api.Context.Session.Prepare("SELECT email FROM users where id=?")
-
-	if err != nil {
-		panic(err)
-	}
-
-	rows, err := stmt.Query(userid)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	User := User{}
-
-	for rows.Next() {
-		var result tempUser
-		err := rows.Scan(
-			&result.Email,
-		)
-
-
-
-		if err != nil {
-			panic(err)
-		}
-
-		sum := md5.Sum([]byte(result.Email))
-		gravatar := hex.EncodeToString(sum[:])
-		User.Username = result.Username;
-		User.Gravatar = gravatar;
-
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return User.Gravatar;
-}
-
-// Checks if a User has given the correct details or not
-// TODO change name
-func getAuthUser(api router.API, username string, password string) bool {
-	var exist bool
-	err := api.Context.Session.QueryRow("SELECT EXISTS(SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "')").Scan(&exist)
-	if (err != nil) {
-		panic(err)
-	}
-
-	if exist {
-		return true
-	}
-	return false
-}
-
-
 // Returns User information when given a username
 //noinspection GoUnusedFunction
-func GetUser(api router.API, username string) User {
+func GetUser(api router.API, id string) User {
 	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users WHERE username = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(username)
+	rows, err := stmt.Query(id)
 	if err != nil {
 		log.Println(err)
 	}
@@ -205,7 +97,7 @@ func GetUser(api router.API, username string) User {
 // Checks if a User already exists
 func CheckIfUserExists(api router.API, username string) bool {
 	var exist bool
-	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE username = ?)", username).Scan(&exist)
+	err := api.Context.Session.QueryRow("CALL doesUserExist(?)", username).Scan(&exist)
 	if (err != nil) {
 		panic(err)
 	}
@@ -217,28 +109,7 @@ func CheckIfUserExists(api router.API, username string) bool {
 }
 
 
-// Registers the User
-func RegisterUser(api router.API, username string, password string, email string) bool {
-	stmt, err := api.Context.Session.Prepare("INSERT INTO users (username, password, email, first_name, last_name, location, date_registered) VALUES (?,?,?,?,?,?,?)")
 
-	if err != nil {
-		log.Fatal(err)
-		return false;
-	}
-
-
-	res, err:= stmt.Exec(username, password, email, "first_name", "last_name", "location", time.Now())
-	if (err != nil) {
-		panic(err)
-		return false;
-	}
-
-	_ = res
-
-	defer stmt.Close()
-
-	return true;
-}
 
 
 //noinspection GoUnusedFunction

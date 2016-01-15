@@ -4,11 +4,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
+	//"os/exec"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/config"
 	"github.com/remony/Equipment-Rental-API/core/server"
 	"github.com/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/utils/setup"
 )
 
 const confFile = "./config.json"
@@ -18,24 +19,24 @@ var clear map[string]func()
 func main() {
 	// Create the server and give it the config values
 	settings := config.LoadConfig(confFile, true)
-
 	args := os.Args
-
-
-
+	log.Println(args)
 	if len(args) > 1 {
-		if args[1] == "--install" {
-
+		if args[1] == "--setup" {
 			fmt.Println("INSTALLING!!!!")
-			log.Println("Installing Bower components")
-			cmd:= exec.Command("cls")
-			cmd.Stdout = os.Stdout
-			cmd.Run()
+			setup.Start(database.Connection(settings.Production.DbUrl))
+		} else if (args[1] == "--dev") {
+			start(1, settings);
 		}
-
 	} else {
+		start(0, settings);
+	}
+}
 
-		server.Start(settings, database.Connection(settings.Production.DbUrl))
-
+func start(mode int, settings config.Config) {
+	if (mode == 1) {
+		server.Start(settings, database.Connection(settings.Development.DbUrl), 1)
+	} else {
+		server.Start(settings, database.Connection(settings.Production.DbUrl), 0)
 	}
 }

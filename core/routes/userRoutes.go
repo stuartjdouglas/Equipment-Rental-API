@@ -6,6 +6,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"github.com/zenazn/goji/web"
+	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
 func generateUserRoutes(api router.API) {
@@ -27,8 +28,12 @@ func generateUserRoutes(api router.API) {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 		}
 
+
+
+
 		if !models.CheckIfUserExists(api, newdata.Username) {
-			if models.RegisterUser(api, newdata.Username, newdata.Password, newdata.Email) {
+			//hash := secure.SaltPassword(newdata.Password)
+			if database.RegisterUser(api, newdata.Username, newdata.Password, newdata.Email) {
 				res.Header().Set("Content-Type", "application/json")
 				res.WriteHeader(http.StatusCreated)
 				json.NewEncoder(res).Encode(error_response{Message:"User Created"})

@@ -10,7 +10,7 @@ angular.module('app.ownerItem', ['ngRoute'])
         });
     }
 ])
-.controller('ownerItemCtrl', ['$rootScope', '$scope', '$http', '$routeParams', function($rootScope, $scope, $http, $routeParams) {
+.controller('ownerItemCtrl', ['$rootScope', '$scope', '$http', '$routeParams', 'authFactory', function($rootScope, $scope, $http, $routeParams, authFactory) {
         $http({
             url: backend + "/product/" + $routeParams.id,
             method: 'GET',
@@ -21,6 +21,20 @@ angular.module('app.ownerItem', ['ngRoute'])
             $scope.error = true;
         });
 
+    $scope.deleteItem = function() {
+        console.log("deleteing");
+        $http({
+            url: backend + '/product/' + $routeParams.id + '/delete',
+            method: 'DELETE',
+            headers: {
+                'token': authFactory.getToken()
+            },
+        }).success(function (data, status, headers, config) {
 
+        }).
+        error(function (data, status, headers, config) {
+            $scope.error = true;
+        });
+    };
 
 }]);
