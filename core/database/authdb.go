@@ -78,6 +78,27 @@ func LoginUser(api router.API, username string) Auth {
 	return result
 }
 
+func RemoveUser(api router.API, username string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL removeUser(?)")
+
+	if err != nil {
+		log.Fatal(err)
+		return false;
+	}
+
+	res, err := stmt.Exec(username)
+	if (err != nil) {
+		panic(err)
+		return false;
+	}
+
+	_ = res
+
+	defer stmt.Close()
+
+	return true;
+}
+
 // Registers the User
 func RegisterUser(api router.API, username string, password []byte, email string) bool {
 	stmt, err := api.Context.Session.Prepare("CALL register(?,?,?,?,?)")

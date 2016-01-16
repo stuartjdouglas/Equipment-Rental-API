@@ -7,12 +7,20 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
 	"regexp"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 
 type Error_response struct {
 	Message string `json:"message"`
 }
+
+type Register struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email string `json:"email"`
+}
+
 func authLogin(password string, digest string) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(digest), []byte(password)); err != nil {
 		return false
@@ -21,7 +29,7 @@ func authLogin(password string, digest string) bool {
 	}
 }
 
-func isValidUsername(username string) bool{
+func isValidEntry(username string) bool{
 	if len(username) < 240 {
 		if ok, _ := regexp.MatchString("^[A-Za-z0-9]+$", username); ok {
 			log.Println(ok)
@@ -30,19 +38,13 @@ func isValidUsername(username string) bool{
 			return false
 		}
 	}
-
-
 	return false
-}
-
-func isValidPassword(password string) bool {
-	return true
 }
 
 func PerformLogin(api router.API, username string, password string) database.Auth {
 	var digest = database.GetDigest(api, username)
 	var login database.Auth
-	if isValidUsername(username) && isValidPassword(password) {
+	if isValidEntry(username) && isValidEntry(password) {
 		if(authLogin(password, digest)) {
 			log.Println("good login")
 			login = database.LoginUser(api, strings.ToLower(username))
@@ -60,4 +62,30 @@ func PerformLogin(api router.API, username string, password string) database.Aut
 		}
 	}
 
+}
+
+func PerformRegister(api router.API, data Register) bool {
+	if !models.CheckIfUserExists(api, data.Username) {
+		hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if database.RegisterUser(api, data.Username, hash, data.Email) {
+			return true;
+		} else {
+			return false;
+		}
+
+	} else {
+		return false;
+	}
+}
+
+func PerformRemoveUser(api router.API, data Register) bool {
+	if (models.CheckIfUserExists(api, data.Username)) {
+		database.RemoveUser(api, data.Username)
+		return true
+	}
+	return false
 }

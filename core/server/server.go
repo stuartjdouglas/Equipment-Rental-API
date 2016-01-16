@@ -8,7 +8,6 @@ import (
 	"github.com/hypebeast/gojistatic"
 	"github.com/rs/cors"
 	"github.com/remony/Equipment-Rental-API/core/config"
-	"github.com/remony/Equipment-Rental-API/core/config/database"
 	"github.com/remony/Equipment-Rental-API/core/routes"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
@@ -16,7 +15,7 @@ import (
 	"github.com/remony/lemonlog"
 )
 // Start handles all route configuration and starts the http server
-func Start(settings config.Config, context database.Context, mode int) {
+func Start(settings config.Config, context config.Context, mode int) {
 	log.Println("こんにちは, listening on port :" + strconv.Itoa(settings.Production.Port))
 
 	// Create the main router

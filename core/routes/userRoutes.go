@@ -6,9 +6,6 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"github.com/zenazn/goji/web"
-	"golang.org/x/crypto/bcrypt"
-	"log"
-"github.com/remony/Equipment-Rental-API/core/database"
 )
 
 func generateUserRoutes(api router.API) {
@@ -21,38 +18,6 @@ func generateUserRoutes(api router.API) {
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		res.Write(data)
-	})
-
-	api.Router.Post("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		newdata := register{}
-		err := json.NewDecoder(r.Body).Decode(&newdata)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusBadRequest)
-		}
-
-
-
-
-		if !models.CheckIfUserExists(api, newdata.Username) {
-			hash, err := bcrypt.GenerateFromPassword([]byte(newdata.Password), bcrypt.MinCost)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if database.RegisterUser(api, newdata.Username, hash, newdata.Email) {
-				res.Header().Set("Content-Type", "application/json")
-				res.WriteHeader(http.StatusCreated)
-				json.NewEncoder(res).Encode(error_response{Message:"User Created"})
-			} else {
-				res.Header().Set("Content-Type", "application/json")
-				res.WriteHeader(http.StatusInternalServerError)
-				json.NewEncoder(res).Encode(error_response{Message:"User not created: Something went wrong"})
-			}
-		} else {
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(http.StatusConflict)
-			json.NewEncoder(res).Encode(error_response{Message:"User not created: Already exists"})
-		}
 	})
 
 	api.Router.Get("/users", func (c web.C, res http.ResponseWriter, r *http.Request) {

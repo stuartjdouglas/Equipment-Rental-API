@@ -19,12 +19,6 @@ type hello struct {
 	Message string `json:"message"`
 }
 
-type register struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email string `json:"email"`
-}
-
 type error_response struct {
 	Message string `json:"message"`
 }

@@ -219,6 +219,25 @@ CALL register("lemon", "test", "lemon@lemondev.xyz", "lemon", "yamano");
 
 select * from users;
 
+#
+#   Remove user
+#   > Later on we will want to limit this to only admins and the defined user by using there token
+#
+DROP PROCEDURE removeUser;
+CALL removeUser("lemontest");
+
+CREATE PROCEDURE `removeUser`(u_name VARCHAR(240))
+  BEGIN
+    DECLARE UID INT;
+    SELECT id into UID from users where username = u_name;
+    DELETE FROM tokens WHERE user_id = UID;
+    DELETE FROM users WHERE username = u_name;
+  END;
+
+#
+#   Does User Exist
+#
+
 DROP PROCEDURE doesUserExist;
 
 CALL doesUserExist("lemon");
@@ -316,8 +335,8 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     DELETE from products_has_images where products_id = pid;
     DELETE from images where id = iid;
     DELETE from has where products_id = pid;
-    DELETE from products where id = pid;
     DELETE from user_rent_product where products_id = pid;
+    DELETE from products where id = pid;
 
   END;
 

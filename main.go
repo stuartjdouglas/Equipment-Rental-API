@@ -8,7 +8,6 @@ import (
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/config"
 	"github.com/remony/Equipment-Rental-API/core/server"
-	"github.com/remony/Equipment-Rental-API/core/config/database"
 	"github.com/remony/Equipment-Rental-API/core/utils/setup"
 )
 
@@ -24,7 +23,7 @@ func main() {
 	if len(args) > 1 {
 		if args[1] == "--setup" {
 			fmt.Println("INSTALLING!!!!")
-			setup.Start(database.Connection(settings.Production.DbUrl))
+			setup.Start(config.Connection(settings.Production.DbUrl))
 		} else if (args[1] == "--dev") {
 			start(1, settings);
 		}
@@ -35,8 +34,8 @@ func main() {
 
 func start(mode int, settings config.Config) {
 	if (mode == 1) {
-		server.Start(settings, database.Connection(settings.Development.DbUrl), 1)
+		server.Start(settings, config.Connection(settings.Development.DbUrl), 1)
 	} else {
-		server.Start(settings, database.Connection(settings.Production.DbUrl), 0)
+		server.Start(settings, config.Connection(settings.Production.DbUrl), 0)
 	}
 }

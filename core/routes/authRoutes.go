@@ -23,7 +23,23 @@ func generateAuthRoutes(api router.API)	{
 		//		Call method to remove token
 	})
 
+	api.Router.Post("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		newdata := auth.Register{}
+		err := json.NewDecoder(r.Body).Decode(&newdata)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+		}
 
+		if auth.PerformRegister(api, newdata) {
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusCreated)
+			json.NewEncoder(res).Encode(error_response{Message:"User Created"})
+		} else {
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(res).Encode(error_response{Message:"User not created: Something went wrong"})
+		}
+	})
 
 
 	api.Router.Post("/login", func (c web.C, res http.ResponseWriter, r *http.Request) {

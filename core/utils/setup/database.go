@@ -2,15 +2,15 @@ package setup
 
 import (
 	"log"
-	"github.com/remony/Equipment-Rental-API/core/config/database"
+	"github.com/remony/Equipment-Rental-API/core/config"
 )
 
-func Start(context database.Context) {
+func Start(context config.Context) {
 	log.Println("Setting up database")
 	setupdb(context)
 }
 
 
-func setupdb(db database.Context) {
+func setupdb(db config.Context) {
 
 }
