@@ -5,10 +5,10 @@ import(
 	"net/http"
 	"github.com/zenazn/goji/web"
 	"github.com/remony/Equipment-Rental-API/core/router"
-	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"github.com/remony/Equipment-Rental-API/core/database"
-	"github.com/remony/Equipment-Rental-API/core/models/auth"
+	"github.com/remony/Equipment-Rental-API/core/models"
 )
+
 type tokenremoved struct {
 	ID	string `json:"id"`
 	Message string `json:"message"`
@@ -24,13 +24,13 @@ func generateAuthRoutes(api router.API)	{
 	})
 
 	api.Router.Post("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
-		newdata := auth.Register{}
+		newdata := models.Register{}
 		err := json.NewDecoder(r.Body).Decode(&newdata)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 		}
 
-		if auth.PerformRegister(api, newdata) {
+		if models.PerformRegister(api, newdata) {
 			res.Header().Set("Content-Type", "application/json")
 			res.WriteHeader(http.StatusCreated)
 			json.NewEncoder(res).Encode(error_response{Message:"User Created"})
@@ -57,7 +57,7 @@ func generateAuthRoutes(api router.API)	{
 		}
 
 		var login database.Auth;
-		login = auth.PerformLogin(api, loginDetails.Username, loginDetails.Password)
+		login = models.PerformLogin(api, loginDetails.Username, loginDetails.Password)
 
 		if(login.Success) {
 			data, err := json.Marshal(login)
@@ -82,10 +82,10 @@ func generateAuthRoutes(api router.API)	{
 
 
 		if (token != "" && idenf != "") {
-			if (sessions.IsSessionValid(api, token)) {
+			if (models.IsSessionValid(api, token)) {
 
 
-				removal := sessions.DisableToken(api, idenf)
+				removal := models.DisableToken(api, idenf)
 
 				if (removal) {
 

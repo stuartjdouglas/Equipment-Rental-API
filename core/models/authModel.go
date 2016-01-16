@@ -1,4 +1,4 @@
-package auth
+package models
 
 import (
 	"golang.org/x/crypto/bcrypt"
@@ -7,7 +7,6 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
 	"regexp"
-	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
 
@@ -32,7 +31,6 @@ func authLogin(password string, digest string) bool {
 func isValidEntry(username string) bool{
 	if len(username) < 240 {
 		if ok, _ := regexp.MatchString("^[A-Za-z0-9]+$", username); ok {
-			log.Println(ok)
 			return true
 		} else {
 			return false
@@ -46,12 +44,10 @@ func PerformLogin(api router.API, username string, password string) database.Aut
 	var login database.Auth
 	if isValidEntry(username) && isValidEntry(password) {
 		if(authLogin(password, digest)) {
-			log.Println("good login")
 			login = database.LoginUser(api, strings.ToLower(username))
 			return login;
 
 		} else {
-			log.Println("bad login")
 			return database.Auth {
 				Success: false,
 			}
@@ -65,7 +61,7 @@ func PerformLogin(api router.API, username string, password string) database.Aut
 }
 
 func PerformRegister(api router.API, data Register) bool {
-	if !models.CheckIfUserExists(api, data.Username) {
+	if !database.CheckIfUserExists(api, data.Username) {
 		hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
 		if err != nil {
 			log.Fatal(err)
@@ -83,9 +79,10 @@ func PerformRegister(api router.API, data Register) bool {
 }
 
 func PerformRemoveUser(api router.API, data Register) bool {
-	if (models.CheckIfUserExists(api, data.Username)) {
+	if (database.CheckIfUserExists(api, data.Username)) {
 		database.RemoveUser(api, data.Username)
 		return true
 	}
 	return false
 }
+

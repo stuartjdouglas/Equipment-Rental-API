@@ -1,8 +1,9 @@
-package sessions
+package models
 import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
 	"time"
+	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
 type Session struct{
@@ -61,8 +62,8 @@ func DisableToken(api router.API, token string) bool {
 	return true
 }
 
-func GetSession(api router.API, token string) []Session {
-	sessions := []Session{}
+func GetSession(api router.API, token string) Session {
+	sessions := Session{}
 
 	stmt, err := api.Context.Session.Prepare("SELECT date_generated, date_expires, idenf, active FROM tokens WHERE token = ?")
 
@@ -90,7 +91,7 @@ func GetSession(api router.API, token string) []Session {
 		if err != nil {
 			panic(err)
 		}
-		sessions = append(sessions, sess)
+		sessions = sess
 	}
 
 	if err = rows.Err(); err != nil {
@@ -103,7 +104,7 @@ func GetSession(api router.API, token string) []Session {
 
 func GetSessions(api router.API, token string) Sessions {
 	result := []Session{}
-	userid := GetUserIdFromToken(api, token)
+	userid := database.GetUserIdFromToken(api, token)
 
 	stmt, err := api.Context.Session.Prepare("SELECT date_generated, date_expires, idenf, active FROM tokens WHERE user_id = ? AND active = 1")
 	if err != nil {
@@ -137,61 +138,7 @@ func GetSessions(api router.API, token string) Sessions {
 	return Sessions{Sessions:result, Total: len(result)}
 }
 
-func GetUserNameFromToken(api router.API, token string) string {
-	stmt, err := api.Context.Session.Prepare("CALL getUsername(?)")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(token)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
 
-	var username string
 
-	for rows.Next() {
-		err := rows.Scan(
-			&username,
-		)
 
-		if err != nil {
-			panic(err)
-		}
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return username;
-}
-
-func GetUserIdFromToken(api router.API, token string) int {
-	stmt, err := api.Context.Session.Prepare("SELECT user_id FROM tokens where token=?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(token)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	var id int
-
-	for rows.Next() {
-		err := rows.Scan(
-			&id,
-		)
-
-		if err != nil {
-			panic(err)
-		}
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return id;
-}
 

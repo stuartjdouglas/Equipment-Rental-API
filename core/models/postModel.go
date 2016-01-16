@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
-	"github.com/remony/Equipment-Rental-API/core/models/sessions"
+	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
 type Posts struct {
@@ -36,38 +36,9 @@ func CheckIfPostExists (api router.API, slug string) bool {
 	return false
 }
 
-func getUsername(api router.API, userid int) string {
-	stmt, err := api.Context.Session.Prepare("SELECT username FROM users where id=?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(userid)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	var username string
-
-	for rows.Next() {
-		err := rows.Scan(
-			&username,
-		)
-
-		if err != nil {
-			panic(err)
-		}
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return username;
-}
-
 func CreatePost(api router.API, post Post, token string, slug string) bool {
-	userid := sessions.GetUserIdFromToken(api, token)
-	author := getUsername(api, userid)
+	userid := database.GetUserIdFromToken(api, token)
+	author := GetUsername(api, userid)
 	stmt, err := api.Context.Session.Prepare("INSERT INTO posts (title, slug, author, content, date_created, date_edited, users_id) values (?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {

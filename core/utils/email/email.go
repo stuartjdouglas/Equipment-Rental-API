@@ -1,9 +1,9 @@
 package email
 import (
 	"github.com/go-gomail/gomail"
-	"strconv"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"strconv"
 )
 
 
@@ -14,18 +14,20 @@ type Email struct {
 
 }
 // SendEmail sends an email using example from https://godoc.org/gopkg.in/gomail.v2#example-package
-func SendEmail(api router.API, receipt string, subject string, body string) {
+func SendEmail(api router.API, receipt string, subject string, body string) bool {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "test@test.com")
 	m.SetHeader("To", receipt)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
 
-	port, err := strconv.Atoi(api.Config.Development.Email.Port)
 
+	port, err := strconv.Atoi(api.Config.Development.Email.Port)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+
+
 	d := gomail.NewPlainDialer(
 		api.Config.Development.Email.Hostname,
 		port,
@@ -34,8 +36,8 @@ func SendEmail(api router.API, receipt string, subject string, body string) {
 	)
 
 	if err := d.DialAndSend(m); err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
-
-
+	return true;
 }

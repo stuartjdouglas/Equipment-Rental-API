@@ -250,9 +250,7 @@ CREATE PROCEDURE `doesUserExist` (u_name VARCHAR(240))
 #
 #   Get Digest
 #
-CALL
-
-CREATE PROCEDURE  `getDigest` (u_name VARCHAR(240))
+CREATE PROCEDURE `getDigest` (u_name VARCHAR(240))
   BEGIN
     SELECT password FROM users WHERE username = u_name;
   END;
@@ -304,14 +302,14 @@ CALL imageExists('1OxlR3nLip');
 SELECT id FROM images where file_name = 'EDH86AiKEx.jpg';
 
 DROP PROCEDURE createProduct;
-call createProduct("item3","something3","2015-12-27","2015-12-27","something",7,0,1);
+call createProduct("item3","something3","2015-12-27","2015-12-27","something",7,0,16);
 
 CREATE PROCEDURE createProduct (product_name VARCHAR(240), product_id VARCHAR(240), date_added DATETIME, date_updated DATETIME, product_description VARCHAR(240), product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT)
   BEGIN
     DECLARE imgid INT;
     SELECT id INTO imgid FROM images where file_name = product_image_id ORDER BY date_added DESC;
     INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid)
-    values (product_name,product_id,date_added,date_updated,product_description,product_rental_period_limit,ownerid);
+    values (product_name,product_id,date_added,date_updated,product_description,product_rental_period_limit,owner_id);
     SET @last_id = LAST_INSERT_ID();
     INSERT INTO has (users_id, products_id, status) VALUES (owner_id, @last_id, 0);
     INSERT INTO products_has_images (products_id, images_id) VALUES(@last_id, imgid);
@@ -429,7 +427,7 @@ CREATE PROCEDURE ReturnItem (o_token VARCHAR(240), product VARCHAR(240))
 #
 
 DROP PROCEDURE ReturnItemAsOwner;
-CALL ReturnItemAsOwner("a208d08d-0ae1-4561-88e7-2e0bee21e121", "4c0bc251-bc9a-4a95-9612-a883bc6877ad");
+CALL ReturnItemAsOwner("33c49783-f059-42d5-b5c2-6234eb8a5b78", "f4025ccb-3656-4975-a9ee-0bba89e085db");
 
 CREATE PROCEDURE ReturnItemAsOwner (o_token VARCHAR(240), product VARCHAR(240))
   BEGIN
@@ -443,9 +441,9 @@ CREATE PROCEDURE ReturnItemAsOwner (o_token VARCHAR(240), product VARCHAR(240))
     select products_id, users_id INTO pid, uid FROM user_rent_product
     LEFT JOIN products ON user_rent_product.products_id = products.id
     WHERE product_id = product and ownerid = tmp_u_id;
-# select pid;
     DELETE FROM user_rent_product WHERE users_id = uid AND products_id = pid;
   END;
+
 
 #
 # Check Item Availabibility

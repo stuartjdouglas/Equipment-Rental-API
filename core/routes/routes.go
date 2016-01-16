@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zenazn/goji/web"
-	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
 
@@ -47,7 +47,7 @@ func CreateRoutes (api router.API) {
 
 	api.Router.Get("/hello", func (c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {
-			result := models.GetHello(api, r.Header.Get("token"))
+			result := database.GetHello(api, r.Header.Get("token"))
 			data, err := json.Marshal(result)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)

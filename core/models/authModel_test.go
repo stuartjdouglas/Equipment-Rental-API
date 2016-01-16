@@ -1,12 +1,10 @@
-package auth
+package models
 
 import (
 	"testing"
 	. "github.com/franela/goblin"
-
 	"github.com/remony/Equipment-Rental-API/core/config"
 	"github.com/remony/Equipment-Rental-API/core/router"
-
 	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
