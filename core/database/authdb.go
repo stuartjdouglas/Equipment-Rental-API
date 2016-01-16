@@ -15,17 +15,45 @@ type Auth struct {
 	Expiry   time.Time        `json:"expiry"`
 }
 
-func LoginUser(api router.API, username string, password string) Auth {
-	token := utils.GenerateToken(username)
-	indef := utils.GenerateToken(username)
-
-	stmt, err := api.Context.Session.Prepare("CALL login(?, ?, ?, ?)")
+func GetDigest(api router.API, username string) string {
+	stmt, err := api.Context.Session.Prepare("CALL getDigest(?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(username, password, token, indef)
+	rows, err := stmt.Query(username)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var result string
+
+	for rows.Next() {
+		err := rows.Scan(
+			&result,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	return result
+}
+
+func LoginUser(api router.API, username string) Auth {
+	token := utils.GenerateToken(username)
+	indef := utils.GenerateToken(username)
+
+	stmt, err := api.Context.Session.Prepare("CALL login(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(username, token, indef)
 
 	if err != nil {
 		log.Println(err)
@@ -51,8 +79,8 @@ func LoginUser(api router.API, username string, password string) Auth {
 }
 
 // Registers the User
-func RegisterUser(api router.API, username string, password string, email string) bool {
-	stmt, err := api.Context.Session.Prepare("CALL register(?,?,?,?, ?)")
+func RegisterUser(api router.API, username string, password []byte, email string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL register(?,?,?,?,?)")
 
 	if err != nil {
 		log.Fatal(err)

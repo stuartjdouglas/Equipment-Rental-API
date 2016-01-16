@@ -4,10 +4,10 @@ import(
 	"encoding/json"
 	"net/http"
 	"github.com/zenazn/goji/web"
-	"strings"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"github.com/remony/Equipment-Rental-API/core/database"
+	"github.com/remony/Equipment-Rental-API/core/models/auth"
 )
 type tokenremoved struct {
 	ID	string `json:"id"`
@@ -27,11 +27,12 @@ func generateAuthRoutes(api router.API)	{
 
 
 	api.Router.Post("/login", func (c web.C, res http.ResponseWriter, r *http.Request) {
+		// Get username and password from form
 		var loginDetails = login{
 			Username: r.FormValue("username"),
 			Password: r.FormValue("password"),
 		}
-
+		// If any of the values are empty, check the json body for login and password
 		if len(loginDetails.Username) == 0 || len(loginDetails.Password) == 0{
 			err := json.NewDecoder(r.Body).Decode(&loginDetails)
 			if err != nil {
@@ -39,8 +40,8 @@ func generateAuthRoutes(api router.API)	{
 			}
 		}
 
-		var login database.Auth
-		login = database.LoginUser(api, strings.ToLower(loginDetails.Username), loginDetails.Password)
+		var login database.Auth;
+		login = auth.PerformLogin(api, loginDetails.Username, loginDetails.Password)
 
 		if(login.Success) {
 			data, err := json.Marshal(login)
@@ -56,6 +57,7 @@ func generateAuthRoutes(api router.API)	{
 			res.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(res).Encode(error_response{Message:"Invalid Username or Password"})
 		}
+
 	})
 
 	api.Router.Delete("/session", func (c web.C, res http.ResponseWriter, r *http.Request) {

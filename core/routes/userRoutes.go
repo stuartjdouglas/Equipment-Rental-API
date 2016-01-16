@@ -6,7 +6,9 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"github.com/remony/Equipment-Rental-API/core/models/sessions"
 	"github.com/zenazn/goji/web"
-	"github.com/remony/Equipment-Rental-API/core/database"
+	"golang.org/x/crypto/bcrypt"
+	"log"
+"github.com/remony/Equipment-Rental-API/core/database"
 )
 
 func generateUserRoutes(api router.API) {
@@ -32,8 +34,12 @@ func generateUserRoutes(api router.API) {
 
 
 		if !models.CheckIfUserExists(api, newdata.Username) {
-			//hash := secure.SaltPassword(newdata.Password)
-			if database.RegisterUser(api, newdata.Username, newdata.Password, newdata.Email) {
+			hash, err := bcrypt.GenerateFromPassword([]byte(newdata.Password), bcrypt.MinCost)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if database.RegisterUser(api, newdata.Username, hash, newdata.Email) {
 				res.Header().Set("Content-Type", "application/json")
 				res.WriteHeader(http.StatusCreated)
 				json.NewEncoder(res).Encode(error_response{Message:"User Created"})

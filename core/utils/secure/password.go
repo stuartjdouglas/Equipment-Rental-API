@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-const saltSize = 32
+const saltSize = 64
 
 func SaltPassword(password string) []byte {
 	buffer := make([]byte, saltSize, saltSize + sha512.Size)

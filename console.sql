@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS `honoursproject`.`has` ;
 DROP TABLE IF EXISTS `honoursproject`.`products` ;
 DROP TABLE IF EXISTS `honoursproject`.`users` ;
 
+ALTER TABLE `users` DROP COLUMN Salt;
 CREATE TABLE IF NOT EXISTS `honoursproject`.`users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(45) NOT NULL,
@@ -228,29 +229,32 @@ CREATE PROCEDURE `doesUserExist` (u_name VARCHAR(240))
   END;
 
 #
+#   Get Digest
+#
+CALL
+
+CREATE PROCEDURE  `getDigest` (u_name VARCHAR(240))
+  BEGIN
+    SELECT password FROM users WHERE username = u_name;
+  END;
+
+#
 #    Login
 #
 DROP PROCEDURE  login;
-CALL login('lemon', 'e904d2db7a1baad46a7809ab9ec3d261d1691bb7e0cfc83c5015b31ed93089bb34d0c71f423465e2e59276378247e3c1f0acd13ca2ddb10818c1502e7fc01028', 'bestToken', 'lookToken');
+CALL login('remon', 'bestToken', 'lookToken');
 
-CREATE PROCEDURE `login` (u_name VARCHAR(240), u_password VARCHAR(240), u_token VARCHAR(240), u_idenf VARCHAR(240))
+CREATE PROCEDURE `login` (u_name VARCHAR(240), u_token VARCHAR(240), u_idenf VARCHAR(240))
   BEGIN
-    DECLARE correctDetails BOOLEAN;
-    DECLARE userid int;
-
+    DECLARE userid INT;
     SELECT id INTO userid FROM users WHERE username = u_name;
-    SELECT EXISTS (SELECT username FROM users WHERE username = u_name AND password = u_password) INTO correctDetails;
 
-    if (correctDetails) THEN
-      INSERT INTO tokens (token, user_id, date_generated, date_expires, idenf, active)
-      VALUES(u_token, userid, NOW(), NOW() + INTERVAL 7 DAY, u_idenf, true);
+    INSERT INTO tokens (token, user_id, date_generated, date_expires, idenf, active)
+    VALUES(u_token, userid, NOW(), NOW() + INTERVAL 7 DAY, u_idenf, true);
 
-      select true as success, username, md5(email) as gravatar, u_token as token, NOW() + INTERVAL 7 DAY as expiry from users
-      WHERE username = u_name;
-    ELSE
-      select FALSE, username, md5(email), "null", NOW() from users
-      WHERE username = u_name;
-    END IF;
+    select true as success, username, md5(email) as gravatar, u_token as token, NOW() + INTERVAL 7 DAY as expiry from users
+    WHERE username = u_name;
+
   END;
 
 DROP PROCEDURE addImage;
@@ -694,7 +698,16 @@ CREATE PROCEDURE getIndex()
     SELECT Title as title, description as description FROM Site where id = 1;
   END;
 
+DROP PROCEDURE updateSite;
+CALL updateSite("lemon rental", "test");
+
+#
+#   Update Site
+#   Update the meta data of the website
+#
+
 CREATE PROCEDURE updateSite(s_title VARCHAR(240), s_description VARCHAR(240))
   BEGIN
-
+    UPDATE Site SET Title = s_title, Description = s_description
+    WHERE id = 0;
   END;
