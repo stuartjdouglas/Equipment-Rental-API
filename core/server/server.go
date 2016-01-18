@@ -22,9 +22,10 @@ func Start(settings config.Config, context config.Context, mode int) {
 	masterRouter := web.New()
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "DELETE"},
-		AllowCredentials: true,
+		AllowedMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"*"},
+		AllowCredentials: true,
+		OptionsPassthrough : false,
 	})
 
 	//Create subroutes
@@ -35,7 +36,7 @@ func Start(settings config.Config, context config.Context, mode int) {
 
 	masterRouter.Handle("/api/*", apiRouter)
 	masterRouter.Handle("/data/*", imageRouter)
-	masterRouter.Handle("/*", http.FileServer(http.Dir("./client/app")))
+	masterRouter.Handle("/*", http.FileServer(http.Dir("/var/www/equipment-rental-website/app")))
 
 	// Apply SubRouter middleware to allow sub routing
 	apiRouter.Use(middleware.SubRouter)
@@ -48,6 +49,8 @@ func Start(settings config.Config, context config.Context, mode int) {
 
 	// Apply the CORS options to the main route handler
 	masterRouter.Use(c.Handler)
+	// apiRouter.Use(c.Handler)
+	// imageRouter.Use(c.Handler)
 	if (mode == 1) {
 		masterRouter.Use(lemonlog.Logger)
 	}

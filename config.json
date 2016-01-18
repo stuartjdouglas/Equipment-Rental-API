@@ -2,7 +2,7 @@
     "development": {
         "type": "",
         "title": "Default Title",
-        "port": 3000,
+        "port": 3001,
         "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
         "email": {
             "hostname": "smtp.mailgun.org",
