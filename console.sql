@@ -380,19 +380,19 @@ CREATE PROCEDURE getImage(pid INT)
 # Rent Item
 #
 
-call RentItem ("something3", "remon");
 DROP PROCEDURE RentItem;
+call RentItem ("1cea1430-3a53-4e7a-9834-c52137ab8b5e", "remon");
 
-CREATE PROCEDURE RentItem (product VARCHAR(240), usrname VARCHAR(240))
+CREATE PROCEDURE RentItem (u_pid VARCHAR(240), usrname VARCHAR(240))
   BEGIN
     DECLARE userid INT;
     DECLARE days INT;
-    DECLARE productid INT;
+    DECLARE pid INT;
 
     SELECT id INTO userid FROM users WHERE username = usrname;
-    SELECT id, product_rental_period_limit INTO productid, days FROM products WHERE product_id = product LIMIT 1;
-
-    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due) VALUES (productid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY));
+    SELECT id, product_rental_period_limit INTO pid, days FROM products WHERE product_id = u_pid;
+#     SELECT days;
+    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due) VALUES (pid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY));
   END;
 
 #
@@ -401,7 +401,7 @@ CREATE PROCEDURE RentItem (product VARCHAR(240), usrname VARCHAR(240))
 
 DROP PROCEDURE ReturnItem;
 
-CALL ReturnItem("5f7f2bfb-c8f8-44e6-b05d-f8e59adc1722", "2d85d358-736a-405a-b6ac-9c0fe5af29ff");
+CALL ReturnItem("14afe718-3b4d-4193-a8a0-d8401f9a4a01", "1cea1430-3a53-4e7a-9834-c52137ab8b5e");
 
 CREATE PROCEDURE ReturnItem (o_token VARCHAR(240), product VARCHAR(240))
   BEGIN
@@ -450,21 +450,20 @@ CREATE PROCEDURE ReturnItemAsOwner (o_token VARCHAR(240), product VARCHAR(240))
 #
 
 DROP PROCEDURE checkItemAvailability;
-CALL checkItemAvailability("works so well", "remon");
+CALL checkItemAvailability("1cea1430-3a53-4e7a-9834-c52137ab8b5e", "remon");
 
 CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(240))
 BEGIN
   DECLARE due_date DATETIME;
-  DECLARE activestate BOOLEAN;
 
-  SELECT date_due, active INTO due_date, activestate FROM user_rent_product
+  SELECT date_due INTO due_date FROM user_rent_product
     LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
     LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
     WHERE products.product_id = product
     ORDER BY products.date_updated DESC;
 
-    if (due_date > NOW() || activestate) THEN
-      select FALSE , due_date;
+    if (due_date > NOW()) THEN
+        select FALSE , due_date;
       ELSE
         select TRUE as Available, NOW();
     END IF;
