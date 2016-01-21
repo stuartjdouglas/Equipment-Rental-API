@@ -36,7 +36,7 @@ func Start(settings config.Config, context config.Context, mode int) {
 
 	masterRouter.Handle("/api/*", apiRouter)
 	masterRouter.Handle("/data/*", imageRouter)
-	masterRouter.Handle("/*", http.FileServer(http.Dir("/var/www/equipment-rental-website/app")))
+	masterRouter.Handle("/*", http.FileServer(http.Dir("C:/Users/remon/Git/equipment-rental-website/app")))
 
 	// Apply SubRouter middleware to allow sub routing
 	apiRouter.Use(middleware.SubRouter)

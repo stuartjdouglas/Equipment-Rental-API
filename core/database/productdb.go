@@ -1,29 +1,36 @@
 package database
+
 import (
 	"time"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"strings"
 )
 
 type Items struct {
 	Items []Item `json:"items"`
-	Total int 	`json:"total"`
+	Total int        `json:"total"`
 }
 
 type Item struct {
-	Product_name			string 		`json:"title"`
-	Product_id			string 		`json:"id"`
-	Date_added 			time.Time	`json:"date_added"`
-	Date_updated			time.Time 	`json:"date_updated"`
-	Product_description		string		`json:"description"`
-	Product_rental_period_limit	int64 		`json:"product_rental_period_limit"`
-	Owner 				User   		`json:"owner"`
-	Image				Image           `json:"image"`
+	Product_name                string                `json:"title"`
+	Product_id                  string                `json:"id"`
+	Date_added                  time.Time        `json:"date_added"`
+	Date_updated                time.Time        `json:"date_updated"`
+	Product_description         string                `json:"description"`
+	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
+	Owner                       User                `json:"owner"`
+	Image                       Image           `json:"image"`
+	Tags                        []Tag                `json:"tags"`
+}
+
+type Tag struct {
+	Title string `json:"tag"`
 }
 
 type Result struct {
-	Results	Items 		`json:"results"` // The returned results
-	Total	int        	`json:"total"` // The total number of results
+	Results Items                `json:"results"` // The returned results
+	Total   int                `json:"total"`     // The total number of results
 }
 
 func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string) bool {
@@ -36,7 +43,7 @@ func CreateProduct(api router.API, product_name string, product_description stri
 		panic(err)
 	}
 
-	res, err:= stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid)
+	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid)
 	if (err != nil) {
 		log.Println(err)
 		return false
@@ -48,7 +55,7 @@ func CreateProduct(api router.API, product_name string, product_description stri
 	return true
 }
 
-func GetProducts (api router.API) Items {
+func GetProducts(api router.API) Items {
 	var content = []Item{}
 	stmt, err := api.Context.Session.Prepare("CALL getListing()")
 
@@ -62,7 +69,6 @@ func GetProducts (api router.API) Items {
 	}
 	defer rows.Close()
 
-
 	for rows.Next() {
 		var result Item
 		var tmpuserid int
@@ -75,7 +81,10 @@ func GetProducts (api router.API) Items {
 			&result.Date_updated,
 			&result.Product_description,
 			&result.Product_rental_period_limit,
+			&postid,
 		)
+
+		result.Tags = getTags(api, result.Product_id);
 
 		result.Image = GetImage(api, postid)
 		result.Owner = GetUser(api, GetUsername(api, tmpuserid))
@@ -92,7 +101,53 @@ func GetProducts (api router.API) Items {
 	return Items{Items: content, Total: len(content)}
 }
 
-func GetProductsPaging (api router.API, step int, count int) Items {
+func filterTags(tag string) []Tag {
+	var tags []Tag
+	tmp := strings.Split(tag, ", ")
+	for i := 0; i < len(tmp); i++ {
+		var newTag Tag
+		newTag.Title = tmp[i]
+		tags = append(tags, newTag)
+	}
+	return tags
+}
+
+func getTags(api router.API, pid string) []Tag {
+	var tags = []Tag{}
+
+	stmt, err := api.Context.Session.Prepare("CALL GetTags(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Tag
+		err := rows.Scan(
+			&result.Title,
+		)
+
+		if err != nil {
+			log.Println("Getting tags scanning")
+			panic(err)
+		}
+
+		tags = append(tags, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return tags
+}
+
+func GetProductsPaging(api router.API, step int, count int) Items {
 
 	var content = []Item{}
 
@@ -123,6 +178,8 @@ func GetProductsPaging (api router.API, step int, count int) Items {
 			&tmpuserid,
 		)
 
+		result.Tags = getTags(api, result.Product_id)
+
 		result.Image = GetImage(api, image_id)
 
 		if err != nil {
@@ -145,22 +202,21 @@ func GetProductsPaging (api router.API, step int, count int) Items {
 }
 
 type RentItems struct {
-	ID 		string 		`json:"id"`
-	Title 		string 		`json:"title"`
-	Description 	string 		`json:"description"`
-	Due 		time.Time 	`json:"due"`
-	Received 	time.Time 	`json:"received"`
-	Images 		Image 		`json:"images"`
-	Owner 		User 		`json:"owner"`
+	ID          string                `json:"id"`
+	Title       string                `json:"title"`
+	Description string                `json:"description"`
+	Due         time.Time        `json:"due"`
+	Received    time.Time        `json:"received"`
+	Images      Image                `json:"images"`
+	Owner       User                `json:"owner"`
 }
 
 type RentResult struct {
-	Items []RentItems 	`json:"items"`
-	Total int 		`json:"total"`
+	Items []RentItems        `json:"items"`
+	Total int                `json:"total"`
 }
 
-
-func GetCurrentlyRentedProducts (api router.API, token string, step int, count int) RentResult {
+func GetCurrentlyRentedProducts(api router.API, token string, step int, count int) RentResult {
 
 	var content = []RentItems{}
 	username := GetUserNameFromToken(api, token)
@@ -284,7 +340,6 @@ func getCount(api router.API, query string) int {
 		}
 		defer rows.Close()
 
-
 		for rows.Next() {
 			err = rows.Scan(
 				&count,
@@ -298,12 +353,11 @@ func getCount(api router.API, query string) int {
 			log.Fatal(err)
 		}
 
-
 	}
 	return count;
 }
 
-func GetProductFromOwner (api router.API, username string) Items {
+func GetProductFromOwner(api router.API, username string) Items {
 	var content = []Item{}
 	//	user:= getUserID(api, username)
 	//	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products where users_id=? ")
@@ -356,8 +410,9 @@ func GetProductFromOwner (api router.API, username string) Items {
 	return Items{Items: content, Total: len(content)}
 }
 
-func GetProductFromID (api router.API, id string) Items {
+func GetProductFromID(api router.API, id string) Items {
 	var content = []Item{}
+	log.Println("getting product " + id)
 	stmt, err := api.Context.Session.Prepare("Call getProduct(?)")
 	if err != nil {
 		log.Fatal(err)
@@ -369,11 +424,11 @@ func GetProductFromID (api router.API, id string) Items {
 	}
 	defer rows.Close()
 
-
 	for rows.Next() {
 		var result Item
 		var imageid int
 		var username string
+		var tags string
 		err := rows.Scan(
 			&result.Product_name,
 			&result.Product_id,
@@ -383,11 +438,16 @@ func GetProductFromID (api router.API, id string) Items {
 			&result.Product_rental_period_limit,
 			&username,
 			&imageid,
+			&tags,
 		)
+
 		if err != nil {
 			panic(err)
 		}
 
+
+
+		result.Tags = filterTags(tags)
 		result.Image = GetImage(api, imageid)
 		if err != nil {
 			panic(err)
@@ -404,24 +464,24 @@ func GetProductFromID (api router.API, id string) Items {
 
 type Availability struct {
 	Available bool `json:"available"`
-	Date time.Time `json:"date"`
+	Date      time.Time `json:"date"`
 }
 
 type RentalStatus struct {
-	Owner		bool  	    `json:"owner"`
-	Available	bool        `json:"available"`
-	Date_taken	time.Time   `json:"date_taken"`
-	Date_due	time.Time   `json:"date_due"`
+	Owner      bool            `json:"owner"`
+	Available  bool        `json:"available"`
+	Date_taken time.Time   `json:"date_taken"`
+	Date_due   time.Time   `json:"date_due"`
 }
 
 type OwnerRentalStatus struct {
-	Owner		string 		`json:"owner"`
-	Available	bool        	`json:"available"`
-	Date_taken	time.Time   	`json:"date_taken"`
-	Date_due	time.Time   	`json:"date_due"`
+	Owner      string                `json:"owner"`
+	Available  bool                `json:"available"`
+	Date_taken time.Time        `json:"date_taken"`
+	Date_due   time.Time        `json:"date_due"`
 }
 
-func GetAvailability (api router.API, product string) Availability {
+func GetAvailability(api router.API, product string) Availability {
 	stmt, err := api.Context.Session.Prepare("CALL checkProductAvailability(?)")
 	if err != nil {
 		log.Println(err)
@@ -432,7 +492,6 @@ func GetAvailability (api router.API, product string) Availability {
 		log.Println(err)
 	}
 	defer rows.Close()
-
 
 	var result Availability
 	for rows.Next() {
@@ -453,7 +512,7 @@ func GetAvailability (api router.API, product string) Availability {
 	return result;
 }
 
-func GetAuthedAvailability (api router.API, product string, token string) RentalStatus {
+func GetAuthedAvailability(api router.API, product string, token string) RentalStatus {
 	var currentProductRenter string
 	var available bool
 
@@ -499,13 +558,11 @@ func GetAuthedAvailability (api router.API, product string, token string) Rental
 		result.Owner = true;
 	}
 
-
 	return result
-
 
 }
 
-func RentItem (api router.API, product string, token string) Availability {
+func RentItem(api router.API, product string, token string) Availability {
 	username := GetUserNameFromToken(api, token)
 	stmt, err := api.Context.Session.Prepare("CALL RentItem(?, ?)")
 	if err != nil {
@@ -518,7 +575,6 @@ func RentItem (api router.API, product string, token string) Availability {
 	}
 	defer rows.Close()
 
-
 	var result Availability
 	for rows.Next() {
 		err := rows.Scan(
@@ -538,7 +594,7 @@ func RentItem (api router.API, product string, token string) Availability {
 	return result;
 }
 
-func ReturnItem (api router.API, product string, token string) Availability {
+func ReturnItem(api router.API, product string, token string) Availability {
 	stmt, err := api.Context.Session.Prepare("CALL ReturnItem(?, ?)")
 	if err != nil {
 		log.Println(err)
@@ -550,7 +606,6 @@ func ReturnItem (api router.API, product string, token string) Availability {
 	}
 	defer rows.Close()
 
-
 	var result Availability
 	for rows.Next() {
 		err := rows.Scan(
@@ -570,7 +625,7 @@ func ReturnItem (api router.API, product string, token string) Availability {
 	return result;
 }
 
-func ReturnItemAsOwner (api router.API, product string, token string) Availability {
+func ReturnItemAsOwner(api router.API, product string, token string) Availability {
 	stmt, err := api.Context.Session.Prepare("CALL ReturnItemAsOwner(?, ?)")
 	if err != nil {
 		log.Println(err)
@@ -581,7 +636,6 @@ func ReturnItemAsOwner (api router.API, product string, token string) Availabili
 		log.Println(err)
 	}
 	defer rows.Close()
-
 
 	var result Availability
 	for rows.Next() {
@@ -613,7 +667,6 @@ func IsOwner(api router.API, token string, product string) bool {
 		log.Println(err)
 	}
 	defer rows.Close()
-
 
 	var result bool
 	for rows.Next() {
@@ -647,7 +700,7 @@ func RemoveProduct(api router.API, pid string, token string) {
 }
 
 // Returns products that belongs to the owner
-func GetOwnerProductsPaging (api router.API, token string, step int, count int) Items {
+func GetOwnerProductsPaging(api router.API, token string, step int, count int) Items {
 
 	var content = []Item{}
 
@@ -694,7 +747,7 @@ func GetOwnerProductsPaging (api router.API, token string, step int, count int) 
 	return Items{Items:content, Total:len(content)}
 }
 
-func GetOwnerProductAvailability (api router.API, product string, token string) OwnerRentalStatus {
+func GetOwnerProductAvailability(api router.API, product string, token string) OwnerRentalStatus {
 	stmt, err := api.Context.Session.Prepare("CALL ownerProductStatus(?, ?)")
 	if err != nil {
 		log.Println(err)

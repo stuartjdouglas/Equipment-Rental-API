@@ -163,6 +163,26 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`user_rent_product` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `honoursproject`.`users_requests_products` (
+  `users_id` INT NOT NULL,
+  `products_id` INT NOT NULL,
+  `date_requested` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`users_id`, `products_id`),
+  INDEX `fk_users_has_products_products3_idx` (`products_id` ASC),
+  INDEX `fk_users_has_products_users3_idx` (`users_id` ASC),
+  CONSTRAINT `fk_users_has_products_users3`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_has_products_products3`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
 CREATE TABLE IF NOT EXISTS `honoursproject`.`tags` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `tag` VARCHAR(240) NULL,
@@ -315,7 +335,9 @@ CREATE PROCEDURE createProduct (product_name VARCHAR(240), product_id VARCHAR(24
     INSERT INTO products_has_images (products_id, images_id) VALUES(@last_id, imgid);
   END;
 
-
+#
+#  Remove Product
+#
 DROP PROCEDURE  removeProduct;
 CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "9cc7a542-c22a-4855-8cdf-cc4b5cd4a13a");
 
@@ -355,15 +377,45 @@ CREATE PROCEDURE getListing()
 # Get Product
 #
 DROP PROCEDURE getProduct;
+CALL getProduct("65400420-f002-4872-a358-72bcc34f0b30");
 
 CREATE PROCEDURE getProduct(pid VARCHAR(240))
   BEGIN
-    SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, username, products.id as id FROM has
+    DECLARE p_id INT;
+    DECLARE tags TEXT;
+
+    SELECT id into p_id from products WHERE product_id = pid;
+
+    SELECT GROUP_CONCAT(CONCAT(tag) SEPARATOR ', ') into tags from products_has_tags
+      LEFT JOIN tags ON products_has_tags.tags_id = tags.id
+    WHERE products_id = p_id;
+
+    if (tags IS NULL) THEN
+      SET tags = "no tags";
+    END IF;
+
+    SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, username, products.id as id, tags FROM has
     LEFT JOIN users ON has.users_id = users.id
     LEFT JOIN products ON has.products_id = products.id
     where product_id = pid;
   END;
 
+#
+#  Get Tags
+#
+DROP PROCEDURE GetTags;
+CALL GetTags("3c0bf3ad-4aae-4a3b-b2c8-5a6df691a3e7");
+
+CREATE PROCEDURE `GetTags` (pid VARCHAR(240))
+  BEGIN
+    DECLARE p_id INT;
+
+    SELECT id into p_id from products where product_id = pid;
+
+    SELECT tags.tag from products_has_tags
+      LEFT JOIN tags ON products_has_tags.tags_id = tags.id
+    WHERE products_id = p_id;
+  END;
 
 #
 #  Get Image
@@ -376,6 +428,82 @@ CREATE PROCEDURE getImage(pid INT)
     LEFT JOIN images ON products_has_images.images_id = images.id
     WHERE products_id = pid;
   END;
+
+
+#
+#   RequestToBorrowItem
+#
+
+DROP PROCEDURE RequestToBorrowItem;
+CALL RequestToBorrowItem ("3c0bf3ad-4aae-4a3b-b2c8-5a6df691a3e7", "14afe718-3b4d-4193-a8a0-d8401f9a4a01");
+
+CREATE PROCEDURE RequestToBorrowItem(p_id VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    select user_id into uid from tokens
+      where token = u_token;
+
+    select id into pid from products where product_id = p_id;
+
+    INSERT INTO users_requests_products(products_id, users_id, date_requested) VALUES (pid, uid, NOW());
+
+  END;
+
+#
+#  GetRequestStatus
+#
+
+DROP PROCEDURE GetRequestStatus;
+CALL GetRequestStatus ("3c0bf3ad-4aae-4a3b-b2c8-5a6df691a3e7", "14afe718-3b4d-4193-a8a0-d8401f9a4a01");
+
+CREATE PROCEDURE GetRequestStatus(p_id VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+    DECLARE pname VARCHAR(240);
+    DECLARE d_requested DATETIME;
+    select user_id into uid from tokens
+      where token = u_token;
+
+    select id into pid from products where product_id = p_id;
+
+    SELECT product_name, date_requested into pname, d_requested from users_requests_products
+      LEFT JOIN users ON users_requests_products.users_id = users.id
+      LEFT JOIN products ON users_requests_products.products_id = products.id
+      WHERE products_id = pid AND users_id = uid;
+
+    if (pname IS NULL) THEN
+      SELECT false as requested, "null" as product_title, NOW() as date_requested;
+    ELSE
+      SELECT true as requested, pname as product_title, d_requested as date_requested;
+    END IF;
+
+  END;
+
+#
+#  RentFromRequest
+#
+
+DROP PROCEDURE RentFromRequest;
+call RentFromRequest ("3c0bf3ad-4aae-4a3b-b2c8-5a6df691a3e7", "remon");
+
+CREATE PROCEDURE RentFromRequest (u_pid VARCHAR(240), usrname VARCHAR(240))
+  BEGIN
+    DECLARE userid INT;
+    DECLARE days INT;
+    DECLARE pid INT;
+
+    SELECT id INTO userid FROM users WHERE username = usrname;
+    SELECT id, product_rental_period_limit INTO pid, days FROM products WHERE product_id = u_pid;
+#     SELECT days;
+    DELETE FROM users_requests_products WHERE users_id = userid AND products_id = pid;
+
+    INSERT INTO user_rent_product (products_id, users_id, date_received, date_due) VALUES (pid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY));
+  END;
+
+
 #
 # Rent Item
 #
