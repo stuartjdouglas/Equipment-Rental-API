@@ -12,11 +12,11 @@ import (
 )
 
 type Product struct {
-	Title 			string 	`json:"title"`
-	Description		string	`json:"description"`
-	Rental_period_limit 	int 	`json:"rental_period_limit"`
-	Image			string 	`json:"image"`
-	Filetype		string 	`json:"filetype"`
+	Title               string        `json:"title"`
+	Description         string        `json:"description"`
+	Rental_period_limit int        `json:"rental_period_limit"`
+	Image               string        `json:"image"`
+	Filetype            string        `json:"filetype"`
 }
 
 func ValidToken(token string) bool {
@@ -36,8 +36,9 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 
 	imageCode := utils.RandomString(10) // create random string
 
-	for imageExists(api, imageCode) { // For each time the file exists
-		imageCode = utils.RandomString(10)	// create new random string
+	for imageExists(api, imageCode) {
+		// For each time the file exists
+		imageCode = utils.RandomString(10)        // create new random string
 	}
 
 	if (product.Filetype != "") {
@@ -48,7 +49,7 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 		mime = strings.SplitN(mime[1], ";", 2)
 		product.Filetype = mime[0]
 
-		b64data := product.Image[strings.IndexByte(product.Image, ',')+1:]
+		b64data := product.Image[strings.IndexByte(product.Image, ',') + 1:]
 
 		data, err := base64.StdEncoding.DecodeString(b64data)
 		if err != nil {
@@ -138,6 +139,6 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) d
 	return database.GetOwnerProductsPaging(api, token, step, count)
 }
 
-func GetProductFromOwner(api router.API, username string) database.Items{
+func GetProductFromOwner(api router.API, username string) database.Items {
 	return database.GetProductFromOwner(api, username)
 }
