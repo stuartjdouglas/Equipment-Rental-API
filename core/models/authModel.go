@@ -62,20 +62,34 @@ func PerformLogin(api router.API, username string, password string) database.Aut
 
 func PerformRegister(api router.API, data Register) bool {
 	if !database.CheckIfUserExists(api, data.Username) {
-		hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
-		if err != nil {
-			log.Fatal(err)
+		if (secureEntry(data.Password) && secureEntry(data.Username) && secureEntry(data.Email)) {
+
+			hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if database.RegisterUser(api, data.Username, hash, data.Email) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 
-		if database.RegisterUser(api, data.Username, hash, data.Email) {
-			return true;
-		} else {
-			return false;
-		}
-
-	} else {
-		return false;
 	}
+	return false
+}
+
+
+// secureEntry guards the api from entering data which is not acceptable
+func secureEntry(password string) bool {
+	// if the value if more or equal to 6 || if the value does not contain any spaces
+	if len(password) >= 6 && len(strings.Split(password, " ")) == 1 {
+		// Return true that it is acceptable
+		return true;
+	}
+	// Return false that it should not be accepted
+	return false
 }
 
 func PerformRemoveUser(api router.API, data Register) bool {
