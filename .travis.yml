@@ -9,3 +9,7 @@ install:
 script:
   - "go env"
   - "go test -v ./..."
+before_install:
+  - pip install --user codecov
+after_success:
+  - codecov
