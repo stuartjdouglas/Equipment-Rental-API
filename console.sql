@@ -418,6 +418,7 @@ CREATE PROCEDURE `addTag` (p_id VARCHAR(240), p_tag VARCHAR(240))
 
     IF (tag_exists IS NULL) THEN
       INSERT INTO tags(tag) VALUES(p_tag);
+      SELECT id INTO tag_exists FROM tags WHERE tag = p_tag;
       IF (tag_relation_exists IS FALSE) THEN
         INSERT INTO products_has_tags(products_id, tags_id) VALUES (pid, tag_exists);
       END IF;
