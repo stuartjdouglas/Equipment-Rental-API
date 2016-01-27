@@ -43,7 +43,6 @@ func TestSessionsModel(t *testing.T) {
 
 	})
 
-
 }
 
 

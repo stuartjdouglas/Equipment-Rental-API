@@ -7,7 +7,6 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 )
 
-
 func TestIndexModel(t *testing.T) {
 	g := Goblin(t)
 

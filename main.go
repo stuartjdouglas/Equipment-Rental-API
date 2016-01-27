@@ -4,7 +4,7 @@ package main
 import (
 	"fmt"
 	"os"
-	//"os/exec"
+//"os/exec"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/config"
 	"github.com/remony/Equipment-Rental-API/core/server"
@@ -12,6 +12,7 @@ import (
 )
 
 const confFile = "./config.json"
+
 var clear map[string]func()
 
 // Starts the server

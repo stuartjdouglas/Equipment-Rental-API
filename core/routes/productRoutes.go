@@ -1,4 +1,5 @@
 package routes
+
 import (
 	"github.com/zenazn/goji/web"
 	"net/http"
@@ -9,14 +10,12 @@ import (
 	"strconv"
 )
 
-
-
 type DeleteResponse struct {
 	message string
 }
 
-func generateProductRoutes (api router.API) {
-	api.Router.Post("/p", func (c web.C, res http.ResponseWriter, r *http.Request) {
+func generateProductRoutes(api router.API) {
+	api.Router.Post("/p", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
 
 		if models.ValidToken(token) {
@@ -26,15 +25,13 @@ func generateProductRoutes (api router.API) {
 				log.Println(err)
 			}
 
-			product := models.Product {
+			product := models.Product{
 				Title:r.FormValue("title"),
 				Description:r.FormValue("description"),
 				Rental_period_limit:limit,
 				Image:r.FormValue("image"),
 				Filetype:r.FormValue("filetype"),
 			}
-
-
 
 			result := models.CreateProduct(api, product, token)
 
@@ -48,8 +45,6 @@ func generateProductRoutes (api router.API) {
 			res.WriteHeader(200)
 			res.Write(data)
 
-
-
 		} else {
 			http.Error(res, "", http.StatusUnauthorized)
 		}
@@ -58,11 +53,11 @@ func generateProductRoutes (api router.API) {
 
 
 	//	Get all Products
-	api.Router.Get("/p", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/p", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
-		if (r.Header.Get("Start") != ""|| r.Header.Get("Count") != "") {
-			step, err :=  strconv.Atoi(r.Header.Get("Start"))
-			count, err :=  strconv.Atoi(r.Header.Get("Count"))
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
 
 			result := models.GetProductsPaging(api, step, count)
 
@@ -89,14 +84,12 @@ func generateProductRoutes (api router.API) {
 			res.Write(data)
 		}
 
-
-
 	})
 
 	api.Router.Get("/owner/products", func(c web.C, res http.ResponseWriter, req *http.Request) {
-		token :=  req.Header.Get("token")
-		step, err :=  strconv.Atoi(req.Header.Get("step"))
-		count, err :=  strconv.Atoi(req.Header.Get("count"))
+		token := req.Header.Get("token")
+		step, err := strconv.Atoi(req.Header.Get("step"))
+		count, err := strconv.Atoi(req.Header.Get("count"))
 
 		result := models.GetOwnerProductsPaging(api, token, step, count)
 
@@ -113,7 +106,7 @@ func generateProductRoutes (api router.API) {
 
 	})
 
-	api.Router.Get("/products/:username", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/products/:username", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetProductFromOwner(api, c.URLParams["username"])
 
@@ -128,7 +121,7 @@ func generateProductRoutes (api router.API) {
 		res.Write(data)
 	})
 
-	api.Router.Get("/product/:id", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/product/:id", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetProductFromID(api, c.URLParams["id"])
 
@@ -143,17 +136,13 @@ func generateProductRoutes (api router.API) {
 		res.Write(data)
 	})
 
-
-
-
-	api.Router.Delete("/product/:id/delete", func (c web.C, res http.ResponseWriter, req *http.Request) {
+	api.Router.Delete("/product/:id/delete", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		token := req.Header.Get("token")
-
 
 		if (models.IsOwner(api, token, c.URLParams["id"])) {
 			item := models.GetProductFromID(api, c.URLParams["id"])
 			models.RemoveProduct(api, c.URLParams["id"], token, item)
-			result := DeleteResponse {
+			result := DeleteResponse{
 				message: "Has been deleted",
 			}
 			data, err := json.Marshal(result)
@@ -173,11 +162,11 @@ func generateProductRoutes (api router.API) {
 
 
 	//	Get all Currently Rented Products
-	api.Router.Get("/p/rent/current", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/p/rent/current", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
-		if (r.Header.Get("Step") != ""|| r.Header.Get("Count") != "") {
-			step, err :=  strconv.Atoi(r.Header.Get("Step"))
-			count, err :=  strconv.Atoi(r.Header.Get("Count"))
+		if (r.Header.Get("Step") != "" || r.Header.Get("Count") != "") {
+			step, err := strconv.Atoi(r.Header.Get("Step"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
 
 			result := models.GetCurrentlyRentedProducts(api, token, step, count)
 			data, err := json.Marshal(result)
@@ -204,22 +193,22 @@ func generateProductRoutes (api router.API) {
 	})
 
 	//	Get all Currently Rented Products
-	api.Router.Get("/p/rent/past", func (c web.C, res http.ResponseWriter, r *http.Request) {
-//		token := r.Header.Get("token")
-		if (r.Header.Get("Step") != ""|| r.Header.Get("Count") != "") {
-//			step, err :=  strconv.Atoi(r.Header.Get("Step"))
-//			count, err :=  strconv.Atoi(r.Header.Get("Count"))
+	api.Router.Get("/p/rent/past", func(c web.C, res http.ResponseWriter, r *http.Request) {
+		//		token := r.Header.Get("token")
+		if (r.Header.Get("Step") != "" || r.Header.Get("Count") != "") {
+			//			step, err :=  strconv.Atoi(r.Header.Get("Step"))
+			//			count, err :=  strconv.Atoi(r.Header.Get("Count"))
 
-//			result := models.GetPastRentedProducts(api, token, step, count)
-//			data, err := json.Marshal(result)
-//			if err != nil {
-//				http.Error(res, err.Error(), http.StatusInternalServerError)
-//				return
-//			}
-//
-//			res.Header().Set("Content-Type", "application/json")
-//			res.WriteHeader(200)
-//			res.Write(data)
+			//			result := models.GetPastRentedProducts(api, token, step, count)
+			//			data, err := json.Marshal(result)
+			//			if err != nil {
+			//				http.Error(res, err.Error(), http.StatusInternalServerError)
+			//				return
+			//			}
+			//
+			//			res.Header().Set("Content-Type", "application/json")
+			//			res.WriteHeader(200)
+			//			res.Write(data)
 		} else {
 			result := models.GetProducts(api)
 			data, err := json.Marshal(result)
@@ -234,7 +223,7 @@ func generateProductRoutes (api router.API) {
 		}
 	})
 
-	api.Router.Get("/p/:id/availability", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/p/:id/availability", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
 		if token != "" {
 			// Check that the token is a valid token
@@ -264,7 +253,7 @@ func generateProductRoutes (api router.API) {
 		}
 	})
 
-	api.Router.Get("/owner/products/:id/availability", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/owner/products/:id/availability", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
 		if token != "" {
 			// Check that the token is a valid token
@@ -295,15 +284,12 @@ func generateProductRoutes (api router.API) {
 			res.Write(data)
 		}
 
-
 	})
 
-	api.Router.Post("/p/:id/rent", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Post("/p/:id/rent", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetAvailability(api, c.URLParams["id"])
 		token := r.Header.Get("token")
-
-
 
 		if result.Available {
 			if token != "" {
@@ -312,7 +298,6 @@ func generateProductRoutes (api router.API) {
 				} else {
 					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
 				}
-
 
 			} else {
 				http.Error(res, "Unauthorized: missing token", http.StatusInternalServerError)
@@ -332,20 +317,12 @@ func generateProductRoutes (api router.API) {
 
 		}
 
-
-
-
-
-
 	})
 
-
-	api.Router.Post("/p/:id/return", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Post("/p/:id/return", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetAvailability(api, c.URLParams["id"])
 		token := r.Header.Get("token")
-
-
 
 		if !result.Available {
 			if token != "" {
@@ -355,7 +332,6 @@ func generateProductRoutes (api router.API) {
 				} else {
 					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
 				}
-
 
 			} else {
 				http.Error(res, "Unauthorized: missing token", http.StatusInternalServerError)

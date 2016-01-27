@@ -1,4 +1,5 @@
 package email
+
 import (
 	"github.com/go-gomail/gomail"
 	"log"
@@ -6,12 +7,10 @@ import (
 	"strconv"
 )
 
-
 type Email struct {
 	Subject string `json:"string"`
 	Receipt string `json:"receipt"`
-	Body string `json:"body"`
-
+	Body    string `json:"body"`
 }
 // SendEmail sends an email using example from https://godoc.org/gopkg.in/gomail.v2#example-package
 func SendEmail(api router.API, receipt string, subject string, body string) bool {
@@ -21,12 +20,10 @@ func SendEmail(api router.API, receipt string, subject string, body string) bool
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
 
-
 	port, err := strconv.Atoi(api.Config.Development.Email.Port)
 	if err != nil {
 		log.Println(err)
 	}
-
 
 	d := gomail.NewPlainDialer(
 		api.Config.Development.Email.Hostname,

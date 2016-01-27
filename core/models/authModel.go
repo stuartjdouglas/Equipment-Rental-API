@@ -2,13 +2,12 @@ package models
 
 import (
 	"golang.org/x/crypto/bcrypt"
-"strings"
-"github.com/remony/Equipment-Rental-API/core/database"
+	"strings"
+	"github.com/remony/Equipment-Rental-API/core/database"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
 	"regexp"
 )
-
 
 type Error_response struct {
 	Message string `json:"message"`
@@ -17,7 +16,7 @@ type Error_response struct {
 type Register struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Email string `json:"email"`
+	Email    string `json:"email"`
 }
 
 func authLogin(password string, digest string) bool {
@@ -28,7 +27,7 @@ func authLogin(password string, digest string) bool {
 	}
 }
 
-func isValidEntry(username string) bool{
+func isValidEntry(username string) bool {
 	if len(username) < 240 {
 		if ok, _ := regexp.MatchString("^[A-Za-z0-9]+$", username); ok {
 			return true
@@ -43,17 +42,17 @@ func PerformLogin(api router.API, username string, password string) database.Aut
 	var digest = database.GetDigest(api, username)
 	var login database.Auth
 	if isValidEntry(username) && isValidEntry(password) {
-		if(authLogin(password, digest)) {
+		if (authLogin(password, digest)) {
 			login = database.LoginUser(api, strings.ToLower(username))
 			return login;
 
 		} else {
-			return database.Auth {
+			return database.Auth{
 				Success: false,
 			}
 		}
 	} else {
-		return database.Auth {
+		return database.Auth{
 			Success: false,
 		}
 	}

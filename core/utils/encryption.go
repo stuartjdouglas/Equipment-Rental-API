@@ -1,4 +1,5 @@
 package utils
+
 import (
 	"crypto/sha512"
 	"encoding/hex"

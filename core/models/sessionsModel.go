@@ -1,4 +1,5 @@
 package models
+
 import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
@@ -6,25 +7,25 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
-type Session struct{
-	Date_generated 		time.Time `json:"date_generated"`
-	Date_expires		time.Time `json:"date_expires"`
-	Idenf			string    `json:"idenf"`
-	Active			bool      `json:"active"`
+type Session struct {
+	Date_generated time.Time `json:"date_generated"`
+	Date_expires   time.Time `json:"date_expires"`
+	Idenf          string    `json:"idenf"`
+	Active         bool      `json:"active"`
 }
 
 type session struct {
-	Session		Session        `json:"session"`
-	Total		int            `json:"total"`
+	Session Session        `json:"session"`
+	Total   int            `json:"total"`
 }
 
 type Sessions struct {
-	Sessions	[]Session        `json:"session"`
-	Total		int            `json:"total"`
+	Sessions []Session        `json:"session"`
+	Total    int            `json:"total"`
 }
 
-type removalRes	struct {
-	ID string `json:"id"`
+type removalRes        struct {
+	ID      string `json:"id"`
 	Message string `json:"message"`
 }
 
@@ -57,7 +58,6 @@ func DisableToken(api router.API, token string) bool {
 		log.Fatal(err)
 	}
 	rows.RowsAffected()
-
 
 	return true
 }
@@ -99,8 +99,6 @@ func GetSession(api router.API, token string) Session {
 	}
 	return sessions
 }
-
-
 
 func GetSessions(api router.API, token string) Sessions {
 	result := []Session{}

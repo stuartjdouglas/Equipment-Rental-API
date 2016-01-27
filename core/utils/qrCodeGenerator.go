@@ -1,7 +1,8 @@
 package utils
+
 import (
-"image"
-"github.com/boombuler/barcode/qr"
+	"image"
+	"github.com/boombuler/barcode/qr"
 	"log"
 	"github.com/boombuler/barcode"
 )

@@ -445,8 +445,6 @@ func GetProductFromID(api router.API, id string) Items {
 			panic(err)
 		}
 
-
-
 		result.Tags = filterTags(tags)
 		result.Image = GetImage(api, imageid)
 		if err != nil {

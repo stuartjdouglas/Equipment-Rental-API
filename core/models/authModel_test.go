@@ -87,9 +87,6 @@ func TestAuthModel(t *testing.T) {
 		})
 	})
 
-
-
-
 	g.Describe("removing user", func() {
 		g.It("should return true", func() {
 			g.Assert(PerformRemoveUser(api, testUser)).IsTrue()
@@ -98,7 +95,6 @@ func TestAuthModel(t *testing.T) {
 		g.It("should return false", func() {
 			g.Assert(PerformRemoveUser(api, testUser)).IsFalse()
 		})
-
 
 	})
 }
