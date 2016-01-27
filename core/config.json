@@ -2,8 +2,8 @@
     "development": {
         "type": "",
         "title": "Default Title",
-        "port": 3000,
-        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+        "port": 3001,
+        "dburl": "lemon:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
         "email": {
             "hostname": "smtp.mailgun.org",
             "login": "postmaster@sandboxa72f5bb74b7f42e79840c6406411dda6.mailgun.org",
@@ -15,7 +15,7 @@
         "type": "",
         "title": "Default Title",
         "port": 3000,
-        "dburl": "root:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
+        "dburl": "lemon:l3mon@tcp(lemondev.xyz:3306)/honoursproject?parseTime=true",
         "email": {
             "hostname": "smtp.mailgun.org",
             "login": "postmaster@sandboxa72f5bb74b7f42e79840c6406411dda6.mailgun.org",
