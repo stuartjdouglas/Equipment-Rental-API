@@ -2,7 +2,6 @@ package models
 
 import (
 	"strings"
-	"log"
 	"github.com/remony/Equipment-Rental-API/core/database"
 	"github.com/remony/Equipment-Rental-API/core/router"
 )
@@ -29,7 +28,6 @@ func parseJSArrayTags(json string) []Tag {
 
 func UploadTags(api router.API, pid string, data string) bool {
 	tags := parseJSArrayTags(data)
-	log.Println(len(tags))
 	for i := 0; i < len(tags); i++ {
 		if len(tags[i].Title) > 0 {
 
@@ -37,4 +35,24 @@ func UploadTags(api router.API, pid string, data string) bool {
 		}
 	}
 	return true
+}
+
+func RemoveTag(api router.API, pid string, tag string, token string) bool {
+	if IsOwner(api, token, pid) {
+		database.RemoveTag(api, pid, tag)
+		return true
+	}
+	return false
+}
+
+func AddTag(api router.API, pid string, tag string, token string) bool {
+	if IsOwner(api, token, pid) {
+		UploadTags(api, pid, tag)
+		return true
+	}
+	return false
+}
+
+func GetTags(api router.API, pid string) []database.Tag{
+	return database.GetTags(api, pid)
 }
