@@ -9,7 +9,6 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/database"
 )
 
-
 type login struct {
 	Username string `json:"username" param:"username"`
 	Password string `json:"password" param:"password"`
@@ -23,8 +22,7 @@ type error_response struct {
 	Message string `json:"message"`
 }
 
-
-func CreateRoutes (api router.API) {
+func CreateRoutes(api router.API) {
 	createPostRoutes(api)
 	generateRootRoutes(api)
 	generateUserRoutes(api)
@@ -35,17 +33,17 @@ func CreateRoutes (api router.API) {
 
 	// A test route
 
-	api.Router.Get("/hello/:name", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/hello/:name", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		message := hello{
 			Message: fmt.Sprintf("こんにちは, %s!", c.URLParams["name"]),
 		}
-//		email.SendEmail(api, "remonasebi@gmail.com", "hello", "<h1>" + message.Message + "</h1>")
+		//		email.SendEmail(api, "remonasebi@gmail.com", "hello", "<h1>" + message.Message + "</h1>")
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		json.NewEncoder(res).Encode(message)
 	})
 
-	api.Router.Get("/hello", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/hello", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {
 			result := database.GetHello(api, r.Header.Get("token"))
 			data, err := json.Marshal(result)
@@ -61,6 +59,5 @@ func CreateRoutes (api router.API) {
 			http.Error(res, "", http.StatusUnauthorized)
 		}
 	})
-
 
 }

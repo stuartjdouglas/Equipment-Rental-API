@@ -10,14 +10,12 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
-
 func generateSlug(slug string) string {
 	return strings.Replace(strings.ToLower(slug), " ", "_", -1)
 }
 
-
-func createPostRoutes (api router.API) {
-	api.Router.Post("/post", func (c web.C, res http.ResponseWriter, r *http.Request) {
+func createPostRoutes(api router.API) {
+	api.Router.Post("/post", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("token") != "" {
 			post := models.Post{}
 			err := json.NewDecoder(r.Body).Decode(&post)
@@ -61,8 +59,8 @@ func createPostRoutes (api router.API) {
 
 
 
-//	Get all posts
-	api.Router.Get("/posts", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	//	Get all posts
+	api.Router.Get("/posts", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetPosts(api)
 
@@ -78,7 +76,7 @@ func createPostRoutes (api router.API) {
 		res.Write(data)
 	})
 
-	api.Router.Get("/posts/:username", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/posts/:username", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetPostsFromUser(api, c.URLParams["username"])
 
@@ -94,7 +92,7 @@ func createPostRoutes (api router.API) {
 		res.Write(data)
 	})
 
-	api.Router.Get("/post/:slug", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/post/:slug", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		result := models.GetPost(api, c.URLParams["slug"])
 

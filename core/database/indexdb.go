@@ -6,7 +6,7 @@ import (
 )
 
 type Index struct {
-	Title string `json:"title"`
+	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
@@ -21,7 +21,6 @@ func GetIndexFromDB(api router.API) Index {
 		log.Println(err)
 	}
 	defer rows.Close()
-
 
 	var index Index
 	for rows.Next() {

@@ -13,7 +13,6 @@ func GetUsersData(api router.API) []database.User {
 	return database.GetUsers(api)
 }
 
-
 func CheckIfUserExists(api router.API, username string) bool {
 	return database.CheckIfUserExists(api, username)
 }

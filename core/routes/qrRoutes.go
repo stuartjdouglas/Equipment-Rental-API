@@ -12,11 +12,10 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 )
 
-
 type QRcode struct {
-	Code 	string 	`json:"code"`
-	Width 	int 	`json:"width"`
-	Height 	int 	`json:"height"`
+	Code   string        `json:"code"`
+	Width  int        `json:"width"`
+	Height int        `json:"height"`
 }
 //
 //type Code struct {
@@ -25,12 +24,11 @@ type QRcode struct {
 //}
 
 func generateQrRoutes(api router.API) {
-	api.Router.Get("/identify/qr/:type", func (c web.C, res http.ResponseWriter, req *http.Request) {
+	api.Router.Get("/identify/qr/:type", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		qr := QRcode{}
 		qr.Code = req.Header.Get("code")
 		qr.Height, _ = strconv.Atoi(req.Header.Get("height"))
 		qr.Width, _ = strconv.Atoi(req.Header.Get("width"))
-
 
 		switch(c.URLParams["type"]) {
 		case "user":
@@ -43,9 +41,9 @@ func generateQrRoutes(api router.API) {
 
 		if len(qr.Code) < 0 || qr.Height <= 0 || qr.Width < 0 {
 			qr = QRcode{
-				Code: 	"You have given me wrong params; see docs for more information",
-				Height:	500,
-				Width:	500,
+				Code:        "You have given me wrong params; see docs for more information",
+				Height:        500,
+				Width:        500,
 			}
 		} else {
 
@@ -59,7 +57,6 @@ func generateQrRoutes(api router.API) {
 		}
 
 		imgBase64Str := base64.StdEncoding.EncodeToString(buffer.Bytes())
-
 
 		res.Header().Set("Content-Type", "image/jpeg")
 		res.Header().Set("Content-Length", strconv.Itoa(len(imgBase64Str)))

@@ -72,8 +72,20 @@ func TestAuthModel(t *testing.T) {
 
 	})
 
-
-
+	g.Describe("password handling", func() {
+		g.It("with length 5 should be false", func() {
+			g.Assert(secureEntry("sdfjl")).IsFalse()
+		})
+		g.It("with 6 character should be accepted", func() {
+			g.Assert(secureEntry("asdasd")).IsTrue()
+		})
+		g.It("with more than 6 characters should be true", func() {
+			g.Assert(secureEntry("asdasdasd")).IsTrue()
+		})
+		g.It("should return false if spaces are detected", func() {
+			g.Assert(secureEntry("asd asd")).IsFalse()
+		})
+	})
 
 	g.Describe("removing user", func() {
 		g.It("should return true", func() {
@@ -83,7 +95,6 @@ func TestAuthModel(t *testing.T) {
 		g.It("should return false", func() {
 			g.Assert(PerformRemoveUser(api, testUser)).IsFalse()
 		})
-
 
 	})
 }

@@ -29,8 +29,8 @@ func Start(settings config.Config, context config.Context, mode int) {
 	})
 
 	//Create subroutes
-	apiRouter 		:= web.New()
-	imageRouter		:= web.New()
+	apiRouter := web.New()
+	imageRouter := web.New()
 
 	// Assign sub routes to handle certain path requests
 

@@ -1,7 +1,7 @@
 package utils
 
 import (
-  "fmt"
+	"fmt"
 	"os"
 	"github.com/nfnt/resize"
 	"log"
@@ -9,11 +9,11 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-"strings"
+	"strings"
 	"image/gif"
 )
 
-func WriteBase64Image (filez io.Reader, filetype string, filename string, extension string) bool {
+func WriteBase64Image(filez io.Reader, filetype string, filename string, extension string) bool {
 	if (filetype == "image/jpeg") {
 		file, err := jpeg.Decode(filez)
 		if err != nil {
@@ -46,7 +46,6 @@ func WriteBase64Image (filez io.Reader, filetype string, filename string, extens
 		}
 		// write original
 		writeGIF(file, filename + extension, filetype)
-
 
 	} else if (filetype == "image/png") {
 		file, err := png.Decode(filez)
@@ -194,11 +193,11 @@ func BinFiles(file_type string, filename string) {
 
 func moveImages(filename string, ext string) {
 
-	err :=  os.Rename("data/images/" + filename + "." + ext, "data/images/bin/" + filename + "." + ext)
-	err =  os.Rename("data/images/" + filename + "_large." + ext, "data/images/bin/" + filename + "_large." + ext)
-	err =  os.Rename("data/images/" + filename + "_medium." + ext, "data/images/bin/" + filename + "_medium." + ext)
-	err =  os.Rename("data/images/" + filename + "_small." + ext, "data/images/bin/" + filename + "_small." + ext)
-	err =  os.Rename("data/images/" + filename + "_thumb." + ext, "data/images/bin/" + filename + "_thumb." + ext)
+	err := os.Rename("data/images/" + filename + "." + ext, "data/images/bin/" + filename + "." + ext)
+	err = os.Rename("data/images/" + filename + "_large." + ext, "data/images/bin/" + filename + "_large." + ext)
+	err = os.Rename("data/images/" + filename + "_medium." + ext, "data/images/bin/" + filename + "_medium." + ext)
+	err = os.Rename("data/images/" + filename + "_small." + ext, "data/images/bin/" + filename + "_small." + ext)
+	err = os.Rename("data/images/" + filename + "_thumb." + ext, "data/images/bin/" + filename + "_thumb." + ext)
 
 	if err != nil {
 		fmt.Println(err)
@@ -214,10 +213,10 @@ func getFileExt(data string) string {
 func getFilename(data string) string {
 	splitfile := strings.Split(data, ".")
 	splitfile = strings.Split(splitfile[0], "/")
-	return splitfile[len(splitfile)- 1]
+	return splitfile[len(splitfile) - 1]
 }
 
 func getFullFilename(data string) string {
 	splitfile := strings.Split(data, "/")
-	return splitfile[len(splitfile)- 1]
+	return splitfile[len(splitfile) - 1]
 }

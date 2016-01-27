@@ -1,4 +1,5 @@
 package models
+
 import (
 	"time"
 	"fmt"
@@ -8,22 +9,20 @@ import (
 )
 
 type Posts struct {
-	Post []Post `json:"post"`
-	Total int 	`json:"total"`
+	Post  []Post `json:"post"`
+	Total int        `json:"total"`
 }
-
-
 
 type Post struct {
-	Title			string 		`json:"title"`
-	Slug 			string 		`json:"slug"`
-	Author 			string 		`json:"author"`
-	Content			string 		`json:"content"`
-	Date_created	time.Time   `json:"date_Created"`
-	Date_edited		time.Time 	`json:"date_edited"`
+	Title        string                `json:"title"`
+	Slug         string                `json:"slug"`
+	Author       string                `json:"author"`
+	Content      string                `json:"content"`
+	Date_created time.Time   `json:"date_Created"`
+	Date_edited  time.Time        `json:"date_edited"`
 }
 
-func CheckIfPostExists (api router.API, slug string) bool {
+func CheckIfPostExists(api router.API, slug string) bool {
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM posts WHERE slug = ?)", slug).Scan(&exist)
 	if (err != nil) {
@@ -45,7 +44,7 @@ func CreatePost(api router.API, post Post, token string, slug string) bool {
 		panic(err)
 	}
 
-	res, err:= stmt.Exec(post.Title, slug, author, post.Content, time.Now(), time.Now(), userid)
+	res, err := stmt.Exec(post.Title, slug, author, post.Content, time.Now(), time.Now(), userid)
 	if (err != nil) {
 		return false
 	}
@@ -56,7 +55,7 @@ func CreatePost(api router.API, post Post, token string, slug string) bool {
 	return true
 }
 
-func GetPosts (api router.API) Posts {
+func GetPosts(api router.API) Posts {
 	var content = []Post{}
 	stmt, err := api.Context.Session.Prepare("SELECT title, slug, author, content, date_created, date_edited FROM posts")
 	if err != nil {
@@ -69,7 +68,6 @@ func GetPosts (api router.API) Posts {
 	}
 	defer rows.Close()
 
-
 	for rows.Next() {
 		var result Post
 		err := rows.Scan(
@@ -92,7 +90,7 @@ func GetPosts (api router.API) Posts {
 
 	return Posts{Post: content, Total: len(content)}
 }
-func GetPostsFromUser (api router.API, username string) Posts {
+func GetPostsFromUser(api router.API, username string) Posts {
 	var content = []Post{}
 	stmt, err := api.Context.Session.Prepare("SELECT title, slug, author, content, date_created, date_edited FROM posts where author = ?")
 	if err != nil {
@@ -105,7 +103,6 @@ func GetPostsFromUser (api router.API, username string) Posts {
 	}
 	defer rows.Close()
 
-
 	for rows.Next() {
 		var result Post
 		err := rows.Scan(
@@ -129,7 +126,7 @@ func GetPostsFromUser (api router.API, username string) Posts {
 	return Posts{Post: content, Total: len(content)}
 }
 
-func GetPost (api router.API, slug string) Posts {
+func GetPost(api router.API, slug string) Posts {
 	var content = []Post{}
 	stmt, err := api.Context.Session.Prepare("SELECT title, slug, author, content, date_created, date_edited FROM posts where slug = ?")
 	if err != nil {
@@ -141,7 +138,6 @@ func GetPost (api router.API, slug string) Posts {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-
 
 	for rows.Next() {
 		var result Post

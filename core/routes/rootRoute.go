@@ -9,7 +9,7 @@ import (
 )
 
 func generateRootRoutes(api router.API) {
-	api.Router.Get("/", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		result := models.GetIndex(api)
 		data, err := json.Marshal(result)
 		if err != nil {

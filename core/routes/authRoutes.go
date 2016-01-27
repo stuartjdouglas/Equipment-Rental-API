@@ -1,6 +1,6 @@
 package routes
-import(
 
+import (
 	"encoding/json"
 	"net/http"
 	"github.com/zenazn/goji/web"
@@ -10,20 +10,18 @@ import(
 )
 
 type tokenremoved struct {
-	ID	string `json:"id"`
+	ID      string `json:"id"`
 	Message string `json:"message"`
 }
 
-func generateAuthRoutes(api router.API)	{
+func generateAuthRoutes(api router.API) {
 
-
-
-	api.Router.Post("/logout", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Post("/logout", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		//		Not yet implemented
 		//		Call method to remove token
 	})
 
-	api.Router.Post("/user/register", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Post("/user/register", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		newdata := models.Register{}
 		err := json.NewDecoder(r.Body).Decode(&newdata)
 		if err != nil {
@@ -41,15 +39,14 @@ func generateAuthRoutes(api router.API)	{
 		}
 	})
 
-
-	api.Router.Post("/login", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Post("/login", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		// Get username and password from form
 		var loginDetails = login{
 			Username: r.FormValue("username"),
 			Password: r.FormValue("password"),
 		}
 		// If any of the values are empty, check the json body for login and password
-		if len(loginDetails.Username) == 0 || len(loginDetails.Password) == 0{
+		if len(loginDetails.Username) == 0 || len(loginDetails.Password) == 0 {
 			err := json.NewDecoder(r.Body).Decode(&loginDetails)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusBadRequest)
@@ -59,7 +56,7 @@ func generateAuthRoutes(api router.API)	{
 		var login database.Auth;
 		login = models.PerformLogin(api, loginDetails.Username, loginDetails.Password)
 
-		if(login.Success) {
+		if (login.Success) {
 			data, err := json.Marshal(login)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -76,14 +73,12 @@ func generateAuthRoutes(api router.API)	{
 
 	})
 
-	api.Router.Delete("/session", func (c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Delete("/session", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		var idenf = r.Header.Get("id")
 		var token = r.Header.Get("token")
 
-
 		if (token != "" && idenf != "") {
 			if (models.IsSessionValid(api, token)) {
-
 
 				removal := models.DisableToken(api, idenf)
 
@@ -112,7 +107,6 @@ func generateAuthRoutes(api router.API)	{
 			res.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(res).Encode(error_response{Message:"Missing parameters id and/or token"})
 		}
-
 
 	})
 }

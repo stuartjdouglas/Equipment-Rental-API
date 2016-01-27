@@ -9,42 +9,40 @@ import (
 )
 
 type User struct {
-	Username 	string 	`json:"username"`
-	Gravatar	string  `json:"gravatar"`
+	Username string        `json:"username"`
+	Gravatar string  `json:"gravatar"`
 }
 
 type tempUser struct {
-	Username	string    `json:"username"`
-	Email		string    `json:"email"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
 }
 
 type Profile struct {
-	First_name 		string `json:"first_name"`
-	Last_name 		string `json:"last_name"`
+	First_name      string `json:"first_name"`
+	Last_name       string `json:"last_name"`
 	Date_registered string `json:"date_registered"`
 }
 
 type fullUser struct {
-	Username 	string `json:"username", bson:"username"`
-	Email 		string `json:"email", bson:"email"`
-	Password 	string `json:"password", bson:"password"`
+	Username string `json:"username", bson:"username"`
+	Email    string `json:"email", bson:"email"`
+	Password string `json:"password", bson:"password"`
 }
 
-
-
 type UserProfile struct {
-	ID int `json:"id"`
-	Username 		string 		`json:"username"`
-	Email			string 		`json:"email"`
-	First_name		string 		`json:"first_name"`
-	Last_name		string 		`json:"last_name"`
-	Location 		string 		`json:"location"`
-	Date_registered	time.Time 	`json:"date_registered"`
-	Gravatar		string    	`json:"gravatar"`
+	ID              int `json:"id"`
+	Username        string                `json:"username"`
+	Email           string                `json:"email"`
+	First_name      string                `json:"first_name"`
+	Last_name       string                `json:"last_name"`
+	Location        string                `json:"location"`
+	Date_registered time.Time        `json:"date_registered"`
+	Gravatar        string        `json:"gravatar"`
 }
 
 type UserProfileContainer struct {
-	Profile	UserProfile    `json:"profile"`
+	Profile UserProfile    `json:"profile"`
 }
 
 // Returns the userid when given a username
@@ -139,7 +137,7 @@ func GetUsername(api router.API, userid int) string {
 
 
 //noinspection GoUnusedFunction
-func GetUsers(api router.API) []User{
+func GetUsers(api router.API) []User {
 	//	SELECT username, bio FROM users;
 	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users")
 	if err != nil {
@@ -207,7 +205,6 @@ func GetUserNameFromToken(api router.API, token string) string {
 	return username;
 }
 
-
 func GetUserIdFromToken(api router.API, token string) int {
 	stmt, err := api.Context.Session.Prepare("SELECT user_id FROM tokens where token=?")
 	if err != nil {
@@ -263,7 +260,6 @@ func GetProfile(api router.API, token string) UserProfileContainer {
 			&User.Location,
 			&User.Date_registered,
 		)
-
 
 		if err != nil {
 			panic(err)
