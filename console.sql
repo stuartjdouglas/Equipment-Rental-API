@@ -401,6 +401,51 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
   END;
 
 #
+# Add Tag to product
+#
+DROP PROCEDURE addTag;
+CALL addTag('fbf8a27c-da48-4300-b611-b427843c835e', 'google');
+
+CREATE PROCEDURE `addTag` (p_id VARCHAR(240), p_tag VARCHAR(240))
+  BEGIN
+    DECLARE pid int;
+    DECLARE tag_exists int;
+    DECLARE tag_relation_exists BOOL;
+    SELECT id INTO pid FROM products WHERE product_id = p_id;
+    SELECT id INTO tag_exists FROM tags WHERE tag = p_tag;
+    SELECT EXISTS(SELECT * from products_has_tags where products_id = pid AND tags_id = tag_exists) INTO tag_relation_exists;
+#     SELECT tag_exists;
+
+    IF (tag_exists IS NULL) THEN
+      INSERT INTO tags(tag) VALUES(p_tag);
+      IF (tag_relation_exists IS FALSE) THEN
+        INSERT INTO products_has_tags(products_id, tags_id) VALUES (pid, tag_exists);
+      END IF;
+    ELSE
+      IF (tag_relation_exists IS FALSE) THEN
+        INSERT INTO products_has_tags(products_id, tags_id) VALUES (pid, tag_exists);
+      END IF;
+    END IF;
+  END;
+
+#
+# Remove Tag
+#
+
+DROP PROCEDURE removeTag;
+CALL removeTag('fbf8a27c-da48-4300-b611-b427843c835e', 'google');
+
+CREATE PROCEDURE `removeTag` (p_id VARCHAR(240), p_tag VARCHAR(240))
+  BEGIN
+    DECLARE pid int;
+    DECLARE tid int;
+    SELECT id INTO pid FROM products WHERE product_id = p_id;
+    SELECT id INTO tid FROM tags WHERE tag = p_tag;
+
+    DELETE FROM products_has_tags WHERE tags_id = tid AND products_id = pid;
+  END;
+
+#
 #  Get Tags
 #
 DROP PROCEDURE GetTags;
