@@ -31,6 +31,7 @@ func CreateRoutes(api router.API) {
 	generateQrRoutes(api)
 	generateProductRoutes(api)
 	generateTagRoutes(api)
+	generateSearchRoutes(api)
 
 	// A test route
 

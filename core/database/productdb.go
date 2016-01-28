@@ -178,6 +178,7 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 			&result.Owner.Gravatar,
 		)
 
+		log.Println(result.Product_id)
 		result.Tags = getTags(api, result.Product_id)
 
 		result.Image = GetImage(api, image_id)

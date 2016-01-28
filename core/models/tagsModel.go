@@ -4,6 +4,8 @@ import (
 	"strings"
 	"github.com/remony/Equipment-Rental-API/core/database"
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"strconv"
+	"log"
 )
 
 type Tag struct {
@@ -53,6 +55,25 @@ func AddTag(api router.API, pid string, tag string, token string) bool {
 	return false
 }
 
-func GetTags(api router.API, pid string) []database.Tag{
+func GetTags(api router.API, pid string) []database.Tag {
 	return database.GetTags(api, pid)
+}
+
+func parseStringToInt(value string) int {
+	result, err := strconv.Atoi(value)
+	if err != nil {
+		log.Println(err)
+	}
+	return result
+}
+
+func parseCount(count int) int {
+	if count < 6 {
+		return 6
+	}
+	return count
+}
+
+func GetProductsOfTag(api router.API, tag string, start string, count string) database.Items {
+	return database.GetProductsWithTag(api, tag, parseStringToInt(start), parseCount(parseStringToInt(count)))
 }

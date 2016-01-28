@@ -361,6 +361,48 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
   END;
 
 #
+#   getListingOfTag
+#
+DROP PROCEDURE getListingOfTag;
+CALL getListingOfTag("mobile", 0, 5);
+
+CREATE PROCEDURE `getListingOfTag`(s_tag VARCHAR(240), start INT, count INT)
+  BEGIN
+    SELECT product_id as id, products.product_name as name, products.product_description as description, products.date_added,
+      products.date_updated, products.product_rental_period_limit as time_period, has.products_id as image_id, username as username, md5(email) as gravatar
+    from has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT OUTER JOIN products_has_tags ON products.id = products_has_tags.products_id
+      LEFT OUTER JOIN tags ON products_has_tags.tags_id = tags.id
+      WHERE tag = s_tag
+      ORDER BY products.date_updated DESC LIMIT start, count;
+  END;
+
+
+#
+#   searchFilterByTag
+#
+
+DROP PROCEDURE searchFilterByTag;
+CALL searchFilterByTag("mobile", 0, 2);
+
+CREATE PROCEDURE `searchFilterByTag`(s_tag TEXT, start INT, count INT)
+  BEGIN
+    SELECT product_id as id, products.product_name as name, products.product_description as description, products.date_added,
+      products.date_updated, products.product_rental_period_limit as time_period, has.products_id as image_id, username as username, md5(email) as gravatar
+    from has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT OUTER JOIN products_has_tags ON products.id = products_has_tags.products_id
+      LEFT OUTER JOIN tags ON products_has_tags.tags_id = tags.id
+      WHERE tag LIKE CONCAT("%", s_tag, "%")
+      GROUP BY product_id
+      ORDER BY products.date_updated DESC LIMIT start, count;
+  END;
+
+
+#
 #   Get Listing
 #
 DROP PROCEDURE  getListing;
