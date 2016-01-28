@@ -33,8 +33,12 @@ func generateProductRoutes(api router.API) {
 				Filetype:r.FormValue("filetype"),
 			}
 
-			result := models.CreateProduct(api, product, token)
+			tags := r.FormValue("tags")
 
+			result := models.CreateProduct(api, product, token)
+			if tags != "" {
+				models.UploadTags(api, result.Items[0].Product_id, tags)
+			}
 			data, err := json.Marshal(result)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)

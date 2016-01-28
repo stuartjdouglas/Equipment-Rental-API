@@ -361,6 +361,48 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
   END;
 
 #
+#   getListingOfTag
+#
+DROP PROCEDURE getListingOfTag;
+CALL getListingOfTag("mobile", 0, 5);
+
+CREATE PROCEDURE `getListingOfTag`(s_tag VARCHAR(240), start INT, count INT)
+  BEGIN
+    SELECT product_id as id, products.product_name as name, products.product_description as description, products.date_added,
+      products.date_updated, products.product_rental_period_limit as time_period, has.products_id as image_id, username as username, md5(email) as gravatar
+    from has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT OUTER JOIN products_has_tags ON products.id = products_has_tags.products_id
+      LEFT OUTER JOIN tags ON products_has_tags.tags_id = tags.id
+      WHERE tag = s_tag
+      ORDER BY products.date_updated DESC LIMIT start, count;
+  END;
+
+
+#
+#   searchFilterByTag
+#
+
+DROP PROCEDURE searchFilterByTag;
+CALL searchFilterByTag("mobile", 0, 2);
+
+CREATE PROCEDURE `searchFilterByTag`(s_tag TEXT, start INT, count INT)
+  BEGIN
+    SELECT product_id as id, products.product_name as name, products.product_description as description, products.date_added,
+      products.date_updated, products.product_rental_period_limit as time_period, has.products_id as image_id, username as username, md5(email) as gravatar
+    from has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT OUTER JOIN products_has_tags ON products.id = products_has_tags.products_id
+      LEFT OUTER JOIN tags ON products_has_tags.tags_id = tags.id
+      WHERE tag LIKE CONCAT("%", s_tag, "%")
+      GROUP BY product_id
+      ORDER BY products.date_updated DESC LIMIT start, count;
+  END;
+
+
+#
 #   Get Listing
 #
 DROP PROCEDURE  getListing;
@@ -368,8 +410,9 @@ CALL getListing();
 
 CREATE PROCEDURE getListing()
   BEGIN
-    SELECT ownerid as owner, product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, id as id FROM products
+    SELECT username as username, md5(email) as gravatar, product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, products.id as id FROM products
     LEFT JOIN has ON products.id = has.products_id
+    LEFT JOIN users ON has.users_id = users.id
     ORDER BY date_updated DESC;
   END;
 
@@ -418,6 +461,7 @@ CREATE PROCEDURE `addTag` (p_id VARCHAR(240), p_tag VARCHAR(240))
 
     IF (tag_exists IS NULL) THEN
       INSERT INTO tags(tag) VALUES(p_tag);
+      SELECT id INTO tag_exists FROM tags WHERE tag = p_tag;
       IF (tag_relation_exists IS FALSE) THEN
         INSERT INTO products_has_tags(products_id, tags_id) VALUES (pid, tag_exists);
       END IF;
@@ -651,7 +695,7 @@ CALL getPagedProducts(0, 6);
 
 CREATE PROCEDURE getPagedProducts (step INT, count INT)
   BEGIN
-    SELECT product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, products_id as image_id, username as owner from has
+    SELECT product_id as id, product_name as name, product_description as description, date_added, date_updated, product_rental_period_limit as time_period, products_id as image_id, username as username, md5(email) as gravatar from has
     LEFT OUTER JOIN products ON has.products_id = products.id
     LEFT OUTER JOIN users ON has.users_id = users.id
     ORDER BY products.date_updated DESC LIMIT step, count;

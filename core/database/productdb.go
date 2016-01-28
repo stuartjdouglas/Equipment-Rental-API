@@ -71,10 +71,10 @@ func GetProducts(api router.API) Items {
 
 	for rows.Next() {
 		var result Item
-		var tmpuserid int
 		var postid int
 		err := rows.Scan(
-			&tmpuserid,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
 			&result.Product_name,
 			&result.Product_id,
 			&result.Date_added,
@@ -87,7 +87,6 @@ func GetProducts(api router.API) Items {
 		result.Tags = getTags(api, result.Product_id);
 
 		result.Image = GetImage(api, postid)
-		result.Owner = GetUser(api, GetUsername(api, tmpuserid))
 
 		if err != nil {
 			panic(err)
@@ -166,7 +165,7 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 	for rows.Next() {
 		var result Item
 		var image_id int
-		var tmpuserid string
+		//var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
 			&result.Product_name,
@@ -175,9 +174,11 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 			&result.Date_updated,
 			&result.Product_rental_period_limit,
 			&image_id,
-			&tmpuserid,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
 		)
 
+		log.Println(result.Product_id)
 		result.Tags = getTags(api, result.Product_id)
 
 		result.Image = GetImage(api, image_id)
