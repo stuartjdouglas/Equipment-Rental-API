@@ -178,7 +178,6 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 			&result.Owner.Gravatar,
 		)
 
-		log.Println(result.Product_id)
 		result.Tags = getTags(api, result.Product_id)
 
 		result.Image = GetImage(api, image_id)
@@ -413,7 +412,6 @@ func GetProductFromOwner(api router.API, username string) Items {
 
 func GetProductFromID(api router.API, id string) Items {
 	var content = []Item{}
-	log.Println("getting product " + id)
 	stmt, err := api.Context.Session.Prepare("Call getProduct(?)")
 	if err != nil {
 		log.Fatal(err)
