@@ -354,4 +354,23 @@ func generateProductRoutes(api router.API) {
 			res.Write(data)
 		}
 	})
+
+	api.Router.Get("/product/:id/owner", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		pid := c.URLParams["id"]
+		token := r.Header.Get("token")
+
+		result := models.AmITheOwner(api, pid, token)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+
+		res.Write(data)
+
+	})
 }

@@ -123,10 +123,8 @@ func RentItem(api router.API, product_id string, token string) database.Availabi
 
 func ReturnItem(api router.API, product_id string, token string) {
 	if (database.IsOwner(api, token, product_id)) {
-		log.Println("returning as owner")
 		database.ReturnItemAsOwner(api, product_id, token)
 	} else {
-		log.Println("returning as user")
 		database.ReturnItem(api, product_id, token)
 	}
 }
@@ -141,4 +139,12 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) d
 
 func GetProductFromOwner(api router.API, username string) database.Items {
 	return database.GetProductFromOwner(api, username)
+}
+
+type OwnerRes struct {
+	Owner bool `json:"owner"`
+}
+
+func AmITheOwner(api router.API, pid string, token string) OwnerRes {
+	return OwnerRes{Owner:IsOwner(api, token, pid)}
 }
