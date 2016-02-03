@@ -292,35 +292,45 @@ func generateProductRoutes(api router.API) {
 
 	api.Router.Post("/p/:id/rent", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
-		result := models.GetAvailability(api, c.URLParams["id"])
-		token := r.Header.Get("token")
-
-		if result.Available {
-			if token != "" {
-				if (models.IsSessionValid(api, token)) {
-					models.RentItem(api, c.URLParams["id"], token)
-				} else {
-					http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
-				}
-
-			} else {
-				http.Error(res, "Unauthorized: missing token", http.StatusInternalServerError)
-			}
-		} else {
-			// Return nil
-			data, err := json.Marshal(result)
-			if err != nil {
-				http.Error(res, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(http.StatusConflict)
-
-			res.Write(data)
-
+		//result := models.GetAvailability(api, c.URLParams["id"])
+		//token := r.Header.Get("token")
+		//
+		//if result.Available {
+		//	if token != "" {
+		//		if (models.IsSessionValid(api, token)) {
+		//			models.RentItem(api, c.URLParams["id"], token)
+		//		} else {
+		//			http.Error(res, "Unauthorized: invalid or expired token", http.StatusInternalServerError)
+		//		}
+		//
+		//	} else {
+		//		http.Error(res, "Unauthorized: missing token", http.StatusInternalServerError)
+		//	}
+		//} else {
+		//	// Return nil
+		//	data, err := json.Marshal(result)
+		//	if err != nil {
+		//		http.Error(res, err.Error(), http.StatusInternalServerError)
+		//		return
+		//	}
+		//
+		//	res.Header().Set("Content-Type", "application/json")
+		//	res.WriteHeader(http.StatusConflict)
+		//
+		//	res.Write(data)
+		//
+		//}
+		result := "disabled"
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusConflict)
+
+		res.Write(data)
 	})
 
 	api.Router.Post("/p/:id/return", func(c web.C, res http.ResponseWriter, r *http.Request) {
@@ -353,5 +363,24 @@ func generateProductRoutes(api router.API) {
 
 			res.Write(data)
 		}
+	})
+
+	api.Router.Get("/product/:id/owner", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		pid := c.URLParams["id"]
+		token := r.Header.Get("token")
+
+		result := models.AmITheOwner(api, pid, token)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+
+		res.Write(data)
+
 	})
 }
