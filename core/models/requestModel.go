@@ -14,6 +14,14 @@ func GetProductsRequests(api router.API, token string, start string, count strin
 	}
 }
 
+func GetUserRequests(api router.API, token string, start string, count string) database.UserItemRequests {
+	if ValidToken(token) {
+		return database.GetUserRequests(api, token, parseStringToInt(start), parseStringToInt(count))
+	} else {
+		return database.UserItemRequests{}
+	}
+}
+
 func RequestProductStatus(api router.API, pid string, token string) database.Request {
 	if ValidToken(token) {
 		return database.GetProductRequestStatus(api, pid, token)

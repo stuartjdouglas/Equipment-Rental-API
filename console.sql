@@ -763,6 +763,34 @@ CREATE PROCEDURE `OwnerGetProductRequests`(u_token VARCHAR(240), u_pid VARCHAR(2
     ORDER BY date_requested DESC;
   END;
 
+#
+# User get items with requests placed on them
+#
+
+DROP PROCEDURE UserGetOngoingRequests;
+CALL UserGetOngoingRequests("641d8443-9074-4a19-ae5a-2f2e285e8d34", 0, 5);
+
+CREATE PROCEDURE `UserGetOngoingRequests`(u_token VARCHAR(240), step int, count int)
+  BEGIN
+    DECLARE uid int;
+    select user_id into uid from tokens where token = u_token;
+
+    SELECT
+      product_id          AS id,
+      product_name        AS name,
+      product_description AS description,
+      date_requested      AS date_requested,
+      products_id         AS image_id,
+      username            AS owner
+
+    FROM users_requests_products
+      LEFT OUTER JOIN products ON users_requests_products.products_id = products.id
+      LEFT OUTER JOIN users ON users_id = users.id
+    WHERE users_requests_products.date_requested <= NOW() AND users_id = uid
+    ORDER BY users_requests_products.date_requested DESC
+    LIMIT step, count;
+
+  END;
 
 #
 # Owner get items with requests

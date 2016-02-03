@@ -176,6 +176,66 @@ func GetProductsRequests(api router.API, token string, start int, count int) Ite
 	return ItemRequests{Items: content, Total: len(content)}
 }
 
+type UserItemRequests struct {
+	Requests []UserRequestItem `json:"requests"`
+	Total int `json:"total"`
+}
+
+type UserRequestItem struct {
+	ID          string                `json:"id"`
+	Title       string                `json:"title"`
+	Description string                `json:"description"`
+	Date_requested         time.Time        `json:"date_requested"`
+	Images      Image                `json:"images"`
+	Owner       User                `json:"owner"`
+}
+
+func GetUserRequests(api router.API, token string, start int, count int) UserItemRequests {
+	var content = []UserRequestItem{}
+	stmt, err := api.Context.Session.Prepare("Call UserGetOngoingRequests(?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token, start, count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result UserRequestItem
+		var image_id int
+		var username string
+		err := rows.Scan(
+			&result.ID,
+			&result.Title,
+			&result.Description,
+			&result.Date_requested,
+			&image_id,
+			&username,
+		)
+
+		result.Images = GetImage(api, image_id)
+		//		userid, err := strconv.Atoi(tmpuserid)
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+		result.Owner = GetUser(api, username)
+
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return UserItemRequests{Requests: content, Total: len(content)}
+}
+
 func SendRequestProduct(api router.API, pid string, token string) Request {
 	var req Request
 	stmt, err := api.Context.Session.Prepare("CALL RequestToBorrowItem(?, ?)")

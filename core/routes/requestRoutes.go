@@ -9,7 +9,7 @@ import (
 )
 
 func generateRequestRouter(api router.API) {
-	api.Router.Get("/requests", func(c web.C, res http.ResponseWriter, req *http.Request) {
+	api.Router.Get("/owner/requests", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		//pid := c.URLParams["pid"]
 		token := req.Header.Get("token")
 		start := req.Header.Get("start")
@@ -17,6 +17,33 @@ func generateRequestRouter(api router.API) {
 
 		if len(token) > 3 {
 			result := models.GetProductsRequests(api, token, start, count)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			message := hello{
+				Message: "Unable to request item",
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(res).Encode(message)
+		}
+	})
+
+	api.Router.Get("/requests", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		//pid := c.URLParams["pid"]
+		token := req.Header.Get("token")
+		start := req.Header.Get("start")
+		count := req.Header.Get("count")
+
+		if len(token) > 3 {
+			result := models.GetUserRequests(api, token, start, count)
 			data, err := json.Marshal(result)
 			if err != nil {
 				http.Error(res, err.Error(), http.StatusInternalServerError)
