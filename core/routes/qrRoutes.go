@@ -39,7 +39,7 @@ func generateQrRoutes(api router.API) {
 			break;
 		}
 
-		if len(qr.Code) < 0 || qr.Height <= 0 || qr.Width < 0 {
+		if len(qr.Code) <= 0 || qr.Height <= 0 || qr.Width <= 0 {
 			qr = QRcode{
 				Code:        "You have given me wrong params; see docs for more information",
 				Height:        500,

@@ -226,3 +226,23 @@ func SendCancelRequestProduct(api router.API, pid string, token string) bool {
 	}
 	return true
 }
+
+func SendCancelRequestProductAsOwner(api router.API, pid string, username string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL OwnerDropRequest(?, ?)")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(pid, username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return true
+}

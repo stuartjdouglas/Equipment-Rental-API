@@ -84,10 +84,14 @@ func RequestProduct(api router.API, pid string, token string) database.Request {
 	}
 }
 
-func CancelRequestProduct(api router.API, pid string, token string) bool {
+func CancelRequestProduct(api router.API, pid string, token string, username string) bool {
 	if ValidToken(token) {
 		if database.GetAvailability(api, pid).Available {
-			database.SendCancelRequestProduct(api, pid, token)
+			if IsOwner(api, token, pid) {
+				database.SendCancelRequestProductAsOwner(api, pid, username)
+			} else {
+				database.SendCancelRequestProduct(api, pid, token)
+			}
 			return true
 		} else {
 			return false

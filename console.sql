@@ -802,6 +802,32 @@ CREATE PROCEDURE `OwnerGetRequests`(u_token VARCHAR(240), step int, count int)
   END;
 
 #
+#  Owner Cancel Request
+#
+
+DROP PROCEDURE OwnerDropRequest;
+CALL OwnerDropRequest();
+
+CREATE PROCEDURE `OwnerDropRequest`(u_pid VARCHAR(240) , t_username VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    SELECT id
+    INTO uid
+    FROM users
+    WHERE username = t_username;
+
+    SELECT id
+    INTO pid
+    FROM products
+    WHERE product_id = u_pid;
+
+    DELETE FROM users_requests_products
+    WHERE products_id = pid AND users_id = uid;
+  END;
+
+#
 #   Cancel Request
 #
 

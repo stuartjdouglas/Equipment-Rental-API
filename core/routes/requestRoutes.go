@@ -135,7 +135,7 @@ func generateRequestRouter(api router.API) {
 	api.Router.Post("/product/:pid/request/cancel", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		pid := c.URLParams["pid"]
 		if len(pid) > 3 {
-			result := models.CancelRequestProduct(api, pid, req.Header.Get("token"))
+			result := models.CancelRequestProduct(api, pid, req.Header.Get("token"), req.Header.Get("username"))
 			var message hello
 			if (result) {
 				res.WriteHeader(200)
