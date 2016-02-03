@@ -33,7 +33,6 @@ func RequestProductStatus(api router.API, pid string, token string) database.Req
 	}
 }
 
-
 func RequestToRent(api router.API, pid string, username string, token string) bool {
 	if IsOwner(api, token, pid) {
 		if database.GetAuthedAvailability(api, pid, token).Available {

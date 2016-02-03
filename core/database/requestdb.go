@@ -178,16 +178,16 @@ func GetProductsRequests(api router.API, token string, start int, count int) Ite
 
 type UserItemRequests struct {
 	Requests []UserRequestItem `json:"requests"`
-	Total int `json:"total"`
+	Total    int `json:"total"`
 }
 
 type UserRequestItem struct {
-	ID          string                `json:"id"`
-	Title       string                `json:"title"`
-	Description string                `json:"description"`
-	Date_requested         time.Time        `json:"date_requested"`
-	Images      Image                `json:"images"`
-	Owner       User                `json:"owner"`
+	ID             string                `json:"id"`
+	Title          string                `json:"title"`
+	Description    string                `json:"description"`
+	Date_requested time.Time        `json:"date_requested"`
+	Images         Image                `json:"images"`
+	Owner          User                `json:"owner"`
 }
 
 func GetUserRequests(api router.API, token string, start int, count int) UserItemRequests {
