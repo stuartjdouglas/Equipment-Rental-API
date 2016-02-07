@@ -28,9 +28,17 @@ func SendNotificationProduct(api router.API, token string, pid string, message N
 		if IsOwner(api, token, pid) {
 			data := database.GetPushNotificationProductregid(api, pid)
 			sendNotification(data, message)
-			log.Println(data)
-			//return database.SendNotificationProduct(api, regid, deviceType, token)
+			return true
 		}
+	}
+	return false
+}
+
+func SendNotificationToUser(api router.API, username string, message Notification) bool {
+	if (len(username) > 0) {
+		data := database.GetPushNotificationUserRegID(api, username)
+		sendNotification(data, message)
+		return true
 	}
 	return false
 }

@@ -89,3 +89,37 @@ func GetPushNotificationProductregid(api router.API, pid string) PushNotificatio
 
 	return content
 }
+func GetPushNotificationUserRegID(api router.API, username string) PushNotificationReqID {
+	var content PushNotificationReqID
+	stmt, err := api.Context.Session.Prepare("Call GetPushNotificationIDsOfUser(?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var ids string
+		err := rows.Scan(
+			&content.Username,
+			&ids,
+			&content.Type,
+		)
+
+		content.RequestIDs = parseids(ids)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return content
+}

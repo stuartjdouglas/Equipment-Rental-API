@@ -43,6 +43,25 @@ func generatePushNotificationRoutes(api router.API) {
 		res.Write(data)
 	})
 
+	api.Router.Post("/notification/user/:username", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		decoder := json.NewDecoder(req.Body)
+		var message models.Notification
+		err := decoder.Decode(&message)
+		if err != nil {
+			log.Println(err)
+		}
+		result := models.SendNotificationToUser(api, c.URLParams["username"], message)
+		data, err := json.Marshal(result)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+	})
+
 	api.Router.Post("/notification", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		log.Println("testing")
 		models.TestNotification();
