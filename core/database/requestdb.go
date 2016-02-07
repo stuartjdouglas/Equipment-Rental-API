@@ -176,6 +176,52 @@ func GetProductsRequests(api router.API, token string, start int, count int) Ite
 	return ItemRequests{Items: content, Total: len(content)}
 }
 
+func GetProductsRequestsAsOwner(api router.API, token string, start int, count int) ItemRequests {
+	var content = []ItemRequest{}
+	stmt, err := api.Context.Session.Prepare("Call OwnerGetRequests(?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token, start, count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result ItemRequest
+		var imageid int
+		err := rows.Scan(
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Product_name,
+			&result.Product_id,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_description,
+			&result.Product_rental_period_limit,
+			&imageid,
+			&result.Requests,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		result.Image = GetImage(api, imageid)
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return ItemRequests{Items: content, Total: len(content)}
+}
+
 type UserItemRequests struct {
 	Requests []UserRequestItem `json:"requests"`
 	Total    int `json:"total"`

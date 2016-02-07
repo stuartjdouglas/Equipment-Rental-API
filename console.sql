@@ -268,6 +268,33 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`Site` (
 )
   ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `honoursproject`.`push_tokens` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` TEXT NOT NULL,
+  `reqid` VARCHAR(240) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`users_has_push_tokens` (
+  `users_id` INT NOT NULL,
+  `push_tokens_id` INT NOT NULL,
+  PRIMARY KEY (`users_id`, `push_tokens_id`),
+  INDEX `fk_users_has_push_tokens_push_tokens1_idx` (`push_tokens_id` ASC),
+  INDEX `fk_users_has_push_tokens_users1_idx` (`users_id` ASC),
+  CONSTRAINT `fk_users_has_push_tokens_users1`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_has_push_tokens_push_tokens1`
+    FOREIGN KEY (`push_tokens_id`)
+    REFERENCES `honoursproject`.`push_tokens` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+
 #
 #
 #
@@ -275,6 +302,78 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`Site` (
 #
 #
 #
+
+#
+# GetPushNotificationIDsOfUser
+#
+DROP PROCEDURE GetPushNotificationIDsOfUser;
+CALL GetPushNotificationIDsOfUser("remon");
+
+CREATE PROCEDURE `GetPushNotificationIDsOfUser`(u_name VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    SELECT id into uid from users where username = u_name;
+
+    SELECT username, GROUP_CONCAT(CONCAT(reqid) SEPARATOR ', ') as reqid, type FROM users_has_push_tokens
+    LEFT JOIN push_tokens ON users_has_push_tokens.push_tokens_id = push_tokens.id
+      LEFT JOIN users ON users_has_push_tokens.users_id = users.id
+    WHERE username = u_name;
+
+  END;
+
+select * from tokens
+LEFT JOIN users on tokens.user_id = users.id where username = "john";
+
+select * from push_tokens where reqid = "APA91bEmTcK5SsI4Isj89UUyHtaFJQbRtxrEZxkDHbEebaNqf-qfdu2kgLqjErm1tX1TmtP-v8NeLEha1J2KQJRAP6CDacdkmTzQsOUuEMJwsY156zV6iDC217GUnI8mLp4bRuUSiuFb";
+
+DROP PROCEDURE GetPushNotificationIDsOfProduct;
+CALL GetPushNotificationIDsOfProduct("311b8bf3-bae2-4dca-a973-428b635b6114");
+
+CREATE PROCEDURE `GetPushNotificationIDsOfProduct`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    SELECT users.id, products.id into uid, pid FROM user_rent_product
+      LEFT JOIN users ON user_rent_product.users_id = users.id
+      LEFT JOIN products ON user_rent_product.products_id = products.id
+      WHERE product_id = p_id;
+
+    SELECT username, GROUP_CONCAT(CONCAT(reqid) SEPARATOR ', ') as reqid, type FROM users_has_push_tokens
+    LEFT JOIN push_tokens ON users_has_push_tokens.push_tokens_id = push_tokens.id
+      LEFT JOIN users ON users_has_push_tokens.users_id = users.id
+    WHERE users_id = uid;
+
+  END;
+
+
+
+#
+#  Add regid to push notifications
+#
+
+DROP PROCEDURE addPushNotificationRegID;
+CALL addPushNotificationRegID("fcbba753-0010-41ec-b098-2966e54e0f3c", "acode", "test");
+
+CREATE PROCEDURE `addPushNotificationRegID`(u_token VARCHAR(240), p_regid VARCHAR(240), p_type TEXT)
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+    DECLARE r_exists BOOL;
+
+    SELECT EXISTS(select id from push_tokens where reqid = p_regid) into r_exists;
+
+    if (r_exists) THEN
+        SELECT FALSE;
+      ELSE
+        SELECT user_id into uid FROM tokens where token = u_token;
+        INSERT INTO push_tokens (type, reqid) VALUES(p_type, p_regid);
+        INSERT INTO users_has_push_tokens (users_id, push_tokens_id) VALUES(uid, LAST_INSERT_ID());
+        SELECT TRUE;
+    END IF;
+
+  END;
+
 
 
 #
@@ -887,7 +986,10 @@ CREATE PROCEDURE `CancelRequest`(p_id VARCHAR(240), u_token VARCHAR(240))
 #
 
 DROP PROCEDURE GetRequestStatus;
-CALL GetRequestStatus("fbf749c8-010f-4bb1-aa10-7da3aca6ba0d", "674c99c7-da73-43f3-b8fe-1e6c96eedda7");
+CALL GetRequestStatus(
+    "73094d40-6724-4aed-ae96-a7a230226318",
+    "674c99c7-da73-43f3-b8fe-1e6c96eedda7"
+);
 
 CREATE PROCEDURE GetRequestStatus(p_id VARCHAR(240), u_token VARCHAR(240))
   BEGIN
@@ -1231,7 +1333,8 @@ CREATE PROCEDURE `checkProductAvailability`(product VARCHAR(240))
 #
 
 DROP PROCEDURE checkAuthedProductAvailability;
-CALL checkAuthedProductAvailability("4c0bc251-bc9a-4a95-9612-a883bc6877ad");
+CALL checkAuthedProductAvailability(
+    "f8339453-7aaa-42b9-a355-b82608f4af2b");
 
 CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
   BEGIN

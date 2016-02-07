@@ -33,6 +33,7 @@ func CreateRoutes(api router.API) {
 	generateTagRoutes(api)
 	generateSearchRoutes(api)
 	generateRequestRouter(api)
+	generatePushNotificationRoutes(api)
 
 	// A test route
 

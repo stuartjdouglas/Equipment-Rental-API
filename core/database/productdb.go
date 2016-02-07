@@ -512,6 +512,8 @@ func GetAvailability(api router.API, product string) Availability {
 func GetAuthedAvailability(api router.API, product string, token string) RentalStatus {
 	var currentProductRenter string
 	var available bool
+	log.Println("test")
+	log.Println(product)
 
 	username := GetUserNameFromToken(api, token)
 

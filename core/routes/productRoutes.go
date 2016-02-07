@@ -229,6 +229,8 @@ func generateProductRoutes(api router.API) {
 
 	api.Router.Get("/p/:id/availability", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
+		log.Println("token:" +token)
+		log.Println("pid" + c.URLParams["id"])
 		if token != "" {
 			// Check that the token is a valid token
 			if models.IsSessionValid(api, token) {

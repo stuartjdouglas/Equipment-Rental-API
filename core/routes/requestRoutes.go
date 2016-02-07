@@ -138,6 +138,7 @@ func generateRequestRouter(api router.API) {
 
 	api.Router.Post("/product/:pid/request", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		pid := c.URLParams["pid"]
+
 		if len(pid) > 3 {
 			result := models.RequestProduct(api, pid, req.Header.Get("token"))
 			data, err := json.Marshal(result)
