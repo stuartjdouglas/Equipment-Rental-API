@@ -12,6 +12,11 @@ type Items struct {
 	Total int        `json:"total"`
 }
 
+type OwnerItems struct {
+	Items []OwnerItem `json:"items"`
+	Total int `json:"total"`
+}
+
 type Item struct {
 	Product_name                string                `json:"title"`
 	Product_id                  string                `json:"id"`
@@ -21,6 +26,19 @@ type Item struct {
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
 	Image                       Image           `json:"image"`
+	Tags                        []Tag                `json:"tags"`
+}
+
+type OwnerItem struct {
+	Product_name                string                `json:"title"`
+	Product_id                  string                `json:"id"`
+	Date_added                  time.Time        `json:"date_added"`
+	Date_updated                time.Time        `json:"date_updated"`
+	Product_description         string                `json:"description"`
+	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
+	Owner                       User                `json:"owner"`
+	Image                       Image           `json:"image"`
+	Holder                      User `json:"holder"`
 	Tags                        []Tag                `json:"tags"`
 }
 
@@ -699,9 +717,9 @@ func RemoveProduct(api router.API, pid string, token string) {
 }
 
 // Returns products that belongs to the owner
-func GetOwnerProductsPaging(api router.API, token string, step int, count int) Items {
+func GetOwnerProductsPaging(api router.API, token string, step int, count int) OwnerItems {
 
-	var content = []Item{}
+	var content = []OwnerItem{}
 
 	stmt, err := api.Context.Session.Prepare("CALL getOwnerProducts(?, ?, ?)")
 	if err != nil {
@@ -716,9 +734,9 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) I
 	defer rows.Close()
 
 	for rows.Next() {
-		var result Item
+		var result OwnerItem
 		var image_id int
-		var tmpuserid string
+		//var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
 			&result.Product_name,
@@ -727,10 +745,12 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) I
 			&result.Date_updated,
 			&result.Product_rental_period_limit,
 			&image_id,
-			&tmpuserid,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
 		)
 
 		result.Image = GetImage(api, image_id)
+		result.Holder = getHolder(api, result.Product_id)
 
 		if err != nil {
 			log.Println("Getting paged results error scanning")
@@ -743,7 +763,36 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) I
 		log.Fatal(err)
 	}
 
-	return Items{Items:content, Total:len(content)}
+	return OwnerItems{Items:content, Total:len(content)}
+}
+
+func getHolder(api router.API, pid string) User {
+	stmt, err := api.Context.Session.Prepare("CALL getHolder(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var result User
+
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Username,
+			&result.Gravatar,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	return result
 }
 
 func GetOwnerProductAvailability(api router.API, product string, token string) OwnerRentalStatus {

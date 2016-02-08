@@ -36,7 +36,12 @@ func RequestProductStatus(api router.API, pid string, token string) database.Req
 func RequestToRent(api router.API, pid string, username string, token string) bool {
 	if IsOwner(api, token, pid) {
 		if database.GetAuthedAvailability(api, pid, token).Available {
-			return database.RequestToRent(api, pid, username)
+			result := database.RequestToRent(api, pid, username)
+			if result {
+				productdata := GetProductFromID(api, pid)
+				SendNotificationToUser(api, username, Notification{Title: "Your request for " + productdata.Items[0].Product_name + " has been accepted", Message: productdata.Items[0].Product_name + " is now ready to collect"})
+			}
+			return result
 		} else {
 			return false
 		}

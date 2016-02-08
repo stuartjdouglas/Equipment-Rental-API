@@ -133,7 +133,7 @@ func GetProductsPaging(api router.API, step int, count int) database.Items {
 	return database.GetProductsPaging(api, step, count)
 }
 
-func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.Items {
+func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.OwnerItems {
 	return database.GetOwnerProductsPaging(api, token, step, count)
 }
 

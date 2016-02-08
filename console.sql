@@ -1381,11 +1381,28 @@ CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
   END;
 
 #
+#  getHolder
+#
+DROP PROCEDURE `getHolder`;
+CALL getHolder("73094d40-6724-4aed-ae96-a7a230226318");
+
+CREATE PROCEDURE `getHolder`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE  pid INT;
+
+    SELECT id into pid from products WHERE product_id = p_id;
+    SELECT username, md5(email) from user_rent_product
+      LEFT JOIN users ON user_rent_product.users_id = users.id
+    WHERE products_id = pid;
+  END;
+
+#
 # Get owner products
 #
 
 DROP PROCEDURE getOwnerProducts;
-CALL getOwnerProducts("94a17bfa-6c49-4398-8155-137f07612f7d", 0, 15);
+CALL getOwnerProducts("674c99c7-da73-43f3-b8fe-1e6c96eedda7", 0, 15);
 
 CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
   BEGIN
@@ -1395,6 +1412,7 @@ CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
     FROM tokens
       LEFT OUTER JOIN users ON tokens.user_id = users.id
     WHERE token = u_token;
+
     SELECT
       product_id                  AS id,
       product_name                AS name,
@@ -1403,7 +1421,8 @@ CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
       date_updated,
       product_rental_period_limit AS time_period,
       products_id                 AS image_id,
-      username                    AS owner
+      username                    AS username,
+      md5(email)                  AS gravatar
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
