@@ -2,6 +2,10 @@ package routes
 
 import (
 	"github.com/remony/Equipment-Rental-API/core/router"
+	"github.com/zenazn/goji/web"
+	"net/http"
+	"github.com/remony/Equipment-Rental-API/core/models"
+	"encoding/json"
 )
 
 type Error struct {
@@ -9,6 +13,39 @@ type Error struct {
 }
 
 func generateImageRoutes(api router.API) {
+	api.Router.Post("/product/:pid/image/add", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		pid := c.URLParams["pid"]
+		fileType := req.FormValue("filetype")
+		image := req.FormValue("image")
+		if len(pid) > 3 {
+			result := models.AddImageToProduct(api, pid, req.Header.Get("token"), fileType, image)
+			var message hello
+			if (result) {
+				res.WriteHeader(200)
+				message.Message = "Image added"
+			} else {
+				res.WriteHeader(http.StatusInternalServerError)
+				message.Message = "Unable to add image"
+			}
+			data, err := json.Marshal(message)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+
+			res.Write(data)
+		} else {
+			message := hello{
+				Message: "No product exist",
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(res).Encode(message)
+		}
+	})
+
 	//	api.Router.Get("/image/:filename", func(c web.C, res http.ResponseWriter, r *http.Request) {
 	//		result := models.GetImage(api,c.URLParams["filename"])
 	//

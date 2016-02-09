@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`users` (
   `bio`             VARCHAR(140) NULL     DEFAULT 'Please describe me',
   `date_registered` DATE         NOT NULL,
   `karma`           INT          NOT NULL DEFAULT 0,
+  `role` varchar(240) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `username` (`username` ASC)
 )
@@ -142,6 +143,9 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
   `product_description`         VARCHAR(240) NOT NULL,
   `product_rental_period_limit` VARCHAR(240) NOT NULL,
   `ownerid`                     INT          NOT NULL,
+  `condition` varchar(240) NOT NULL,
+  `authorized` tinyint(1) NOT NULL DEFAULT '0',
+  `visable` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
 )
   ENGINE = InnoDB;
@@ -386,8 +390,8 @@ CALL register("lemon", "test", "lemon@lemondev.xyz", "lemon", "yamano");
 CREATE PROCEDURE `register`(u_name      VARCHAR(240), u_password VARCHAR(240), u_email VARCHAR(240),
                             u_firstname VARCHAR(240), u_lastname VARCHAR(240))
   BEGIN
-    INSERT INTO users (username, password, email, first_name, last_name, location, date_registered)
-    VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW());
+    INSERT INTO users (username, password, email, first_name, last_name, location, date_registered, role)
+    VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW(), "user");
   END;
 
 SELECT *
@@ -466,6 +470,10 @@ CREATE PROCEDURE `login`(u_name VARCHAR(240), u_token VARCHAR(240), u_idenf VARC
 
   END;
 
+#
+# addImage
+#
+
 DROP PROCEDURE addImage;
 
 CALL addImage("image", "image", "image", "");
@@ -478,6 +486,27 @@ CREATE PROCEDURE addImage(i_name VARCHAR(240), i_title VARCHAR(240), i_original 
     WHERE token = u_token;
     INSERT INTO images (file_name, title, date_added, original_name) VALUES (i_name, i_title, NOW(), i_original);
   END;
+
+#
+# AddAnotherImage
+#
+
+DROP PROCEDURE AddAnotherImage;
+
+CALL AddAnotherImage("image", "image", "image", "", "");
+CREATE PROCEDURE AddAnotherImage(i_name VARCHAR(240), i_title VARCHAR(240), i_original VARCHAR(240), u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE userid INT;
+    DECLARE pid INT;
+    select id into pid from products where product_id = p_id;
+    SELECT user_id
+    INTO userid
+    FROM tokens
+    WHERE token = u_token;
+    INSERT INTO images (file_name, title, date_added, original_name) VALUES (i_name, i_title, NOW(), i_original);
+    INSERT INTO products_has_images(products_id, images_id) VALUES (pid, LAST_INSERT_ID());
+  END;
+
 #
 #   Image exists
 #
@@ -507,7 +536,7 @@ CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something
 
 CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product_id VARCHAR(240), date_added DATETIME,
                                date_updated                DATETIME, product_description VARCHAR(240),
-                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT)
+                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240))
   BEGIN
     DECLARE imgid INT;
     SELECT id
@@ -515,19 +544,49 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
     FROM images
     WHERE file_name = product_image_id
     ORDER BY date_added DESC;
-    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid)
+    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`)
     VALUES
-      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id);
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition);
     SET @last_id = LAST_INSERT_ID();
     INSERT INTO has (users_id, products_id, status) VALUES (owner_id, @last_id, 0);
     INSERT INTO products_has_images (products_id, images_id) VALUES (@last_id, imgid);
   END;
 
 #
+#  EditProduct
+#
+DROP PROCEDURE EditProduct;
+
+CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240))
+  BEGIN
+    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition
+    WHERE product_id = p_id;
+
+  END;
+
+#
+#  Remove Images
+#
+
+DROP PROCEDURE removeImage;
+CALL removeImage("cb0e81e1-d22f-46f8-bc43-061bdef6a69b");
+
+CREATE PROCEDURE removeImage(p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    SELECT id
+    INTO pid
+    FROM products
+    WHERE product_id = p_id;
+
+    DELETE from products_has_images where products_id = pid limit 1;
+  END;
+
+#
 #  Remove Product
 #
 DROP PROCEDURE removeProduct;
-CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "9cc7a542-c22a-4855-8cdf-cc4b5cd4a13a");
+CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "cb0e81e1-d22f-46f8-bc43-061bdef6a69b");
 
 CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
   BEGIN
@@ -550,14 +609,19 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     #     select iid;
     DELETE FROM has
     WHERE users_id = uid AND products_id = pid;
-    DELETE FROM products_has_images
-    WHERE products_id = pid;
-    DELETE FROM images
-    WHERE id = iid;
+
     DELETE FROM has
     WHERE products_id = pid;
+
+    DELETE FROM products_has_tags
+    WHERE products_id = pid;
+
+    DELETE FROM users_has_push_tokens
+    WHERE products_id = pid;
+
     DELETE FROM user_rent_product
     WHERE products_id = pid;
+
     DELETE FROM products
     WHERE id = pid;
 
@@ -681,7 +745,8 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
       product_rental_period_limit,
       username,
       products.id AS id,
-      tags
+      tags,
+      `condition`
     FROM has
       LEFT JOIN users ON has.users_id = users.id
       LEFT JOIN products ON has.products_id = products.id
@@ -777,10 +842,18 @@ CREATE PROCEDURE `GetTags`(pid VARCHAR(240))
     WHERE products_id = p_id;
   END;
 
+
+#
+# AddImage
+#
+
+CREATE PROCEDURE AddImage(p_id VARCHAR(240), )
+
 #
 #  Get Image
 #
-CALL getImage(6);
+  DROP PROCEDURE getImage;
+CALL getImage(32);
 
 CREATE PROCEDURE getImage(pid INT)
   BEGIN
@@ -790,7 +863,8 @@ CREATE PROCEDURE getImage(pid INT)
       date_added
     FROM products_has_images
       LEFT JOIN images ON products_has_images.images_id = images.id
-    WHERE products_id = pid;
+    WHERE products_id = pid
+    ORDER BY date_added ASC;
   END;
 
 #
@@ -1221,10 +1295,12 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT)
       product_rental_period_limit AS time_period,
       products_id                 AS image_id,
       username                    AS username,
-      md5(email)                  AS gravatar
+      md5(email)                  AS gravatar,
+      `condition`
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
+      WHERE visable = TRUE AND authorized = TRUE
     ORDER BY products.date_updated DESC
     LIMIT step, COUNT;
   END;
@@ -1572,9 +1648,82 @@ CALL updateSite("lemon rental", "test");
 #   Update the meta data of the website
 #
 
-CREATE PROCEDURE updateSite(s_title VARCHAR(240), s_description VARCHAR(240))
+DROP PROCEDURE updateSite;
+
+CREATE PROCEDURE updateSite(s_title VARCHAR(240), s_description VARCHAR(240), u_token VARCHAR(240))
   BEGIN
-    UPDATE Site
-    SET Title = s_title, Description = s_description
-    WHERE id = 0;
+     DECLARE urole VARCHAR(240);
+    DECLARE uid int;
+    select user_id into uid from tokens where token = u_token;
+    select role into urole from users where id = uid;
+    if (urole = "admin") THEN
+      UPDATE Site
+        SET Title = s_title, Description = s_description
+        WHERE id = 1;
+      select "true";
+      ELSE
+      select "false";
+    END IF;
+
+  END;
+
+#
+#  GetUnAuthorizedProducts
+#
+
+DROP PROCEDURE GetUnAuthorizedProducts;
+CALL GetUnAuthorizedProducts(0, 6);
+
+CREATE PROCEDURE GetUnAuthorizedProducts(step INT, count INT)
+  BEGIN
+    SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products_id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      WHERE authorized = FALSE
+    ORDER BY products.date_updated DESC
+    LIMIT step, COUNT;
+  END;
+
+#
+#  Authorize product
+#
+DROP PROCEDURE AuthorizeProduct;
+CALL AuthorizeProduct("36f8b4d3-845e-47c0-b2fc-531389b1f456", "1640049c-3930-4283-bde8-fb655ea70a5a")
+
+CREATE PROCEDURE `AuthorizeProduct`(p_id VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE urole VARCHAR(240);
+    DECLARE uid int;
+    select user_id into uid from tokens where token = u_token;
+    select role into urole from users where id = uid;
+    if (urole = "admin") THEN
+      update products SET authorized = 1 where product_id = p_id;
+      select "true";
+      ELSE
+      select "false";
+    END IF;
+  END;
+
+#
+#  GetUserRole
+#
+DROP PROCEDURE GetUserRole;
+CALL GetUserRole("1640049c-3930-4283-bde8-fb655ea70a5a");
+
+CREATE PROCEDURE `GetUserRole`(u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    select user_id into uid from tokens where token = u_token;
+    select username, role from users where id = uid;
+
   END;

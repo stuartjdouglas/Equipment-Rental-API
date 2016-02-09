@@ -41,8 +41,8 @@ func DoesImageExist(api router.API, code string) bool {
 
 }
 
-func GetImage(api router.API, id int) Image {
-	var images = Image{}
+func GetImage(api router.API, id int) []Image {
+	var images = []Image{}
 	stmt, err := api.Context.Session.Prepare("CALL getImage(?)")
 	if err != nil {
 		log.Fatal(err)
@@ -82,7 +82,7 @@ func GetImage(api router.API, id int) Image {
 
 		}
 
-		images = image
+		images = append(images, image)
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
@@ -160,8 +160,24 @@ func AddImageLocationToDb(api router.API, filename string, title string, origina
 	}
 	defer rows.Close()
 
-	return true;
+	return true
 }
 
+func AddImageToProduct(api router.API, filename string, token string, pid string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL AddAnotherImage(?, ?, ?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(filename, filename, filename, token, pid)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	return true
+}
 
 

@@ -34,6 +34,7 @@ func CreateRoutes(api router.API) {
 	generateSearchRoutes(api)
 	generateRequestRouter(api)
 	generatePushNotificationRoutes(api)
+	generateAdminRoutes(api)
 
 	// A test route
 

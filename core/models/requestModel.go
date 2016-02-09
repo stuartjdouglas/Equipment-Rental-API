@@ -113,3 +113,15 @@ func CancelRequestProduct(api router.API, pid string, token string, username str
 	}
 	return false
 }
+
+func GetAdminProductsRequests(api router.API, token string, step int, count int) database.OwnerItems {
+	return database.GetAdminProductsRequests(api, step, count)
+}
+
+func AdminAuthorizeListingRequest(api router.API, pid string, token string) bool {
+	//if isAdmin(api, token) {
+		return database.AdminAuthorizeListingRequest(api, pid, token)
+	//}
+
+	return false
+}

@@ -25,8 +25,9 @@ type Item struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Image                       Image           `json:"image"`
+	Image                       []Image           `json:"image"`
 	Tags                        []Tag                `json:"tags"`
+	Condition                   string        `json:"condition"`
 }
 
 type OwnerItem struct {
@@ -37,7 +38,7 @@ type OwnerItem struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Image                       Image           `json:"image"`
+	Image                       []Image           `json:"image"`
 	Holder                      User `json:"holder"`
 	Tags                        []Tag                `json:"tags"`
 }
@@ -51,17 +52,17 @@ type Result struct {
 	Total   int                `json:"total"`     // The total number of results
 }
 
-func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string) bool {
+func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string, condition string) bool {
 	userid := GetUserIdFromToken(api, token)
 	log.Println(userid)
 
 	//	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id) values (?,?,?,?,?,?,?,?)")
-	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid)
+	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, condition)
 	if (err != nil) {
 		log.Println(err)
 		return false
@@ -194,6 +195,7 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 			&image_id,
 			&result.Owner.Username,
 			&result.Owner.Gravatar,
+			&result.Condition,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
@@ -225,7 +227,7 @@ type RentItems struct {
 	Description string                `json:"description"`
 	Due         time.Time        `json:"due"`
 	Received    time.Time        `json:"received"`
-	Images      Image                `json:"images"`
+	Images      []Image                `json:"images"`
 	Owner       User                `json:"owner"`
 }
 
@@ -456,6 +458,7 @@ func GetProductFromID(api router.API, id string) Items {
 			&username,
 			&imageid,
 			&tags,
+			&result.Condition,
 		)
 
 		if err != nil {
@@ -715,6 +718,19 @@ func RemoveProduct(api router.API, pid string, token string) {
 	}
 	defer rows.Close()
 }
+func RemoveImages(api router.API, pid string) {
+	stmt, err := api.Context.Session.Prepare("CALL removeImage(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+}
 
 // Returns products that belongs to the owner
 func GetOwnerProductsPaging(api router.API, token string, step int, count int) OwnerItems {
@@ -793,6 +809,22 @@ func getHolder(api router.API, pid string) User {
 		}
 	}
 	return result
+}
+func UpdateProduct(api router.API, pid string, title string, description string, time int, condition string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL EditProduct(?, ?, ?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid, title, description, time, condition)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	return true
 }
 
 func GetOwnerProductAvailability(api router.API, product string, token string) OwnerRentalStatus {

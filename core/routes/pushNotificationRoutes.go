@@ -51,12 +51,6 @@ func generatePushNotificationRoutes(api router.API) {
 			log.Println(err)
 		}
 
-		//message.Title = req.FormValue("title")
-		//message.Message = req.FormValue("message")
-
-		log.Println(c.URLParams["username"])
-		log.Println(message.Title)
-		log.Println(message.Message)
 		result := models.SendNotificationToUser(api, c.URLParams["username"], message)
 		data, err := json.Marshal(result)
 		if err != nil {
