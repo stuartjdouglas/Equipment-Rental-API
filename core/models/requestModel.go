@@ -4,6 +4,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/database"
 	"time"
+	"github.com/remony/Equipment-Rental-API/core/utils/email"
 )
 
 func GetProductsRequests(api router.API, token string, start string, count string) database.ItemRequests {
@@ -36,7 +37,12 @@ func RequestProductStatus(api router.API, pid string, token string) database.Req
 func RequestToRent(api router.API, pid string, username string, token string) bool {
 	if IsOwner(api, token, pid) {
 		if database.GetAuthedAvailability(api, pid, token).Available {
-			return database.RequestToRent(api, pid, username)
+			result := database.RequestToRent(api, pid, username)
+			if result {
+				productdata := GetProductFromID(api, pid, token)
+				SendNotificationToUser(api, username, Notification{Title: "Your request for " + productdata.Items[0].Product_name + " has been accepted", Message: productdata.Items[0].Product_name + " is now ready to collect"})
+			}
+			return result
 		} else {
 			return false
 		}
@@ -69,7 +75,20 @@ func GetProductRequests(api router.API, pid string, token string) database.UserR
 func RequestProduct(api router.API, pid string, token string) database.Request {
 	if (ValidToken(token)) {
 		if database.GetAvailability(api, pid).Available {
-			return database.SendRequestProduct(api, pid, token)
+			result := database.SendRequestProduct(api, pid, token)
+			username := database.GetUserNameFromToken(api, token)
+			user := database.GetUserDetails(api, username)
+			product := database.GetProductFromID(api, pid, token)
+			if result.Requested {
+				email.SendEmail(api,
+					user.Username,
+					user.Email,
+					"Someone has requested " + product.Items[0].Product_name,
+					"Hello, " + user.Username + "\nSomeone has requested " + result.Title + "\n <img src=\"https://www.karite.xyz" + product.Items[0].Image[0].Size.Medium + "\">")
+
+			}
+			return result
+
 		} else {
 			return database.Request{
 				Requested: false,
@@ -106,5 +125,17 @@ func CancelRequestProduct(api router.API, pid string, token string, username str
 	} else {
 		return false
 	}
+	return false
+}
+
+func GetAdminProductsRequests(api router.API, token string, step int, count int) database.OwnerItems {
+	return database.GetAdminProductsRequests(api, step, count)
+}
+
+func AdminAuthorizeListingRequest(api router.API, pid string, token string) bool {
+	//if isAdmin(api, token) {
+		return database.AdminAuthorizeListingRequest(api, pid, token)
+	//}
+
 	return false
 }

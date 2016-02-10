@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/remony/Equipment-Rental-API/core/models"
+"strconv"
 )
 
 func generateRequestRouter(api router.API) {
@@ -138,6 +139,7 @@ func generateRequestRouter(api router.API) {
 
 	api.Router.Post("/product/:pid/request", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		pid := c.URLParams["pid"]
+
 		if len(pid) > 3 {
 			result := models.RequestProduct(api, pid, req.Header.Get("token"))
 			data, err := json.Marshal(result)
@@ -188,5 +190,45 @@ func generateRequestRouter(api router.API) {
 			res.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(res).Encode(message)
 		}
+	})
+
+
+	api.Router.Get("/admin/requests/products", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		token := req.Header.Get("token")
+		step, err := strconv.Atoi(req.Header.Get("step"))
+		count, err := strconv.Atoi(req.Header.Get("count"))
+
+		result := models.GetAdminProductsRequests(api, token, step, count)
+
+		data, err := json.Marshal(result)
+
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+
+	})
+
+	api.Router.Post("/admin/requests/listing/:pid/authorize", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		token := req.Header.Get("token")
+		pid := c.URLParams["pid"]
+
+		result := models.AdminAuthorizeListingRequest(api, pid, token)
+
+		data, err := json.Marshal(result)
+
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(200)
+		res.Write(data)
+
 	})
 }

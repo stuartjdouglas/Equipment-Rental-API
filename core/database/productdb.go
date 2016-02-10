@@ -12,6 +12,11 @@ type Items struct {
 	Total int        `json:"total"`
 }
 
+type OwnerItems struct {
+	Items []OwnerItem `json:"items"`
+	Total int `json:"total"`
+}
+
 type Item struct {
 	Product_name                string                `json:"title"`
 	Product_id                  string                `json:"id"`
@@ -20,7 +25,31 @@ type Item struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Image                       Image           `json:"image"`
+	Image                       []Image           `json:"image"`
+	Tags                        []Tag                `json:"tags"`
+	Condition                   string        `json:"condition"`
+	Comments                    []Comment `json:"comments"`
+	Likes                       Like `json:"likes"`
+}
+
+type Comment struct {
+	ID           string `json:"id"`
+	Text         string `json:"message"`
+	Author       User `json:"author"`
+	Date_added   time.Time `json:"date_added"`
+	Date_updated time.Time `json:"date_updated"`
+}
+
+type OwnerItem struct {
+	Product_name                string                `json:"title"`
+	Product_id                  string                `json:"id"`
+	Date_added                  time.Time        `json:"date_added"`
+	Date_updated                time.Time        `json:"date_updated"`
+	Product_description         string                `json:"description"`
+	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
+	Owner                       User                `json:"owner"`
+	Image                       []Image           `json:"image"`
+	Holder                      User `json:"holder"`
 	Tags                        []Tag                `json:"tags"`
 }
 
@@ -33,17 +62,17 @@ type Result struct {
 	Total   int                `json:"total"`     // The total number of results
 }
 
-func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string) bool {
+func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string, condition string) bool {
 	userid := GetUserIdFromToken(api, token)
 	log.Println(userid)
 
 	//	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id) values (?,?,?,?,?,?,?,?)")
-	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid)
+	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, condition)
 	if (err != nil) {
 		log.Println(err)
 		return false
@@ -85,7 +114,7 @@ func GetProducts(api router.API) Items {
 		)
 
 		result.Tags = getTags(api, result.Product_id);
-
+		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, postid)
 
 		if err != nil {
@@ -146,7 +175,84 @@ func getTags(api router.API, pid string) []Tag {
 	return tags
 }
 
-func GetProductsPaging(api router.API, step int, count int) Items {
+func getComments(api router.API, pid string) []Comment {
+	var tags = []Comment{}
+
+	stmt, err := api.Context.Session.Prepare("CALL GetComments(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Comment
+		err := rows.Scan(
+			&result.Text,
+			&result.Author.Username,
+			&result.Author.Gravatar,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.ID,
+		)
+
+		if err != nil {
+			log.Println("Getting comments scanning")
+			panic(err)
+		}
+
+		tags = append(tags, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return tags
+}
+
+
+type Like struct {
+	Likes int `json:"likes"`
+	Liked bool `json:"liked"`
+}
+
+func getLikes(api router.API, pid string, token string) Like {
+	stmt, err := api.Context.Session.Prepare("CALL GetLikes(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid, token)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+	var result Like
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Likes,
+			&result.Liked,
+		)
+
+		if err != nil {
+			log.Println("Getting comments scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result
+}
+
+func GetProductsPaging(api router.API, step int, count int, token string) Items {
 
 	var content = []Item{}
 
@@ -176,11 +282,13 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 			&image_id,
 			&result.Owner.Username,
 			&result.Owner.Gravatar,
+			&result.Condition,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
-
+		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
 			log.Println("Getting paged results error scanning")
@@ -207,7 +315,7 @@ type RentItems struct {
 	Description string                `json:"description"`
 	Due         time.Time        `json:"due"`
 	Received    time.Time        `json:"received"`
-	Images      Image                `json:"images"`
+	Images      []Image                `json:"images"`
 	Owner       User                `json:"owner"`
 }
 
@@ -410,7 +518,7 @@ func GetProductFromOwner(api router.API, username string) Items {
 	return Items{Items: content, Total: len(content)}
 }
 
-func GetProductFromID(api router.API, id string) Items {
+func GetProductFromID(api router.API, id string, token string) Items {
 	var content = []Item{}
 	stmt, err := api.Context.Session.Prepare("Call getProduct(?)")
 	if err != nil {
@@ -438,6 +546,7 @@ func GetProductFromID(api router.API, id string) Items {
 			&username,
 			&imageid,
 			&tags,
+			&result.Condition,
 		)
 
 		if err != nil {
@@ -445,7 +554,9 @@ func GetProductFromID(api router.API, id string) Items {
 		}
 
 		result.Tags = filterTags(tags)
+		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, imageid)
+		result.Likes = getLikes(api, result.Product_id, token)
 		if err != nil {
 			panic(err)
 		}
@@ -512,6 +623,8 @@ func GetAvailability(api router.API, product string) Availability {
 func GetAuthedAvailability(api router.API, product string, token string) RentalStatus {
 	var currentProductRenter string
 	var available bool
+	log.Println("test")
+	log.Println(product)
 
 	username := GetUserNameFromToken(api, token)
 
@@ -695,11 +808,24 @@ func RemoveProduct(api router.API, pid string, token string) {
 	}
 	defer rows.Close()
 }
+func RemoveImages(api router.API, pid string) {
+	stmt, err := api.Context.Session.Prepare("CALL removeImage(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+}
 
 // Returns products that belongs to the owner
-func GetOwnerProductsPaging(api router.API, token string, step int, count int) Items {
+func GetOwnerProductsPaging(api router.API, token string, step int, count int) OwnerItems {
 
-	var content = []Item{}
+	var content = []OwnerItem{}
 
 	stmt, err := api.Context.Session.Prepare("CALL getOwnerProducts(?, ?, ?)")
 	if err != nil {
@@ -714,9 +840,9 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) I
 	defer rows.Close()
 
 	for rows.Next() {
-		var result Item
+		var result OwnerItem
 		var image_id int
-		var tmpuserid string
+		//var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
 			&result.Product_name,
@@ -725,10 +851,12 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) I
 			&result.Date_updated,
 			&result.Product_rental_period_limit,
 			&image_id,
-			&tmpuserid,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
 		)
 
 		result.Image = GetImage(api, image_id)
+		result.Holder = getHolder(api, result.Product_id)
 
 		if err != nil {
 			log.Println("Getting paged results error scanning")
@@ -741,7 +869,52 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) I
 		log.Fatal(err)
 	}
 
-	return Items{Items:content, Total:len(content)}
+	return OwnerItems{Items:content, Total:len(content)}
+}
+
+func getHolder(api router.API, pid string) User {
+	stmt, err := api.Context.Session.Prepare("CALL getHolder(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var result User
+
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Username,
+			&result.Gravatar,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	return result
+}
+func UpdateProduct(api router.API, pid string, title string, description string, time int, condition string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL EditProduct(?, ?, ?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid, title, description, time, condition)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	return true
 }
 
 func GetOwnerProductAvailability(api router.API, product string, token string) OwnerRentalStatus {

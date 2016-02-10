@@ -13,9 +13,9 @@ type Email struct {
 	Body    string `json:"body"`
 }
 // SendEmail sends an email using example from https://godoc.org/gopkg.in/gomail.v2#example-package
-func SendEmail(api router.API, receipt string, subject string, body string) bool {
+func SendEmail(api router.API, sender string, receipt string, subject string, body string) bool {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "test@test.com")
+	m.SetHeader("From", "admin@karite.xyz")
 	m.SetHeader("To", receipt)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)

@@ -90,6 +90,40 @@ func GetUser(api router.API, id string) User {
 	return User;
 }
 
+type UserDetails struct {
+	Username string `json:"username"`
+	Email string `json:"email"`
+}
+
+func GetUserDetails(api router.API, username string) UserDetails {
+	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users WHERE username = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(username)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var user UserDetails;
+	for rows.Next() {
+		err := rows.Scan(
+			&user.Username,
+			&user.Email,
+		)
+
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	if err != nil {
+		log.Println(err)
+	}
+	return user;
+}
+
 // Checks if a User already exists
 func CheckIfUserExists(api router.API, username string) bool {
 	var exist bool

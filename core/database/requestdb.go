@@ -19,7 +19,7 @@ type ItemRequest struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Image                       Image           `json:"image"`
+	Image                       []Image           `json:"image"`
 	Tags                        []Tag                `json:"tags"`
 	Requests                    int `json:"request"`
 }
@@ -176,6 +176,52 @@ func GetProductsRequests(api router.API, token string, start int, count int) Ite
 	return ItemRequests{Items: content, Total: len(content)}
 }
 
+func GetProductsRequestsAsOwner(api router.API, token string, start int, count int) ItemRequests {
+	var content = []ItemRequest{}
+	stmt, err := api.Context.Session.Prepare("Call OwnerGetRequests(?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token, start, count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result ItemRequest
+		var imageid int
+		err := rows.Scan(
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Product_name,
+			&result.Product_id,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_description,
+			&result.Product_rental_period_limit,
+			&imageid,
+			&result.Requests,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		result.Image = GetImage(api, imageid)
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return ItemRequests{Items: content, Total: len(content)}
+}
+
 type UserItemRequests struct {
 	Requests []UserRequestItem `json:"requests"`
 	Total    int `json:"total"`
@@ -186,7 +232,7 @@ type UserRequestItem struct {
 	Title          string                `json:"title"`
 	Description    string                `json:"description"`
 	Date_requested time.Time        `json:"date_requested"`
-	Images         Image                `json:"images"`
+	Images         []Image                `json:"images"`
 	Owner          User                `json:"owner"`
 }
 
@@ -304,5 +350,71 @@ func SendCancelRequestProductAsOwner(api router.API, pid string, username string
 		log.Fatal(err)
 		return false
 	}
+	return true
+}
+
+func GetAdminProductsRequests(api router.API, step int, count int) OwnerItems {
+
+	var content = []OwnerItem{}
+
+	stmt, err := api.Context.Session.Prepare("CALL GetUnAuthorizedProducts(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result OwnerItem
+		var image_id int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+		)
+
+		result.Image = GetImage(api, image_id)
+		result.Holder = getHolder(api, result.Product_id)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return OwnerItems{Items:content, Total:len(content)}
+}
+
+func AdminAuthorizeListingRequest(api router.API, pid string, token string) bool {
+
+	stmt, err := api.Context.Session.Prepare("CALL AuthorizeProduct(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid, token)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
 	return true
 }

@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`users` (
   `bio`             VARCHAR(140) NULL     DEFAULT 'Please describe me',
   `date_registered` DATE         NOT NULL,
   `karma`           INT          NOT NULL DEFAULT 0,
+  `role` varchar(240) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `username` (`username` ASC)
 )
@@ -142,6 +143,9 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
   `product_description`         VARCHAR(240) NOT NULL,
   `product_rental_period_limit` VARCHAR(240) NOT NULL,
   `ownerid`                     INT          NOT NULL,
+  `condition` varchar(240) NOT NULL,
+  `authorized` tinyint(1) NOT NULL DEFAULT '0',
+  `visable` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
 )
   ENGINE = InnoDB;
@@ -268,6 +272,103 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`Site` (
 )
   ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `honoursproject`.`push_tokens` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` TEXT NOT NULL,
+  `reqid` VARCHAR(240) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`users_has_push_tokens` (
+  `users_id` INT NOT NULL,
+  `push_tokens_id` INT NOT NULL,
+  PRIMARY KEY (`users_id`, `push_tokens_id`),
+  INDEX `fk_users_has_push_tokens_push_tokens1_idx` (`push_tokens_id` ASC),
+  INDEX `fk_users_has_push_tokens_users1_idx` (`users_id` ASC),
+  CONSTRAINT `fk_users_has_push_tokens_users1`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_has_push_tokens_push_tokens1`
+    FOREIGN KEY (`push_tokens_id`)
+    REFERENCES `honoursproject`.`push_tokens` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`comments` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `comment` TEXT NOT NULL,
+  `date_added` DATETIME NOT NULL,
+  `date_updated` DATETIME NOT NULL,
+  `author` INT NOT NULL,
+  `ident` VARCHAR(240) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products_has_comments` (
+  `products_id` INT NOT NULL,
+  `comments_id` INT NOT NULL,
+  `users_id` INT NOT NULL,
+  PRIMARY KEY (`products_id`, `comments_id`, `users_id`),
+  INDEX `fk_products_has_comments_comments1_idx` (`comments_id` ASC),
+  INDEX `fk_products_has_comments_products1_idx` (`products_id` ASC),
+  INDEX `fk_products_has_comments_users1_idx` (`users_id` ASC),
+  CONSTRAINT `fk_products_has_comments_products1`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_products_has_comments_comments1`
+    FOREIGN KEY (`comments_id`)
+    REFERENCES `honoursproject`.`comments` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_products_has_comments_users1`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`likes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `like` TINYINT(1) NOT NULL,
+  `date_added` DATETIME NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products_has_likes` (
+  `likes_id` INT NOT NULL,
+  `products_id` INT NOT NULL,
+  `users_id` INT NOT NULL,
+  PRIMARY KEY (`likes_id`, `products_id`, `users_id`),
+  INDEX `fk_likes_has_products_products1_idx` (`products_id` ASC),
+  INDEX `fk_likes_has_products_likes1_idx` (`likes_id` ASC),
+  INDEX `fk_likes_has_products_users1_idx` (`users_id` ASC),
+  CONSTRAINT `fk_likes_has_products_likes1`
+    FOREIGN KEY (`likes_id`)
+    REFERENCES `honoursproject`.`likes` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_likes_has_products_products1`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_likes_has_products_users1`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+
+
 #
 #
 #
@@ -275,6 +376,194 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`Site` (
 #
 #
 #
+
+#
+#  like
+#
+
+
+DROP PROCEDURE `like`;
+call `like`("8057c385-bcd2-45c2-b01c-c4086c9dda9a", "708e2cd0-6294-4e03-ba53-e17fee0732f9");
+call `like`("fcbba753-0010-41ec-b098-2966e54e0f3c", "708e2cd0-6294-4e03-ba53-e17fee0732f9");
+call `unLike`("8057c385-bcd2-45c2-b01c-c4086c9dda9a", "708e2cd0-6294-4e03-ba53-e17fee0732f9");
+CREATE PROCEDURE `like`(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE uid INT;
+
+    select user_id into uid from tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+
+    INSERT INTO likes(`like`, date_added) VALUES(1, NOW());
+    INSERT INTO products_has_likes(products_id, users_id, likes_id) VALUES(pid, uid, LAST_INSERT_ID());
+#     INSERT into likes(products_id, users_id, `like`, date_added) VALUES (pid, uid, 1, NOW());
+  END;
+
+
+DROP PROCEDURE `unLike`;
+CREATE PROCEDURE `unLike`(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE uid INT;
+    DECLARE lid INT;
+
+    select user_id into uid from tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+    select likes_id into lid from products_has_likes where users_id = uid and products_id = pid;
+
+    delete from products_has_likes where likes_id = lid and products_id = pid and users_id = uid;
+    delete from likes where id = lid;
+
+  END;
+
+#
+#
+#
+DROP PROCEDURE getLikes;
+CALL getLikes("708e2cd0-6294-4e03-ba53-e17fee0732f9", "fcbba753-0010-41ec-b098-2966e54e0f3c");
+
+CREATE PROCEDURE `getLikes`(p_id VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE ilike BOOl;
+    DECLARE uid INT;
+    select id into pid from products where product_id = p_id;
+    select user_id into uid from tokens where token = u_token;
+    select exists(select * from products_has_likes where products_id = pid and users_id = uid) into ilike;
+
+
+    select SUM(`like`) as likes, ilike as liked  from products_has_likes
+    left join likes on products_has_likes.likes_id = likes.id
+      LEFT JOIN products on products_has_likes.products_id = products.id
+    where products_id = pid
+    GROUP BY `like`;
+
+  END;
+
+#
+#  Add comment
+#
+DROP PROCEDURE `AddComment`;
+CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "708e2cd0-6294-4e03-ba53-e17fee0732f9", "this is lewd");
+
+CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    SELECT user_id into uid FROM tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+    insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+    insert into products_has_comments(products_id, comments_id, users_id) VALUES(pid, LAST_INSERT_ID(), uid);
+  END;
+
+#
+#  GetComments
+#
+DROP PROCEDURE GetComments;
+CALL GetComments("7431eec7-7ee8-4681-a157-29e6a1e22841");
+
+
+CREATE PROCEDURE `GetComments`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    select id into pid from products where product_id = p_id;
+
+    select comment, username, md5(email) as gravatar, date_added, date_updated, ident as indentifier from products_has_comments
+    left JOIN comments on products_has_comments.comments_id = comments.id
+      LEFT JOIN users on products_has_comments.users_id = users.id
+    WHERE products_id = pid
+    ORDER BY date_added ASC;
+  END;
+
+#
+#  DeleteComment
+#
+DROP PROCEDURE `DeleteComment`;
+CALL DeleteComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "ec21ebc7-d02c-11e5-966e-fa163e786249")
+
+CREATE PROCEDURE `DeleteComment`(u_token VARCHAR(240), comment_id VARCHAR(240))
+  BEGIN
+    DECLARE cid INT;
+    DECLARE uid INT;
+
+    select user_id into uid from tokens where token = u_token;
+    select id into cid from comments where ident = comment_id;
+    delete from products_has_comments where users_id = uid and comments_id = cid;
+    delete from comments where id = cid;
+
+  END;
+#
+# GetPushNotificationIDsOfUser
+#
+DROP PROCEDURE GetPushNotificationIDsOfUser;
+CALL GetPushNotificationIDsOfUser("remon");
+
+CREATE PROCEDURE `GetPushNotificationIDsOfUser`(u_name VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    SELECT id into uid from users where username = u_name;
+
+    SELECT username, GROUP_CONCAT(CONCAT(reqid) SEPARATOR ', ') as reqid, type FROM users_has_push_tokens
+    LEFT JOIN push_tokens ON users_has_push_tokens.push_tokens_id = push_tokens.id
+      LEFT JOIN users ON users_has_push_tokens.users_id = users.id
+    WHERE username = u_name;
+
+  END;
+
+select * from tokens
+LEFT JOIN users on tokens.user_id = users.id where username = "john";
+
+select * from push_tokens where reqid = "APA91bEmTcK5SsI4Isj89UUyHtaFJQbRtxrEZxkDHbEebaNqf-qfdu2kgLqjErm1tX1TmtP-v8NeLEha1J2KQJRAP6CDacdkmTzQsOUuEMJwsY156zV6iDC217GUnI8mLp4bRuUSiuFb";
+
+DROP PROCEDURE GetPushNotificationIDsOfProduct;
+CALL GetPushNotificationIDsOfProduct("311b8bf3-bae2-4dca-a973-428b635b6114");
+
+CREATE PROCEDURE `GetPushNotificationIDsOfProduct`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    SELECT users.id, products.id into uid, pid FROM user_rent_product
+      LEFT JOIN users ON user_rent_product.users_id = users.id
+      LEFT JOIN products ON user_rent_product.products_id = products.id
+      WHERE product_id = p_id;
+
+    SELECT username, GROUP_CONCAT(CONCAT(reqid) SEPARATOR ', ') as reqid, type FROM users_has_push_tokens
+    LEFT JOIN push_tokens ON users_has_push_tokens.push_tokens_id = push_tokens.id
+      LEFT JOIN users ON users_has_push_tokens.users_id = users.id
+    WHERE users_id = uid;
+
+  END;
+
+
+
+#
+#  Add regid to push notifications
+#
+
+DROP PROCEDURE addPushNotificationRegID;
+CALL addPushNotificationRegID("fcbba753-0010-41ec-b098-2966e54e0f3c", "acode", "test");
+
+CREATE PROCEDURE `addPushNotificationRegID`(u_token VARCHAR(240), p_regid VARCHAR(240), p_type TEXT)
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+    DECLARE r_exists BOOL;
+
+    SELECT EXISTS(select id from push_tokens where reqid = p_regid) into r_exists;
+
+    if (r_exists) THEN
+        SELECT FALSE;
+      ELSE
+        SELECT user_id into uid FROM tokens where token = u_token;
+        INSERT INTO push_tokens (type, reqid) VALUES(p_type, p_regid);
+        INSERT INTO users_has_push_tokens (users_id, push_tokens_id) VALUES(uid, LAST_INSERT_ID());
+        SELECT TRUE;
+    END IF;
+
+  END;
+
 
 
 #
@@ -287,8 +576,8 @@ CALL register("lemon", "test", "lemon@lemondev.xyz", "lemon", "yamano");
 CREATE PROCEDURE `register`(u_name      VARCHAR(240), u_password VARCHAR(240), u_email VARCHAR(240),
                             u_firstname VARCHAR(240), u_lastname VARCHAR(240))
   BEGIN
-    INSERT INTO users (username, password, email, first_name, last_name, location, date_registered)
-    VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW());
+    INSERT INTO users (username, password, email, first_name, last_name, location, date_registered, role)
+    VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW(), "user");
   END;
 
 SELECT *
@@ -367,6 +656,10 @@ CREATE PROCEDURE `login`(u_name VARCHAR(240), u_token VARCHAR(240), u_idenf VARC
 
   END;
 
+#
+# addImage
+#
+
 DROP PROCEDURE addImage;
 
 CALL addImage("image", "image", "image", "");
@@ -379,6 +672,27 @@ CREATE PROCEDURE addImage(i_name VARCHAR(240), i_title VARCHAR(240), i_original 
     WHERE token = u_token;
     INSERT INTO images (file_name, title, date_added, original_name) VALUES (i_name, i_title, NOW(), i_original);
   END;
+
+#
+# AddAnotherImage
+#
+
+DROP PROCEDURE AddAnotherImage;
+
+CALL AddAnotherImage("image", "image", "image", "", "");
+CREATE PROCEDURE AddAnotherImage(i_name VARCHAR(240), i_title VARCHAR(240), i_original VARCHAR(240), u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE userid INT;
+    DECLARE pid INT;
+    select id into pid from products where product_id = p_id;
+    SELECT user_id
+    INTO userid
+    FROM tokens
+    WHERE token = u_token;
+    INSERT INTO images (file_name, title, date_added, original_name) VALUES (i_name, i_title, NOW(), i_original);
+    INSERT INTO products_has_images(products_id, images_id) VALUES (pid, LAST_INSERT_ID());
+  END;
+
 #
 #   Image exists
 #
@@ -408,7 +722,7 @@ CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something
 
 CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product_id VARCHAR(240), date_added DATETIME,
                                date_updated                DATETIME, product_description VARCHAR(240),
-                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT)
+                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240))
   BEGIN
     DECLARE imgid INT;
     SELECT id
@@ -416,19 +730,49 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
     FROM images
     WHERE file_name = product_image_id
     ORDER BY date_added DESC;
-    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid)
+    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`)
     VALUES
-      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id);
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition);
     SET @last_id = LAST_INSERT_ID();
     INSERT INTO has (users_id, products_id, status) VALUES (owner_id, @last_id, 0);
     INSERT INTO products_has_images (products_id, images_id) VALUES (@last_id, imgid);
   END;
 
 #
+#  EditProduct
+#
+DROP PROCEDURE EditProduct;
+
+CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240))
+  BEGIN
+    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition
+    WHERE product_id = p_id;
+
+  END;
+
+#
+#  Remove Images
+#
+
+DROP PROCEDURE removeImage;
+CALL removeImage("cb0e81e1-d22f-46f8-bc43-061bdef6a69b");
+
+CREATE PROCEDURE removeImage(p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    SELECT id
+    INTO pid
+    FROM products
+    WHERE product_id = p_id;
+
+    DELETE from products_has_images where products_id = pid limit 1;
+  END;
+
+#
 #  Remove Product
 #
 DROP PROCEDURE removeProduct;
-CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "9cc7a542-c22a-4855-8cdf-cc4b5cd4a13a");
+CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "370071c3-bb60-48b1-a483-dfdb247cd3c8");
 
 CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
   BEGIN
@@ -451,14 +795,22 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     #     select iid;
     DELETE FROM has
     WHERE users_id = uid AND products_id = pid;
-    DELETE FROM products_has_images
-    WHERE products_id = pid;
-    DELETE FROM images
-    WHERE id = iid;
+
     DELETE FROM has
     WHERE products_id = pid;
+
+    DELETE FROM products_has_tags
+    WHERE products_id = pid;
+
     DELETE FROM user_rent_product
     WHERE products_id = pid;
+
+    DELETE FROM products_has_images
+    WHERE products_id = pid;
+
+    DELETE from products_has_comments
+    WHERE products_id = pid;
+
     DELETE FROM products
     WHERE id = pid;
 
@@ -582,7 +934,8 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
       product_rental_period_limit,
       username,
       products.id AS id,
-      tags
+      tags,
+      `condition`
     FROM has
       LEFT JOIN users ON has.users_id = users.id
       LEFT JOIN products ON has.products_id = products.id
@@ -678,10 +1031,18 @@ CREATE PROCEDURE `GetTags`(pid VARCHAR(240))
     WHERE products_id = p_id;
   END;
 
+
+#
+# AddImage
+#
+
+CREATE PROCEDURE AddImage(p_id VARCHAR(240), )
+
 #
 #  Get Image
 #
-CALL getImage(6);
+  DROP PROCEDURE getImage;
+CALL getImage(32);
 
 CREATE PROCEDURE getImage(pid INT)
   BEGIN
@@ -691,7 +1052,8 @@ CREATE PROCEDURE getImage(pid INT)
       date_added
     FROM products_has_images
       LEFT JOIN images ON products_has_images.images_id = images.id
-    WHERE products_id = pid;
+    WHERE products_id = pid
+    ORDER BY date_added ASC;
   END;
 
 #
@@ -887,7 +1249,10 @@ CREATE PROCEDURE `CancelRequest`(p_id VARCHAR(240), u_token VARCHAR(240))
 #
 
 DROP PROCEDURE GetRequestStatus;
-CALL GetRequestStatus("fbf749c8-010f-4bb1-aa10-7da3aca6ba0d", "674c99c7-da73-43f3-b8fe-1e6c96eedda7");
+CALL GetRequestStatus(
+    "73094d40-6724-4aed-ae96-a7a230226318",
+    "674c99c7-da73-43f3-b8fe-1e6c96eedda7"
+);
 
 CREATE PROCEDURE GetRequestStatus(p_id VARCHAR(240), u_token VARCHAR(240))
   BEGIN
@@ -1119,10 +1484,12 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT)
       product_rental_period_limit AS time_period,
       products_id                 AS image_id,
       username                    AS username,
-      md5(email)                  AS gravatar
+      md5(email)                  AS gravatar,
+      `condition`
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
+      WHERE visable = TRUE AND authorized = TRUE
     ORDER BY products.date_updated DESC
     LIMIT step, COUNT;
   END;
@@ -1231,7 +1598,8 @@ CREATE PROCEDURE `checkProductAvailability`(product VARCHAR(240))
 #
 
 DROP PROCEDURE checkAuthedProductAvailability;
-CALL checkAuthedProductAvailability("4c0bc251-bc9a-4a95-9612-a883bc6877ad");
+CALL checkAuthedProductAvailability(
+    "f8339453-7aaa-42b9-a355-b82608f4af2b");
 
 CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
   BEGIN
@@ -1278,11 +1646,28 @@ CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
   END;
 
 #
+#  getHolder
+#
+DROP PROCEDURE `getHolder`;
+CALL getHolder("73094d40-6724-4aed-ae96-a7a230226318");
+
+CREATE PROCEDURE `getHolder`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE  pid INT;
+
+    SELECT id into pid from products WHERE product_id = p_id;
+    SELECT username, md5(email) from user_rent_product
+      LEFT JOIN users ON user_rent_product.users_id = users.id
+    WHERE products_id = pid;
+  END;
+
+#
 # Get owner products
 #
 
 DROP PROCEDURE getOwnerProducts;
-CALL getOwnerProducts("94a17bfa-6c49-4398-8155-137f07612f7d", 0, 15);
+CALL getOwnerProducts("674c99c7-da73-43f3-b8fe-1e6c96eedda7", 0, 15);
 
 CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
   BEGIN
@@ -1292,6 +1677,7 @@ CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
     FROM tokens
       LEFT OUTER JOIN users ON tokens.user_id = users.id
     WHERE token = u_token;
+
     SELECT
       product_id                  AS id,
       product_name                AS name,
@@ -1300,7 +1686,8 @@ CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
       date_updated,
       product_rental_period_limit AS time_period,
       products_id                 AS image_id,
-      username                    AS owner
+      username                    AS username,
+      md5(email)                  AS gravatar
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1450,9 +1837,101 @@ CALL updateSite("lemon rental", "test");
 #   Update the meta data of the website
 #
 
-CREATE PROCEDURE updateSite(s_title VARCHAR(240), s_description VARCHAR(240))
+DROP PROCEDURE updateSite;
+
+CREATE PROCEDURE updateSite(s_title VARCHAR(240), s_description VARCHAR(240), u_token VARCHAR(240))
   BEGIN
-    UPDATE Site
-    SET Title = s_title, Description = s_description
-    WHERE id = 0;
+     DECLARE urole VARCHAR(240);
+    DECLARE uid int;
+    select user_id into uid from tokens where token = u_token;
+    select role into urole from users where id = uid;
+    if (urole = "admin") THEN
+      UPDATE Site
+        SET Title = s_title, Description = s_description
+        WHERE id = 1;
+      select "true";
+      ELSE
+      select "false";
+    END IF;
+
+  END;
+
+#
+#  GetUnAuthorizedProducts
+#
+
+DROP PROCEDURE GetUnAuthorizedProducts;
+CALL GetUnAuthorizedProducts(0, 6);
+
+CREATE PROCEDURE GetUnAuthorizedProducts(step INT, count INT)
+  BEGIN
+    SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products_id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      WHERE authorized = FALSE
+    ORDER BY products.date_updated DESC
+    LIMIT step, COUNT;
+  END;
+
+#
+#  Authorize product
+#
+DROP PROCEDURE AuthorizeProduct;
+CALL AuthorizeProduct("36f8b4d3-845e-47c0-b2fc-531389b1f456", "1640049c-3930-4283-bde8-fb655ea70a5a")
+
+CREATE PROCEDURE `AuthorizeProduct`(p_id VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE urole VARCHAR(240);
+    DECLARE uid int;
+    select user_id into uid from tokens where token = u_token;
+    select role into urole from users where id = uid;
+    if (urole = "admin") THEN
+      update products SET authorized = 1 where product_id = p_id;
+      select "true";
+      ELSE
+      select "false";
+    END IF;
+  END;
+
+#
+#  GetUserRole
+#
+DROP PROCEDURE GetUserRole;
+CALL GetUserRole("1640049c-3930-4283-bde8-fb655ea70a5a");
+
+CREATE PROCEDURE `GetUserRole`(u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    select user_id into uid from tokens where token = u_token;
+    select username, role from users where id = uid;
+
+  END;
+
+#
+#  DeleteImage
+#
+
+
+DROP PROCEDURE DeleteImage;
+CALL DeleteImage("NfOmL8W2UA.jpg");
+
+select * from images where title = "NfOmL8W2UA.jpg";
+
+CREATE PROCEDURE `DeleteImage`(image_title VARCHAR(240))
+  BEGIN
+    DECLARE iid INT;
+    select id into iid from images where title = image_title limit 1;
+
+    delete from products_has_images where images_id = iid;
+    delete from images where id = iid;
   END;

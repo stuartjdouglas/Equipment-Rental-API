@@ -62,8 +62,8 @@ func generateProductRoutes(api router.API) {
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
 			step, err := strconv.Atoi(r.Header.Get("Start"))
 			count, err := strconv.Atoi(r.Header.Get("Count"))
-
-			result := models.GetProductsPaging(api, step, count)
+			token := r.Header.Get("token")
+			result := models.GetProductsPaging(api, step, count, token)
 
 			data, err := json.Marshal(result)
 
@@ -127,7 +127,7 @@ func generateProductRoutes(api router.API) {
 
 	api.Router.Get("/product/:id", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
-		result := models.GetProductFromID(api, c.URLParams["id"])
+		result := models.GetProductFromID(api, c.URLParams["id"], r.Header.Get("token"))
 
 		data, err := json.Marshal(result)
 		if err != nil {
@@ -139,12 +139,49 @@ func generateProductRoutes(api router.API) {
 		res.WriteHeader(200)
 		res.Write(data)
 	})
+	api.Router.Post("/product/:id/edit", func(c web.C, res http.ResponseWriter, r *http.Request) {
+		limit, err := strconv.Atoi(r.FormValue("rental_period_limit"))
+
+		if err != nil {
+			log.Println(err)
+		}
+		product := models.Product {
+			Title:r.FormValue("title"),
+			Description:r.FormValue("description"),
+			Rental_period_limit: limit,
+			Filetype:r.FormValue("filetype"),
+			Condition:r.FormValue("condition"),
+		}
+
+		if len(product.Condition) <= 0 {
+			product.Condition = "new"
+		}
+
+		edited := models.EditProduct(api, c.URLParams["id"], product, r.Header.Get("token"))
+
+		if edited {
+			result := models.GetProductFromID(api, c.URLParams["id"], r.Header.Get("token"))
+
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			http.Error(res, "could not edit product", http.StatusInternalServerError)
+		}
+
+	})
 
 	api.Router.Delete("/product/:id/delete", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		token := req.Header.Get("token")
 
 		if (models.IsOwner(api, token, c.URLParams["id"])) {
-			item := models.GetProductFromID(api, c.URLParams["id"])
+			item := models.GetProductFromID(api, c.URLParams["id"], token)
 			models.RemoveProduct(api, c.URLParams["id"], token, item)
 			result := DeleteResponse{
 				message: "Has been deleted",

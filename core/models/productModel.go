@@ -17,6 +17,7 @@ type Product struct {
 	Rental_period_limit int        `json:"rental_period_limit"`
 	Image               string        `json:"image"`
 	Filetype            string        `json:"filetype"`
+	Condition           string        `json:"condition"`
 }
 
 func ValidToken(token string) bool {
@@ -78,22 +79,28 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 		filename = "nil"
 	}
 	product_id := utils.GenerateUUID();
-	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id)
+	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, "new")
 
-	return database.GetProductFromID(api, product_id)
+	return database.GetProductFromID(api, product_id, token)
 }
 
 func IsOwner(api router.API, token string, product_id string) bool {
 	return database.IsOwner(api, token, product_id)
 }
 
-func GetProductFromID(api router.API, product_id string) database.Items {
-	return database.GetProductFromID(api, product_id)
+func GetProductFromID(api router.API, product_id string, token string) database.Items {
+	return database.GetProductFromID(api, product_id, token)
 }
 
 func RemoveProduct(api router.API, product_id string, token string, item database.Items) bool {
+
+
+	for i:=0; i < len(item.Items[0].Image); i++ {
+		utils.BinFiles("image", item.Items[0].Image[i].Title)
+		database.RemoveImages(api, product_id)
+	}
 	database.RemoveProduct(api, product_id, token)
-	utils.BinFiles("image", item.Items[0].Image.Title)
+
 	return true;
 }
 
@@ -129,11 +136,11 @@ func ReturnItem(api router.API, product_id string, token string) {
 	}
 }
 
-func GetProductsPaging(api router.API, step int, count int) database.Items {
-	return database.GetProductsPaging(api, step, count)
+func GetProductsPaging(api router.API, step int, count int, token string) database.Items {
+	return database.GetProductsPaging(api, step, count, token)
 }
 
-func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.Items {
+func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.OwnerItems {
 	return database.GetOwnerProductsPaging(api, token, step, count)
 }
 
@@ -147,4 +154,14 @@ type OwnerRes struct {
 
 func AmITheOwner(api router.API, pid string, token string) OwnerRes {
 	return OwnerRes{Owner:IsOwner(api, token, pid)}
+}
+
+func EditProduct(api router.API, pid string, product Product, token string) bool {
+	if IsOwner(api, token, pid) {
+		if len(product.Title) > 0 && len(product.Description) > 0 && product.Rental_period_limit > 0 {
+			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition)
+
+		}
+	}
+	return false
 }
