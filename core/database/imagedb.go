@@ -162,6 +162,22 @@ func AddImageLocationToDb(api router.API, filename string, title string, origina
 
 	return true
 }
+func DeleteImage(api router.API, title string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL DeleteImage(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(title)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	return true
+}
 
 func AddImageToProduct(api router.API, filename string, token string, pid string) bool {
 	stmt, err := api.Context.Session.Prepare("CALL AddAnotherImage(?, ?, ?, ?, ?)")

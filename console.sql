@@ -297,6 +297,76 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`users_has_push_tokens` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `honoursproject`.`comments` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `comment` TEXT NOT NULL,
+  `date_added` DATETIME NOT NULL,
+  `date_updated` DATETIME NOT NULL,
+  `author` INT NOT NULL,
+  `ident` VARCHAR(240) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products_has_comments` (
+  `products_id` INT NOT NULL,
+  `comments_id` INT NOT NULL,
+  `users_id` INT NOT NULL,
+  PRIMARY KEY (`products_id`, `comments_id`, `users_id`),
+  INDEX `fk_products_has_comments_comments1_idx` (`comments_id` ASC),
+  INDEX `fk_products_has_comments_products1_idx` (`products_id` ASC),
+  INDEX `fk_products_has_comments_users1_idx` (`users_id` ASC),
+  CONSTRAINT `fk_products_has_comments_products1`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_products_has_comments_comments1`
+    FOREIGN KEY (`comments_id`)
+    REFERENCES `honoursproject`.`comments` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_products_has_comments_users1`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`likes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `like` TINYINT(1) NOT NULL,
+  `date_added` DATETIME NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `honoursproject`.`products_has_likes` (
+  `likes_id` INT NOT NULL,
+  `products_id` INT NOT NULL,
+  `users_id` INT NOT NULL,
+  PRIMARY KEY (`likes_id`, `products_id`, `users_id`),
+  INDEX `fk_likes_has_products_products1_idx` (`products_id` ASC),
+  INDEX `fk_likes_has_products_likes1_idx` (`likes_id` ASC),
+  INDEX `fk_likes_has_products_users1_idx` (`users_id` ASC),
+  CONSTRAINT `fk_likes_has_products_likes1`
+    FOREIGN KEY (`likes_id`)
+    REFERENCES `honoursproject`.`likes` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_likes_has_products_products1`
+    FOREIGN KEY (`products_id`)
+    REFERENCES `honoursproject`.`products` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_likes_has_products_users1`
+    FOREIGN KEY (`users_id`)
+    REFERENCES `honoursproject`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
 
 
 #
@@ -307,6 +377,122 @@ ENGINE = InnoDB;
 #
 #
 
+#
+#  like
+#
+
+
+DROP PROCEDURE `like`;
+call `like`("8057c385-bcd2-45c2-b01c-c4086c9dda9a", "708e2cd0-6294-4e03-ba53-e17fee0732f9");
+call `like`("fcbba753-0010-41ec-b098-2966e54e0f3c", "708e2cd0-6294-4e03-ba53-e17fee0732f9");
+call `unLike`("8057c385-bcd2-45c2-b01c-c4086c9dda9a", "708e2cd0-6294-4e03-ba53-e17fee0732f9");
+CREATE PROCEDURE `like`(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE uid INT;
+
+    select user_id into uid from tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+
+    INSERT INTO likes(`like`, date_added) VALUES(1, NOW());
+    INSERT INTO products_has_likes(products_id, users_id, likes_id) VALUES(pid, uid, LAST_INSERT_ID());
+#     INSERT into likes(products_id, users_id, `like`, date_added) VALUES (pid, uid, 1, NOW());
+  END;
+
+
+DROP PROCEDURE `unLike`;
+CREATE PROCEDURE `unLike`(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE uid INT;
+    DECLARE lid INT;
+
+    select user_id into uid from tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+    select likes_id into lid from products_has_likes where users_id = uid and products_id = pid;
+
+    delete from products_has_likes where likes_id = lid and products_id = pid and users_id = uid;
+    delete from likes where id = lid;
+
+  END;
+
+#
+#
+#
+DROP PROCEDURE getLikes;
+CALL getLikes("708e2cd0-6294-4e03-ba53-e17fee0732f9", "fcbba753-0010-41ec-b098-2966e54e0f3c");
+
+CREATE PROCEDURE `getLikes`(p_id VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE ilike BOOl;
+    DECLARE uid INT;
+    select id into pid from products where product_id = p_id;
+    select user_id into uid from tokens where token = u_token;
+    select exists(select * from products_has_likes where products_id = pid and users_id = uid) into ilike;
+
+
+    select SUM(`like`) as likes, ilike as liked  from products_has_likes
+    left join likes on products_has_likes.likes_id = likes.id
+      LEFT JOIN products on products_has_likes.products_id = products.id
+    where products_id = pid
+    GROUP BY `like`;
+
+  END;
+
+#
+#  Add comment
+#
+DROP PROCEDURE `AddComment`;
+CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "708e2cd0-6294-4e03-ba53-e17fee0732f9", "this is lewd");
+
+CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    SELECT user_id into uid FROM tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+    insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+    insert into products_has_comments(products_id, comments_id, users_id) VALUES(pid, LAST_INSERT_ID(), uid);
+  END;
+
+#
+#  GetComments
+#
+DROP PROCEDURE GetComments;
+CALL GetComments("7431eec7-7ee8-4681-a157-29e6a1e22841");
+
+
+CREATE PROCEDURE `GetComments`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    select id into pid from products where product_id = p_id;
+
+    select comment, username, md5(email) as gravatar, date_added, date_updated, ident as indentifier from products_has_comments
+    left JOIN comments on products_has_comments.comments_id = comments.id
+      LEFT JOIN users on products_has_comments.users_id = users.id
+    WHERE products_id = pid
+    ORDER BY date_added ASC;
+  END;
+
+#
+#  DeleteComment
+#
+DROP PROCEDURE `DeleteComment`;
+CALL DeleteComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "ec21ebc7-d02c-11e5-966e-fa163e786249")
+
+CREATE PROCEDURE `DeleteComment`(u_token VARCHAR(240), comment_id VARCHAR(240))
+  BEGIN
+    DECLARE cid INT;
+    DECLARE uid INT;
+
+    select user_id into uid from tokens where token = u_token;
+    select id into cid from comments where ident = comment_id;
+    delete from products_has_comments where users_id = uid and comments_id = cid;
+    delete from comments where id = cid;
+
+  END;
 #
 # GetPushNotificationIDsOfUser
 #
@@ -586,7 +772,7 @@ CREATE PROCEDURE removeImage(p_id VARCHAR(240))
 #  Remove Product
 #
 DROP PROCEDURE removeProduct;
-CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "cb0e81e1-d22f-46f8-bc43-061bdef6a69b");
+CALL removeProduct("4ecbc6df-0d66-40dc-ae91-d6d5488b4d7e", "370071c3-bb60-48b1-a483-dfdb247cd3c8");
 
 CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
   BEGIN
@@ -616,10 +802,13 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     DELETE FROM products_has_tags
     WHERE products_id = pid;
 
-    DELETE FROM users_has_push_tokens
+    DELETE FROM user_rent_product
     WHERE products_id = pid;
 
-    DELETE FROM user_rent_product
+    DELETE FROM products_has_images
+    WHERE products_id = pid;
+
+    DELETE from products_has_comments
     WHERE products_id = pid;
 
     DELETE FROM products
@@ -1726,4 +1915,23 @@ CREATE PROCEDURE `GetUserRole`(u_token VARCHAR(240))
     select user_id into uid from tokens where token = u_token;
     select username, role from users where id = uid;
 
+  END;
+
+#
+#  DeleteImage
+#
+
+
+DROP PROCEDURE DeleteImage;
+CALL DeleteImage("NfOmL8W2UA.jpg");
+
+select * from images where title = "NfOmL8W2UA.jpg";
+
+CREATE PROCEDURE `DeleteImage`(image_title VARCHAR(240))
+  BEGIN
+    DECLARE iid INT;
+    select id into iid from images where title = image_title limit 1;
+
+    delete from products_has_images where images_id = iid;
+    delete from images where id = iid;
   END;

@@ -62,8 +62,8 @@ func generateProductRoutes(api router.API) {
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
 			step, err := strconv.Atoi(r.Header.Get("Start"))
 			count, err := strconv.Atoi(r.Header.Get("Count"))
-
-			result := models.GetProductsPaging(api, step, count)
+			token := r.Header.Get("token")
+			result := models.GetProductsPaging(api, step, count, token)
 
 			data, err := json.Marshal(result)
 
@@ -127,7 +127,7 @@ func generateProductRoutes(api router.API) {
 
 	api.Router.Get("/product/:id", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
-		result := models.GetProductFromID(api, c.URLParams["id"])
+		result := models.GetProductFromID(api, c.URLParams["id"], r.Header.Get("token"))
 
 		data, err := json.Marshal(result)
 		if err != nil {
@@ -160,7 +160,7 @@ func generateProductRoutes(api router.API) {
 		edited := models.EditProduct(api, c.URLParams["id"], product, r.Header.Get("token"))
 
 		if edited {
-			result := models.GetProductFromID(api, c.URLParams["id"])
+			result := models.GetProductFromID(api, c.URLParams["id"], r.Header.Get("token"))
 
 			data, err := json.Marshal(result)
 			if err != nil {
@@ -181,7 +181,7 @@ func generateProductRoutes(api router.API) {
 		token := req.Header.Get("token")
 
 		if (models.IsOwner(api, token, c.URLParams["id"])) {
-			item := models.GetProductFromID(api, c.URLParams["id"])
+			item := models.GetProductFromID(api, c.URLParams["id"], token)
 			models.RemoveProduct(api, c.URLParams["id"], token, item)
 			result := DeleteResponse{
 				message: "Has been deleted",
@@ -266,8 +266,6 @@ func generateProductRoutes(api router.API) {
 
 	api.Router.Get("/p/:id/availability", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
-		log.Println("token:" + token)
-		log.Println("pid" + c.URLParams["id"])
 		if token != "" {
 			// Check that the token is a valid token
 			if models.IsSessionValid(api, token) {

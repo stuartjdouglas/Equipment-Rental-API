@@ -28,6 +28,16 @@ type Item struct {
 	Image                       []Image           `json:"image"`
 	Tags                        []Tag                `json:"tags"`
 	Condition                   string        `json:"condition"`
+	Comments                    []Comment `json:"comments"`
+	Likes                       Like `json:"likes"`
+}
+
+type Comment struct {
+	ID           string `json:"id"`
+	Text         string `json:"message"`
+	Author       User `json:"author"`
+	Date_added   time.Time `json:"date_added"`
+	Date_updated time.Time `json:"date_updated"`
 }
 
 type OwnerItem struct {
@@ -104,7 +114,7 @@ func GetProducts(api router.API) Items {
 		)
 
 		result.Tags = getTags(api, result.Product_id);
-
+		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, postid)
 
 		if err != nil {
@@ -165,7 +175,84 @@ func getTags(api router.API, pid string) []Tag {
 	return tags
 }
 
-func GetProductsPaging(api router.API, step int, count int) Items {
+func getComments(api router.API, pid string) []Comment {
+	var tags = []Comment{}
+
+	stmt, err := api.Context.Session.Prepare("CALL GetComments(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Comment
+		err := rows.Scan(
+			&result.Text,
+			&result.Author.Username,
+			&result.Author.Gravatar,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.ID,
+		)
+
+		if err != nil {
+			log.Println("Getting comments scanning")
+			panic(err)
+		}
+
+		tags = append(tags, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return tags
+}
+
+
+type Like struct {
+	Likes int `json:"likes"`
+	Liked bool `json:"liked"`
+}
+
+func getLikes(api router.API, pid string, token string) Like {
+	stmt, err := api.Context.Session.Prepare("CALL GetLikes(?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid, token)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+	var result Like
+	for rows.Next() {
+		err := rows.Scan(
+			&result.Likes,
+			&result.Liked,
+		)
+
+		if err != nil {
+			log.Println("Getting comments scanning")
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result
+}
+
+func GetProductsPaging(api router.API, step int, count int, token string) Items {
 
 	var content = []Item{}
 
@@ -199,8 +286,9 @@ func GetProductsPaging(api router.API, step int, count int) Items {
 		)
 
 		result.Tags = getTags(api, result.Product_id)
-
+		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
 			log.Println("Getting paged results error scanning")
@@ -430,7 +518,7 @@ func GetProductFromOwner(api router.API, username string) Items {
 	return Items{Items: content, Total: len(content)}
 }
 
-func GetProductFromID(api router.API, id string) Items {
+func GetProductFromID(api router.API, id string, token string) Items {
 	var content = []Item{}
 	stmt, err := api.Context.Session.Prepare("Call getProduct(?)")
 	if err != nil {
@@ -466,7 +554,9 @@ func GetProductFromID(api router.API, id string) Items {
 		}
 
 		result.Tags = filterTags(tags)
+		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, imageid)
+		result.Likes = getLikes(api, result.Product_id, token)
 		if err != nil {
 			panic(err)
 		}

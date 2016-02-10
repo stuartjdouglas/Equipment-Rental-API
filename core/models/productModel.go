@@ -81,15 +81,15 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 	product_id := utils.GenerateUUID();
 	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, "new")
 
-	return database.GetProductFromID(api, product_id)
+	return database.GetProductFromID(api, product_id, token)
 }
 
 func IsOwner(api router.API, token string, product_id string) bool {
 	return database.IsOwner(api, token, product_id)
 }
 
-func GetProductFromID(api router.API, product_id string) database.Items {
-	return database.GetProductFromID(api, product_id)
+func GetProductFromID(api router.API, product_id string, token string) database.Items {
+	return database.GetProductFromID(api, product_id, token)
 }
 
 func RemoveProduct(api router.API, product_id string, token string, item database.Items) bool {
@@ -136,8 +136,8 @@ func ReturnItem(api router.API, product_id string, token string) {
 	}
 }
 
-func GetProductsPaging(api router.API, step int, count int) database.Items {
-	return database.GetProductsPaging(api, step, count)
+func GetProductsPaging(api router.API, step int, count int, token string) database.Items {
+	return database.GetProductsPaging(api, step, count, token)
 }
 
 func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.OwnerItems {

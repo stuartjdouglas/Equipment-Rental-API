@@ -15,11 +15,20 @@ func IsImageAvailable(api router.API, url string) bool {
 	return database.DoesImageExist(api, url)
 }
 
+func RemoveImage(api router.API, pid string, title string, token string) bool {
+	if IsOwner(api, token, pid) {
+		utils.BinFiles("image", title)
+		return database.DeleteImage(api, title);
+	}
+	return false
+
+}
+
 func AddImageToProduct(api router.API, pid string, token string, Filetype string, Image string) bool {
 	if IsOwner(api, token, pid) {
 		var file io.Reader
 
-		product := GetProductFromID(api, pid)
+		product := GetProductFromID(api, pid, token)
 
 		imageCode := utils.RandomString(10) // create random string
 
