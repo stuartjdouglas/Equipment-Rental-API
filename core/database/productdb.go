@@ -30,6 +30,8 @@ type Item struct {
 	Condition                   string        `json:"condition"`
 	Comments                    []Comment `json:"comments"`
 	Likes                       Like `json:"likes"`
+	Comments_enabled            bool `json:"comments_enabled"`
+	Comments_require_approval   bool `json:"comments_require_approval"`
 }
 
 type Comment struct {
@@ -38,6 +40,7 @@ type Comment struct {
 	Author       User `json:"author"`
 	Date_added   time.Time `json:"date_added"`
 	Date_updated time.Time `json:"date_updated"`
+	Authorized   bool `json:"authorized"`
 }
 
 type OwnerItem struct {
@@ -114,6 +117,7 @@ func GetProducts(api router.API) Items {
 		)
 
 		result.Tags = getTags(api, result.Product_id);
+
 		result.Comments = getComments(api, result.Product_id)
 		result.Image = GetImage(api, postid)
 
@@ -199,6 +203,7 @@ func getComments(api router.API, pid string) []Comment {
 			&result.Date_added,
 			&result.Date_updated,
 			&result.ID,
+			&result.Authorized,
 		)
 
 		if err != nil {
@@ -215,6 +220,46 @@ func getComments(api router.API, pid string) []Comment {
 	return tags
 }
 
+func getCommentsAsOwner(api router.API, pid string) []Comment {
+	var tags = []Comment{}
+
+	stmt, err := api.Context.Session.Prepare("CALL GetOwnerComments(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Comment
+		err := rows.Scan(
+			&result.Text,
+			&result.Author.Username,
+			&result.Author.Gravatar,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.ID,
+			&result.Authorized,
+		)
+
+		if err != nil {
+			log.Println("Getting comments scanning")
+			panic(err)
+		}
+
+		tags = append(tags, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return tags
+}
 
 type Like struct {
 	Likes int `json:"likes"`
@@ -547,6 +592,8 @@ func GetProductFromID(api router.API, id string, token string) Items {
 			&imageid,
 			&tags,
 			&result.Condition,
+			&result.Comments_enabled,
+			&result.Comments_require_approval,
 		)
 
 		if err != nil {
@@ -554,7 +601,12 @@ func GetProductFromID(api router.API, id string, token string) Items {
 		}
 
 		result.Tags = filterTags(tags)
-		result.Comments = getComments(api, result.Product_id)
+		if IsOwner(api, token, result.Product_id) {
+			log.Println("getting owner commments")
+			result.Comments = getCommentsAsOwner(api, result.Product_id)
+		} else {
+			result.Comments = getComments(api, result.Product_id)
+		}
 		result.Image = GetImage(api, imageid)
 		result.Likes = getLikes(api, result.Product_id, token)
 		if err != nil {
@@ -900,14 +952,14 @@ func getHolder(api router.API, pid string) User {
 	}
 	return result
 }
-func UpdateProduct(api router.API, pid string, title string, description string, time int, condition string) bool {
-	stmt, err := api.Context.Session.Prepare("CALL EditProduct(?, ?, ?, ?, ?)")
+func UpdateProduct(api router.API, pid string, title string, description string, time int, condition string, comments_enabled bool, comments_require_approval bool) bool {
+	stmt, err := api.Context.Session.Prepare("CALL EditProduct(?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(pid, title, description, time, condition)
+	rows, err := stmt.Query(pid, title, description, time, condition, comments_enabled, comments_require_approval)
 
 	if err != nil {
 		log.Println(err)

@@ -143,6 +143,8 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
   `product_description`         VARCHAR(240) NOT NULL,
   `product_rental_period_limit` VARCHAR(240) NOT NULL,
   `ownerid`                     INT          NOT NULL,
+  `enable_comments` tinyint(1) NOT NULL DEFAULT '1',
+  `comments_require_approval` tinyint(1) NOT NULL DEFAULT '0',
   `condition` varchar(240) NOT NULL,
   `authorized` tinyint(1) NOT NULL DEFAULT '0',
   `visable` tinyint(1) DEFAULT '1',
@@ -304,6 +306,7 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`comments` (
   `date_updated` DATETIME NOT NULL,
   `author` INT NOT NULL,
   `ident` VARCHAR(240) NOT NULL,
+  `authorized` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -444,36 +447,114 @@ CREATE PROCEDURE `getLikes`(p_id VARCHAR(240), u_token VARCHAR(240))
 #  Add comment
 #
 DROP PROCEDURE `AddComment`;
-CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "708e2cd0-6294-4e03-ba53-e17fee0732f9", "this is lewd");
+CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9", "this is lewdz", true);
 
-CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140))
+CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140), requiresApproval BOOL)
   BEGIN
     DECLARE uid INT;
     DECLARE pid INT;
-
+    DECLARE requires_authoriz BOOL;
     SELECT user_id into uid FROM tokens where token = u_token;
-    select id into pid from products where product_id = p_id;
-    insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+    select id, comments_require_approval into pid, requires_authoriz from products where product_id = p_id;
+    if (requires_authoriz OR requiresApproval) THEN
+      insert into comments(comment, date_added, date_updated, author, ident, authorized) VALUES(u_comment, NOW(), NOW(), uid, UUID(), FALSE);
+    ELSE
+
+      insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+    END IF;
     insert into products_has_comments(products_id, comments_id, users_id) VALUES(pid, LAST_INSERT_ID(), uid);
   END;
 
 #
+# DisableComments
+#
+DROP PROCEDURE DisableComments;
+CALL DisableComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `DisableComments`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET enable_comments = false WHERE product_id = p_id;
+  END;
+#
+# EnableComments
+#
+DROP PROCEDURE EnableComments;
+CALL EnableComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `EnableComments`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET enable_comments = true WHERE product_id = p_id;
+  END;
+
+#
+# DisableCommentsRequireAuth
+#
+DROP PROCEDURE DisableCommentsRequireAuth;
+CALL DisableCommentsRequireAuth("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `DisableCommentsRequireAuth`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET comments_require_approval = false WHERE product_id = p_id;
+  END;
+#
+# EnableCommentsRequireAuth
+#
+DROP PROCEDURE EnableCommentsRequireAuth;
+CALL EnableCommentsRequireAuth("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `EnableCommentsRequireAuth`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET comments_require_approval = true WHERE product_id = p_id;
+  END;
+
+#
+# ApproveComment
+#
+DROP PROCEDURE `ApproveComment`;
+CALL ApproveComment("ed2be2a7-d1b2-11e5-966e-fa163e786249");
+
+CREATE PROCEDURE `ApproveComment`(c_id VARCHAR(240))
+  BEGIN
+#     DECLARE pid INT;
+    DECLARE cid INT;
+#     SELECT id into pid from products where product_id = p_id;
+    select id into cid from comments where ident = c_id;
+
+    UPDATE comments SET authorized = true where id = cid;
+  END;
+#
 #  GetComments
 #
 DROP PROCEDURE GetComments;
-CALL GetComments("7431eec7-7ee8-4681-a157-29e6a1e22841");
-
+CALL GetComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
 
 CREATE PROCEDURE `GetComments`(p_id VARCHAR(240))
   BEGIN
     DECLARE pid INT;
-    select id into pid from products where product_id = p_id;
+    DECLARE enabled BOOL;
+    select id , enable_comments into pid, enabled from products where product_id = p_id;
 
-    select comment, username, md5(email) as gravatar, date_added, date_updated, ident as indentifier from products_has_comments
-    left JOIN comments on products_has_comments.comments_id = comments.id
-      LEFT JOIN users on products_has_comments.users_id = users.id
-    WHERE products_id = pid
-    ORDER BY date_added ASC;
+      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized from products_has_comments
+      left JOIN comments on products_has_comments.comments_id = comments.id
+        LEFT JOIN users on products_has_comments.users_id = users.id
+        left join products on products_has_comments.products_id = products.id
+      WHERE products_id = pid and comments.authorized = true and products.enable_comments = true
+      ORDER BY date_added ASC;
+  END;
+#
+#  GetOwnerComments
+#
+DROP PROCEDURE GetOwnerComments;
+CALL GetOwnerComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+
+CREATE PROCEDURE `GetOwnerComments`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE enabled BOOL;
+    select id , enable_comments into pid, enabled from products where product_id = p_id;
+
+      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized from products_has_comments
+      left JOIN comments on products_has_comments.comments_id = comments.id
+        LEFT JOIN users on products_has_comments.users_id = users.id
+        left join products on products_has_comments.products_id = products.id
+      WHERE products_id = pid and products.enable_comments = true
+      ORDER BY date_added ASC;
   END;
 
 #
@@ -743,9 +824,9 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
 #
 DROP PROCEDURE EditProduct;
 
-CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240))
+CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240), comments_enabled BOOL, comments_require_approvala BOOL)
   BEGIN
-    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition
+    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition, enable_comments = comments_enabled, comments_require_approval = comments_require_approvala
     WHERE product_id = p_id;
 
   END;
@@ -935,7 +1016,9 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
       username,
       products.id AS id,
       tags,
-      `condition`
+      `condition`,
+      enable_comments as comments_enabled,
+      comments_require_approval as comments_require_approval
     FROM has
       LEFT JOIN users ON has.users_id = users.id
       LEFT JOIN products ON has.products_id = products.id
@@ -1746,8 +1829,11 @@ left join users ON has.users_id = users.id
   left join products on has.products_id = products.id
 where product_id = "fbf749c8-010f-4bb1-aa10-7da3aca6ba0d";
 
+CALL getUserIDofToken("f05a1fc2-2c05-4e88-92d1-b9a3a71b8dd2");
+select * from users where id = 2;
+
 DROP PROCEDURE isOwner;
-CALL isOwner("f05a1fc2-2c05-4e88-92d1-b9a3a71b8dd2", "fbf749c8-010f-4bb1-aa10-7da3aca6ba0d");
+CALL isOwner("f05a1fc2-2c05-4e88-92d1-b9a3a71b8dd2", "a47704d9-abeb-4b17-bbe5-1c9f41226e78");
 
 CREATE PROCEDURE isOwner(u_token VARCHAR(240), p_id VARCHAR(240))
   BEGIN

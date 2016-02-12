@@ -12,12 +12,14 @@ import (
 )
 
 type Product struct {
-	Title               string        `json:"title"`
-	Description         string        `json:"description"`
-	Rental_period_limit int        `json:"rental_period_limit"`
-	Image               string        `json:"image"`
-	Filetype            string        `json:"filetype"`
-	Condition           string        `json:"condition"`
+	Title                     string        `json:"title"`
+	Description               string        `json:"description"`
+	Rental_period_limit       int        `json:"rental_period_limit"`
+	Image                     string        `json:"image"`
+	Filetype                  string        `json:"filetype"`
+	Condition                 string        `json:"condition"`
+	Comments_enabled          bool `json:"comments_enabled"`
+	Comments_require_approval bool `json:"comments_require_approval"`
 }
 
 func ValidToken(token string) bool {
@@ -94,8 +96,7 @@ func GetProductFromID(api router.API, product_id string, token string) database.
 
 func RemoveProduct(api router.API, product_id string, token string, item database.Items) bool {
 
-
-	for i:=0; i < len(item.Items[0].Image); i++ {
+	for i := 0; i < len(item.Items[0].Image); i++ {
 		utils.BinFiles("image", item.Items[0].Image[i].Title)
 		database.RemoveImages(api, product_id)
 	}
@@ -159,9 +160,11 @@ func AmITheOwner(api router.API, pid string, token string) OwnerRes {
 func EditProduct(api router.API, pid string, product Product, token string) bool {
 	if IsOwner(api, token, pid) {
 		if len(product.Title) > 0 && len(product.Description) > 0 && product.Rental_period_limit > 0 {
-			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition)
+			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition, product.Comments_enabled, product.Comments_require_approval)
 
 		}
+	} else {
+		log.Println("we are not owner")
 	}
 	return false
 }

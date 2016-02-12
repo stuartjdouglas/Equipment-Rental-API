@@ -141,16 +141,19 @@ func generateProductRoutes(api router.API) {
 	})
 	api.Router.Post("/product/:id/edit", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		limit, err := strconv.Atoi(r.FormValue("rental_period_limit"))
-
+		Comments_enabled, err := strconv.ParseBool(r.FormValue("comments_enabled"))
+		Comments_require_approval, err := strconv.ParseBool(r.FormValue("comments_require_approval"))
 		if err != nil {
 			log.Println(err)
 		}
-		product := models.Product {
+		product := models.Product{
 			Title:r.FormValue("title"),
 			Description:r.FormValue("description"),
 			Rental_period_limit: limit,
 			Filetype:r.FormValue("filetype"),
 			Condition:r.FormValue("condition"),
+			Comments_enabled: Comments_enabled,
+			Comments_require_approval: Comments_require_approval,
 		}
 
 		if len(product.Condition) <= 0 {
