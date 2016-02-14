@@ -13,6 +13,7 @@ type Auth struct {
 	Gravatar string        `json:"gravatar"`
 	Token    string                `json:"token"`
 	Expiry   time.Time        `json:"expiry"`
+	Role string `json:"role"`
 }
 
 func GetDigest(api router.API, username string) string {
@@ -69,6 +70,7 @@ func LoginUser(api router.API, username string) Auth {
 			&result.Gravatar,
 			&result.Token,
 			&result.Expiry,
+			&result.Role,
 		)
 
 		if err != nil {

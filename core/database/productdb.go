@@ -54,6 +54,12 @@ type OwnerItem struct {
 	Image                       []Image           `json:"image"`
 	Holder                      User `json:"holder"`
 	Tags                        []Tag                `json:"tags"`
+	Condition                   string        `json:"condition"`
+	Comments                    []Comment `json:"comments"`
+	Likes                       Like `json:"likes"`
+	Comments_enabled            bool `json:"comments_enabled"`
+	Comments_require_approval   bool `json:"comments_require_approval"`
+	Requests                    UserRequests `json:"requests"`
 }
 
 type Tag struct {
@@ -65,17 +71,17 @@ type Result struct {
 	Total   int                `json:"total"`     // The total number of results
 }
 
-func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string, condition string) bool {
+func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string, condition string, requires_approval bool) bool {
 	userid := GetUserIdFromToken(api, token)
 	log.Println(userid)
 
 	//	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id) values (?,?,?,?,?,?,?,?)")
-	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, condition)
+	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, condition, requires_approval)
 	if (err != nil) {
 		log.Println(err)
 		return false
@@ -905,11 +911,15 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) O
 			&image_id,
 			&result.Owner.Username,
 			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Comments_enabled,
+			&result.Comments_require_approval,
 		)
 
 		result.Image = GetImage(api, image_id)
 		result.Holder = getHolder(api, result.Product_id)
-
+		result.Comments = getCommentsAsOwner(api, result.Product_id)
+		result.Requests = GetProductRequests(api, result.Product_id, token)
 		if err != nil {
 			log.Println("Getting paged results error scanning")
 			panic(err)

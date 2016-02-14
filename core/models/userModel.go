@@ -9,8 +9,8 @@ func GetUserData(api router.API, username string) database.User {
 	return database.GetUser(api, username)
 }
 
-func GetUsersData(api router.API) []database.User {
-	return database.GetUsers(api)
+func GetUsersData(api router.API, token string) []database.User {
+	return database.GetUsers(api, token)
 }
 
 func CheckIfUserExists(api router.API, username string) bool {
@@ -19,4 +19,14 @@ func CheckIfUserExists(api router.API, username string) bool {
 
 func GetProfile(api router.API, token string) database.UserProfileContainer {
 	return database.GetProfile(api, token)
+}
+
+func ChangeRole(api router.API, username string , role string, token string) bool {
+	if database.GetUserNameFromToken(api, token) != username {
+		if IsSessionValid(api, token) {
+			database.ChangeRole(api, username, role, token)
+			return true
+		}
+	}
+	return false
 }

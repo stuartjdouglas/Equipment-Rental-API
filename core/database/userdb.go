@@ -9,8 +9,11 @@ import (
 )
 
 type User struct {
-	Username string        `json:"username"`
-	Gravatar string  `json:"gravatar"`
+	Username        string        `json:"username"`
+	Gravatar        string  `json:"gravatar"`
+	Email           string `json:"email"`
+	Date_registered time.Time `json:"date_registered"`
+	Role            string `json:"role"`
 }
 
 type tempUser struct {
@@ -92,7 +95,7 @@ func GetUser(api router.API, id string) User {
 
 type UserDetails struct {
 	Username string `json:"username"`
-	Email string `json:"email"`
+	Email    string `json:"email"`
 }
 
 func GetUserDetails(api router.API, username string) UserDetails {
@@ -171,43 +174,54 @@ func GetUsername(api router.API, userid int) string {
 
 
 //noinspection GoUnusedFunction
-func GetUsers(api router.API) []User {
-	//	SELECT username, bio FROM users;
-	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users")
+func GetUsers(api router.API, token string) []User {
+	stmt, err := api.Context.Session.Prepare("CALL getUsers(?)")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query()
+
+	rows, err := stmt.Query(token)
+
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 
-	users := []User{}
+	var users []User
 
 	for rows.Next() {
-		var result tempUser
+		var user User
 		err := rows.Scan(
-			&result.Username,
-			&result.Email,
+			&user.Username,
+			&user.Gravatar,
+			&user.Date_registered,
+			&user.Email,
+			&user.Role,
 		)
-
+		users = append(users, user)
 		if err != nil {
 			panic(err)
 		}
+	}
+	return users
+}
 
-		sum := md5.Sum([]byte(result.Email))
-		gravatar := hex.EncodeToString(sum[:])
-		users = append(users, User{
-			Username:result.Username,
-			Gravatar:gravatar,
-		})
-	}
+func ChangeRole(api router.API, username string , role string, token string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL ChangeUserRole(?, ?, ?)")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-	return users;
+	defer stmt.Close()
+
+	rows, err := stmt.Query(username, role, token)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	return true
 }
 
 func GetUserNameFromToken(api router.API, token string) string {

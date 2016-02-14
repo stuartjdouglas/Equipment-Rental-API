@@ -31,6 +31,7 @@ func generateProductRoutes(api router.API) {
 				Rental_period_limit:limit,
 				Image:r.FormValue("image"),
 				Filetype:r.FormValue("filetype"),
+				Condition: r.FormValue("condition"),
 			}
 
 			tags := r.FormValue("tags")

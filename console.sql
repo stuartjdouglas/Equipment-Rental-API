@@ -731,7 +731,8 @@ CREATE PROCEDURE `login`(u_name VARCHAR(240), u_token VARCHAR(240), u_idenf VARC
       username,
       md5(email)             AS gravatar,
       u_token                AS token,
-      NOW() + INTERVAL 7 DAY AS expiry
+      NOW() + INTERVAL 7 DAY AS expiry,
+      role
     FROM users
     WHERE username = u_name;
 
@@ -799,11 +800,11 @@ FROM images
 WHERE file_name = 'EDH86AiKEx.jpg';
 
 DROP PROCEDURE createProduct;
-CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something", 7, 0, 16);
+CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something", 7, 0, 16, "new", FALSE);
 
 CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product_id VARCHAR(240), date_added DATETIME,
                                date_updated                DATETIME, product_description VARCHAR(240),
-                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240))
+                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240), requires_approval BOOL)
   BEGIN
     DECLARE imgid INT;
     SELECT id
@@ -811,12 +812,24 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
     FROM images
     WHERE file_name = product_image_id
     ORDER BY date_added DESC;
-    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`)
+
+    if (requires_approval) THEN
+       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`)
     VALUES
       (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition);
+      ELSE
+       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`, authorized)
+    VALUES
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition, TRUE);
+    END IF;
+
     SET @last_id = LAST_INSERT_ID();
+
+
     INSERT INTO has (users_id, products_id, status) VALUES (owner_id, @last_id, 0);
     INSERT INTO products_has_images (products_id, images_id) VALUES (@last_id, imgid);
+
+
   END;
 
 #
@@ -881,6 +894,9 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     WHERE products_id = pid;
 
     DELETE FROM products_has_tags
+    WHERE products_id = pid;
+
+    DELETE FROM products_has_likes
     WHERE products_id = pid;
 
     DELETE FROM user_rent_product
@@ -1770,7 +1786,10 @@ CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
       product_rental_period_limit AS time_period,
       products_id                 AS image_id,
       username                    AS username,
-      md5(email)                  AS gravatar
+      md5(email)                  AS gravatar,
+      `condition`,
+      enable_comments as comments_enabled,
+      comments_require_approval as comments_require_approval
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -2020,4 +2039,52 @@ CREATE PROCEDURE `DeleteImage`(image_title VARCHAR(240))
 
     delete from products_has_images where images_id = iid;
     delete from images where id = iid;
+  END;
+
+#
+#  Get all users
+#
+
+
+DROP PROCEDURE `getUsers`;
+CALL getAllUsers("1dc468bc-71e1-4417-b1b2-55ff341f64d1");
+CALL getAllUsers("1064273e-b842-4747-b392-fdbab6bc4c23");
+
+CREATE PROCEDURE `getUsers`(u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE token_expires DATETIME;
+    DECLARE isAdmin BOOL;
+
+
+    select user_id, date_expires into uid, token_expires from tokens where token = u_token;
+    select exists(select role from users where id = uid AND role = 'admin') into isAdmin;
+
+    if (token_expires > NOW() AND isAdmin)
+      THEN
+        select username, md5(email) as gravatar, date_registered, email, role from users;
+      ELSE
+        select "nope", "nope", "nope", "nope", "nope";
+    END IF;
+
+  END;
+
+#
+# ChangeUserRole
+#
+DROP PROCEDURE `ChangeUserRole`;
+CREATE PROCEDURE `ChangeUserRole`(c_username VARCHAR(240), n_role VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE isAdmin BOOL;
+
+
+    select user_id into uid from tokens where token = u_token;
+ select exists(select role from users where id = uid AND role = 'admin') into isAdmin;
+
+    if (isAdmin)
+      THEN
+        UPDATE users SET role = n_role where username = c_username;
+    END IF;
+
   END;

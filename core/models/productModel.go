@@ -9,6 +9,7 @@ import (
 	"strings"
 	"log"
 	"bytes"
+	"gitlab.com/remon/lemon-swear-detector"
 )
 
 type Product struct {
@@ -81,7 +82,12 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 		filename = "nil"
 	}
 	product_id := utils.GenerateUUID();
-	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, "new")
+
+
+
+	requires_approval:= lemon_swear_detector.CheckSentence(product.Title + " " + product.Description)
+	log.Println(requires_approval)
+	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, product.Condition, requires_approval)
 
 	return database.GetProductFromID(api, product_id, token)
 }
