@@ -18,7 +18,7 @@ func generateProductRoutes(api router.API) {
 	api.Router.Post("/p", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
 
-		if models.ValidToken(token) {
+		if models.IsSessionValid(api, token) {
 			limit, err := strconv.Atoi(r.FormValue("rental_period_limit"))
 
 			if err != nil {
@@ -32,7 +32,9 @@ func generateProductRoutes(api router.API) {
 				Image:r.FormValue("image"),
 				Filetype:r.FormValue("filetype"),
 				Condition: r.FormValue("condition"),
+				Content: r.FormValue("content"),
 			}
+			log.Println(product.Content)
 
 			tags := r.FormValue("tags")
 
@@ -51,7 +53,7 @@ func generateProductRoutes(api router.API) {
 			res.Write(data)
 
 		} else {
-			http.Error(res, "", http.StatusUnauthorized)
+			http.Error(res, "Token not valid", http.StatusUnauthorized)
 		}
 	})
 
@@ -155,6 +157,7 @@ func generateProductRoutes(api router.API) {
 			Condition:r.FormValue("condition"),
 			Comments_enabled: Comments_enabled,
 			Comments_require_approval: Comments_require_approval,
+			Content: r.FormValue("content"),
 		}
 
 		if len(product.Condition) <= 0 {

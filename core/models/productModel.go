@@ -10,6 +10,7 @@ import (
 	"log"
 	"bytes"
 	"gitlab.com/remon/lemon-swear-detector"
+	"html"
 )
 
 type Product struct {
@@ -21,6 +22,7 @@ type Product struct {
 	Condition                 string        `json:"condition"`
 	Comments_enabled          bool `json:"comments_enabled"`
 	Comments_require_approval bool `json:"comments_require_approval"`
+	Content                   string `json:"content"`
 }
 
 func ValidToken(token string) bool {
@@ -64,7 +66,6 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 	}
 
 	var fileExt string
-
 	if (product.Filetype == "image/jpeg") {
 		fileExt = ".jpg"
 	} else if (product.Filetype == "image/gif") {
@@ -73,6 +74,7 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 		fileExt = ".png"
 	}
 
+	//imageGood := utils.CheckImageIsSafe(file, product.Filetype)
 	filename := imageCode + fileExt
 	// If write is success then add image details to db
 	if utils.WriteBase64Image(file, product.Filetype, imageCode, fileExt) {
@@ -84,10 +86,19 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 	product_id := utils.GenerateUUID();
 
 
-
-	requires_approval:= lemon_swear_detector.CheckSentence(product.Title + " " + product.Description)
+	requires_approval := lemon_swear_detector.CheckSentence(product.Title + " " + product.Description)
 	log.Println(requires_approval)
-	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, product.Condition, requires_approval)
+
+	if len(product.Content) <= 0 {
+		product.Content = " "
+	}
+
+	product.Title = html.EscapeString(product.Title)
+	product.Description = html.EscapeString(product.Description)
+	product.Condition = html.EscapeString(product.Condition)
+	product.Content = html.EscapeString(product.Content)
+
+	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, product.Condition, requires_approval, product.Content)
 
 	return database.GetProductFromID(api, product_id, token)
 }
@@ -165,8 +176,13 @@ func AmITheOwner(api router.API, pid string, token string) OwnerRes {
 
 func EditProduct(api router.API, pid string, product Product, token string) bool {
 	if IsOwner(api, token, pid) {
+		log.Println(product.Content)
 		if len(product.Title) > 0 && len(product.Description) > 0 && product.Rental_period_limit > 0 {
-			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition, product.Comments_enabled, product.Comments_require_approval)
+			product.Title = html.EscapeString(product.Title)
+			product.Description = html.EscapeString(product.Description)
+			product.Condition = html.EscapeString(product.Condition)
+			product.Content = html.EscapeString(product.Content)
+			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition, product.Comments_enabled, product.Comments_require_approval, product.Content)
 
 		}
 	} else {

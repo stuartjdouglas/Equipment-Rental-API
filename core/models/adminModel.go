@@ -13,3 +13,14 @@ func UpdateIndex(api router.API, title string, Description string, token string)
 	//}
 	return false
 }
+
+func DeleteUser(api router.API, uid string, token string) bool {
+	user := database.GetUserRoleFromToken(api, token)
+
+	log.Println(user)
+	log.Println(user.Role)
+	if user.Role == "admin" {
+		return database.DeleteUser(api, uid, token)
+	}
+	return false
+}

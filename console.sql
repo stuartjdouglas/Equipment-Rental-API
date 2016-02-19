@@ -143,6 +143,7 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
   `product_description`         VARCHAR(240) NOT NULL,
   `product_rental_period_limit` VARCHAR(240) NOT NULL,
   `ownerid`                     INT          NOT NULL,
+  `content` text NOT NULL,
   `enable_comments` tinyint(1) NOT NULL DEFAULT '1',
   `comments_require_approval` tinyint(1) NOT NULL DEFAULT '0',
   `condition` varchar(240) NOT NULL,
@@ -800,11 +801,12 @@ FROM images
 WHERE file_name = 'EDH86AiKEx.jpg';
 
 DROP PROCEDURE createProduct;
-CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something", 7, 0, 16, "new", FALSE);
+CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something", 7, 0, 16, "new", FALSE, "");
 
 CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product_id VARCHAR(240), date_added DATETIME,
                                date_updated                DATETIME, product_description VARCHAR(240),
-                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240), requires_approval BOOL)
+                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240), requires_approval BOOL,
+                              n_content TEXT)
   BEGIN
     DECLARE imgid INT;
     SELECT id
@@ -814,13 +816,13 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
     ORDER BY date_added DESC;
 
     if (requires_approval) THEN
-       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`)
+       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`, content)
     VALUES
-      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition);
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition, n_content);
       ELSE
-       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`, authorized)
+       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`, authorized, content)
     VALUES
-      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition, TRUE);
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition, TRUE, n_content);
     END IF;
 
     SET @last_id = LAST_INSERT_ID();
@@ -837,9 +839,9 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
 #
 DROP PROCEDURE EditProduct;
 
-CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240), comments_enabled BOOL, comments_require_approvala BOOL)
+CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240), comments_enabled BOOL, comments_require_approvala BOOL, n_content TEXT)
   BEGIN
-    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition, enable_comments = comments_enabled, comments_require_approval = comments_require_approvala
+    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition, enable_comments = comments_enabled, comments_require_approval = comments_require_approvala, content = n_content
     WHERE product_id = p_id;
 
   END;
@@ -988,7 +990,8 @@ CREATE PROCEDURE getListing()
       date_updated,
       product_description,
       product_rental_period_limit,
-      products.id AS id
+      products.id AS id,
+      content
     FROM products
       LEFT JOIN has ON products.id = has.products_id
       LEFT JOIN users ON has.users_id = users.id
@@ -1034,7 +1037,8 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
       tags,
       `condition`,
       enable_comments as comments_enabled,
-      comments_require_approval as comments_require_approval
+      comments_require_approval as comments_require_approval,
+      content
     FROM has
       LEFT JOIN users ON has.users_id = users.id
       LEFT JOIN products ON has.products_id = products.id
@@ -1584,7 +1588,8 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT)
       products_id                 AS image_id,
       username                    AS username,
       md5(email)                  AS gravatar,
-      `condition`
+      `condition`,
+      content
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -2068,6 +2073,45 @@ CREATE PROCEDURE `getUsers`(u_token VARCHAR(240))
     END IF;
 
   END;
+
+#
+#
+#
+
+#
+#   Remove user
+#   > Later on we will want to limit this to only admins and the defined user by using there token
+#
+DROP PROCEDURE removeUserAsAdmin;
+CALL removeUserAsAdmin("poop", "5920da7e-cb2e-4352-8229-f07d1723d2fa");
+
+CREATE PROCEDURE `removeUserAsAdmin`(u_name VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE auid INT;
+    DECLARE token_expires DATETIME;
+    DECLARE isAdmin BOOL;
+    DECLARE UID INT;
+
+    select user_id, date_expires into auid, token_expires from tokens where token = u_token;
+    select exists(select role from users where id = auid AND role = "admin") into isAdmin;
+
+    SELECT id
+    INTO UID
+    FROM users
+    WHERE username = u_name;
+
+
+    IF (isAdmin) THEN
+      DELETE FROM tokens
+        WHERE user_id = UID;
+      DELETE FROM users
+        WHERE username = u_name;
+        SELECT "user deleted";
+      ELSE
+        SELECT "user not deleted";
+    END IF;
+  END;
+
 
 #
 # ChangeUserRole

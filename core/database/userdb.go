@@ -61,7 +61,7 @@ func getUserID(api router.API, username string) int {
 // Returns User information when given a username
 //noinspection GoUnusedFunction
 func GetUser(api router.API, id string) User {
-	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users WHERE username = ?")
+	stmt, err := api.Context.Session.Prepare("SELECT username, email, role FROM users WHERE username = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,17 +74,16 @@ func GetUser(api router.API, id string) User {
 
 	var User User;
 	for rows.Next() {
-		var result tempUser
 		err := rows.Scan(
-			&result.Username,
-			&result.Email,
+			&User.Username,
+			&User.Email,
+			&User.Role,
 		)
 
 		if err != nil {
 			log.Println(err)
 		}
-		User.Username = result.Username
-		sum := md5.Sum([]byte(result.Email))
+		sum := md5.Sum([]byte(User.Email))
 		User.Gravatar = hex.EncodeToString(sum[:])
 	}
 	if err != nil {
@@ -222,6 +221,40 @@ func ChangeRole(api router.API, username string , role string, token string) boo
 	defer rows.Close()
 
 	return true
+}
+
+type UserRole struct {
+	Username string `json:"username"`
+	Role string `json:"role"`
+}
+
+func GetUserRoleFromToken(api router.API, token string) UserRole {
+	var user UserRole
+	stmt, err := api.Context.Session.Prepare("CALL GetUserRole(?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(token)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(
+			&user.Username,
+			&user.Role,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return user;
 }
 
 func GetUserNameFromToken(api router.API, token string) string {
