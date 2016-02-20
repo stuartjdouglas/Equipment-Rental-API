@@ -429,7 +429,7 @@ func GetProductsPagingSortedByLikes(api router.API, step int, count int, token s
 
 	var content = []Item{}
 
-	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL getMostLikedPagedProducts(?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
