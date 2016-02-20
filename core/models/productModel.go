@@ -127,7 +127,8 @@ func GetCurrentlyRentedProducts(api router.API, token string, step int, count in
 }
 
 func GetProducts(api router.API) database.Items {
-	return database.GetProducts(api)
+	//return database.GetProducts(api)
+	return database.Items{}
 }
 
 func GetAuthedAvailability(api router.API, product_id string, token string) database.RentalStatus {
@@ -154,8 +155,19 @@ func ReturnItem(api router.API, product_id string, token string) {
 	}
 }
 
-func GetProductsPaging(api router.API, step int, count int, token string) database.Items {
-	return database.GetProductsPaging(api, step, count, token)
+func GetProductsPaging(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPaging(api, step, count, token, order)
+}
+
+func GetProductsPagingSortedByAdded(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPagingSortedByAdded(api, step, count, token, order)
+}
+
+func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPagingSortedByUpdated(api, step, count, token, order)
+}
+func GetProductsPagingSortedByLikes(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPagingSortedByLikes(api, step, count, token, order)
 }
 
 func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.OwnerItems {

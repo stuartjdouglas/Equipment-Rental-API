@@ -1665,28 +1665,57 @@ CREATE PROCEDURE getMostRecentPagedProducts(step INT, count INT)
 #
 
 DROP PROCEDURE getRecentlyUpdatedPagedProducts;
-CALL getRecentlyUpdatedPagedProducts(0, 6);
+CALL getRecentlyUpdatedPagedProducts(0, 6, true);
 
-CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT)
+CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT, t_order bool)
   BEGIN
-    SELECT
+    if (t_order) THEN
+      SELECT
       product_id                  AS id,
       product_name                AS name,
       product_description         AS description,
-      date_added,
+      products.date_added,
       date_updated,
       product_rental_period_limit AS time_period,
-      products_id                 AS image_id,
+      products.id                 AS image_id,
       username                    AS username,
       md5(email)                  AS gravatar,
       `condition`,
-      content
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
       WHERE visable = TRUE AND authorized = TRUE
+    GROUP BY products.product_id
     ORDER BY products.date_updated DESC
     LIMIT step, COUNT;
+      ELSE
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+    GROUP BY products.product_id
+    ORDER BY products.date_updated ASC
+    LIMIT step, COUNT;
+    END IF;
   END;
 
 #

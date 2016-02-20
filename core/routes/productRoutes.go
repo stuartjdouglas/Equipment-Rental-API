@@ -60,13 +60,20 @@ func generateProductRoutes(api router.API) {
 
 
 	//	Get all Products
-	api.Router.Get("/p", func(c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/products", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+			tmp_order := r.Header.Get("order")
+			order, err := strconv.ParseBool(tmp_order)
+			if err != nil {
+				order = true
+			}
+
 			step, err := strconv.Atoi(r.Header.Get("Start"))
 			count, err := strconv.Atoi(r.Header.Get("Count"))
 			token := r.Header.Get("token")
-			result := models.GetProductsPaging(api, step, count, token)
+			result := models.GetProductsPaging(api, step, count, token, order)
 
 			data, err := json.Marshal(result)
 
@@ -90,7 +97,123 @@ func generateProductRoutes(api router.API) {
 			res.WriteHeader(200)
 			res.Write(data)
 		}
+	})
 
+	//	Get all Products Filtered by added
+	api.Router.Get("/products/added/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "newest"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingSortedByAdded(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+	})
+
+//	Get all Products Filtered by added
+	api.Router.Get("/products/updated/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "newest"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingSortedByUpdated(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+	})
+
+//	Get all Products Filtered by likes
+	api.Router.Get("/products/likes/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "most"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingSortedByLikes(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
 	})
 
 	api.Router.Get("/owner/products", func(c web.C, res http.ResponseWriter, req *http.Request) {

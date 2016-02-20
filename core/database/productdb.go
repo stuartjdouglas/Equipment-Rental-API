@@ -306,7 +306,7 @@ func getLikes(api router.API, pid string, token string) Like {
 	return result
 }
 
-func GetProductsPaging(api router.API, step int, count int, token string) Items {
+func GetProductsPaging(api router.API, step int, count int, token string, order bool) Items {
 
 	var content = []Item{}
 
@@ -317,6 +317,184 @@ func GetProductsPaging(api router.API, step int, count int, token string) Items 
 	defer stmt.Close()
 
 	rows, err := stmt.Query(step, count, true)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_id int
+		var likes int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Content,
+			&likes,
+		)
+
+		result.Tags = getTags(api, result.Product_id)
+		result.Comments = getComments(api, result.Product_id)
+		result.Image = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Items = content
+	items.Total = len(content)
+
+	return items
+}
+
+func GetProductsPagingSortedByAdded(api router.API, step int, count int, token string, order bool) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count, order)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_id int
+		var likes int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Content,
+			&likes,
+		)
+
+		result.Tags = getTags(api, result.Product_id)
+		result.Comments = getComments(api, result.Product_id)
+		result.Image = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Items = content
+	items.Total = len(content)
+
+	return items
+}
+func GetProductsPagingSortedByLikes(api router.API, step int, count int, token string, order bool) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count, order)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_id int
+		var likes int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Content,
+			&likes,
+		)
+
+		result.Tags = getTags(api, result.Product_id)
+		result.Comments = getComments(api, result.Product_id)
+		result.Image = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Items = content
+	items.Total = len(content)
+
+	return items
+}
+func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token string, order bool) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getRecentlyUpdatedPagedProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count, order)
 	if err != nil {
 		log.Println(err)
 	}
