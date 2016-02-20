@@ -325,6 +325,7 @@ func GetProductsPaging(api router.API, step int, count int, token string) Items 
 	for rows.Next() {
 		var result Item
 		var image_id int
+		var likes int
 		//var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
@@ -338,6 +339,7 @@ func GetProductsPaging(api router.API, step int, count int, token string) Items 
 			&result.Owner.Gravatar,
 			&result.Condition,
 			&result.Content,
+			&likes,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
