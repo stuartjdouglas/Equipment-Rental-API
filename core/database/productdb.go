@@ -310,13 +310,13 @@ func GetProductsPaging(api router.API, step int, count int, token string) Items 
 
 	var content = []Item{}
 
-	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(step, count)
+	rows, err := stmt.Query(step, count, true)
 	if err != nil {
 		log.Println(err)
 	}

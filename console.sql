@@ -1574,9 +1574,100 @@ CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(2
 #
 
 DROP PROCEDURE getPagedProducts;
-CALL getPagedProducts(0, 6);
+CALL getPagedProducts(0, 6, TRUE );
 
-CREATE PROCEDURE getPagedProducts(step INT, count INT)
+CREATE PROCEDURE getPagedProducts(step INT, count INT, sorting bool)
+  BEGIN
+    if (sorting) THEN
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+        GROUP BY products.product_id
+    ORDER BY products.date_added DESC
+    LIMIT step, COUNT;
+      ELSE
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+        GROUP BY products.product_id
+    ORDER BY products.date_added ASC
+    LIMIT step, COUNT;
+    END IF;
+
+  END;
+
+#
+# Get Most Recent Paged Products
+#
+
+DROP PROCEDURE getMostRecentPagedProducts;
+CALL getMostRecentPagedProducts(0, 6);
+
+CREATE PROCEDURE getMostRecentPagedProducts(step INT, count INT)
+  BEGIN
+    SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products_id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+    ORDER BY products.date_added DESC
+    LIMIT step, COUNT;
+  END;
+
+#
+# Get Recently Updated Paged Products
+#
+
+DROP PROCEDURE getRecentlyUpdatedPagedProducts;
+CALL getRecentlyUpdatedPagedProducts(0, 6);
+
+CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT)
   BEGIN
     SELECT
       product_id                  AS id,
@@ -1597,6 +1688,64 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT)
     ORDER BY products.date_updated DESC
     LIMIT step, COUNT;
   END;
+
+#
+# Get Most Liked Paged Products
+#
+DROP PROCEDURE getMostLikedPagedProducts;
+CALL getMostLikedPagedProducts(0, 6, true);
+CREATE PROCEDURE getMostLikedPagedProducts(step INT, count INT, sortOrder bool)
+  BEGIN
+    if (sortOrder) THEN
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT JOIN products ON has.products_id = products.id
+      LEFT JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+      GROUP BY products.product_id
+    ORDER BY COALESCE(sum(likes.`like`), 0) DESC
+    LIMIT step, COUNT;
+      ELSE
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      COALESCE(sum(likes.`like`), 0) as likes,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      product.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content
+    FROM has
+      LEFT JOIN products ON has.products_id = products.id
+      LEFT JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+      GROUP BY products.product_id
+    ORDER BY COALESCE(sum(likes.`like`), 0) ASC
+    LIMIT step, COUNT;
+
+    END IF;
+  END;
+
 
 # Get Rented Products
 
