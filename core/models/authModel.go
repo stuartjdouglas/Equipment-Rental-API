@@ -93,13 +93,9 @@ func validReCaptchaResposne (response string) bool {
 	return gr.Success
 }
 
-func PerformRegister(api router.API, data Register) bool {
+func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 	if !database.CheckIfUserExists(api, data.Username) {
-		if validReCaptchaResposne(data.Recaptcha) {
-			log.Println("user does not exist")
-			log.Println(data.Email)
-			log.Println(data.Password)
-			log.Println(data.Username)
+		if (!skipCaptcha) {
 			if (secureEntry(data.Password) && secureEntry(data.Username)) {
 				log.Println("data is secure")
 				hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
@@ -113,6 +109,23 @@ func PerformRegister(api router.API, data Register) bool {
 					return false;
 				}
 			}
+		} else {
+			if validReCaptchaResposne(data.Recaptcha) {
+				if (secureEntry(data.Password) && secureEntry(data.Username)) {
+					log.Println("data is secure")
+					hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if database.RegisterUser(api, data.Username, hash, data.Email) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			}
+
 		}
 
 
