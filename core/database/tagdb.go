@@ -127,7 +127,7 @@ func GetProductsWithTag(api router.API, tag string, start int, count int) Items 
 
 		result.Tags = getTags(api, result.Product_id);
 
-		result.Image = GetImage(api, postid)
+		result.Images = GetImage(api, postid)
 
 		if err != nil {
 			panic(err)

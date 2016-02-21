@@ -113,8 +113,8 @@ func GetProductFromID(api router.API, product_id string, token string) database.
 
 func RemoveProduct(api router.API, product_id string, token string, item database.Items) bool {
 
-	for i := 0; i < len(item.Items[0].Image); i++ {
-		utils.BinFiles("image", item.Items[0].Image[i].Title)
+	for i := 0; i < len(item.Items[0].Images); i++ {
+		utils.BinFiles("image", item.Items[0].Images[i].Title)
 		database.RemoveImages(api, product_id)
 	}
 	database.RemoveProduct(api, product_id, token)

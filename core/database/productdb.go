@@ -26,7 +26,7 @@ type Item struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Image                       []Image           `json:"image"`
+	Images                       []Image           `json:"images"`
 	Tags                        []Tag                `json:"tags"`
 	Condition                   string        `json:"condition"`
 	Comments                    []Comment `json:"comments"`
@@ -128,7 +128,7 @@ func GetProducts(api router.API) Items {
 		result.Tags = getTags(api, result.Product_id);
 
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, postid)
+		result.Images = GetImage(api, postid)
 
 		if err != nil {
 			panic(err)
@@ -344,7 +344,7 @@ func GetProductsPaging(api router.API, step int, count int, token string, order 
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, image_id)
+		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
@@ -404,7 +404,7 @@ func GetProductsPagingSortedByAdded(api router.API, step int, count int, token s
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, image_id)
+		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
@@ -463,7 +463,7 @@ func GetProductsPagingSortedByLikes(api router.API, step int, count int, token s
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, image_id)
+		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
@@ -522,7 +522,7 @@ func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, image_id)
+		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
@@ -800,7 +800,7 @@ func GetProductFromID(api router.API, id string, token string) Items {
 		} else {
 			result.Comments = getComments(api, result.Product_id)
 		}
-		result.Image = GetImage(api, imageid)
+		result.Images = GetImage(api, imageid)
 		result.Likes = getLikes(api, result.Product_id, token)
 		if err != nil {
 			panic(err)
