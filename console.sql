@@ -2310,3 +2310,30 @@ CREATE PROCEDURE `ChangeUserRole`(c_username VARCHAR(240), n_role VARCHAR(240), 
     END IF;
 
   END;
+
+
+#
+# getMostUsedTags
+#
+#
+DROP PROCEDURE getMostUsedTags;
+CALL getMostUsedTags(0, 3, true);
+
+CREATE PROCEDURE `getMostUsedTags` (start INT, count INT, sortOrder bool)
+  BEGIN
+    if (sortOrder) THEN
+      select tag, count(tag) from products_has_tags
+    left JOIN tags ON products_has_tags.tags_id = tags.id
+     GROUP BY tag
+    ORDER BY count(tag) DESC
+    LIMIT start, count;
+      ELSE
+      select tag, count(tag) from products_has_tags
+    left JOIN tags ON products_has_tags.tags_id = tags.id
+     GROUP BY tag
+    ORDER BY count(tag) ASC
+    LIMIT start, count;
+    END IF;
+
+  END;
+

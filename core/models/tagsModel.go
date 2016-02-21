@@ -77,3 +77,8 @@ func parseCount(count int) int {
 func GetProductsOfTag(api router.API, tag string, start string, count string) database.Items {
 	return database.GetProductsWithTag(api, tag, parseStringToInt(start), parseCount(parseStringToInt(count)))
 }
+
+func GetTagsMostUsed(api router.API, step int, count int, token string, order bool) []database.MostUsedTag {
+	log.Println("hello")
+	return database.GetTagsMostUsed(api, step, count, token, order)
+}

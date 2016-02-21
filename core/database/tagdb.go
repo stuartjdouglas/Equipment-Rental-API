@@ -65,7 +65,7 @@ func RemoveTag(api router.API, pid string, tag string) {
 
 }
 
-func GetTags(api router.API, pid string) []Tag{
+func GetTags(api router.API, pid string) []Tag {
 	var tags []Tag
 	stmt, err := api.Context.Session.Prepare("CALL getTags(?)")
 	if err != nil {
@@ -77,7 +77,6 @@ func GetTags(api router.API, pid string) []Tag{
 		log.Println(err)
 	}
 	defer rows.Close()
-
 
 	for rows.Next() {
 		var index Tag
@@ -140,4 +139,43 @@ func GetProductsWithTag(api router.API, tag string, start int, count int) Items 
 	}
 
 	return Items{Items: content, Total: len(content)}
+}
+
+type MostUsedTag struct {
+	Title  string `json:"title"`
+	Amount int `json:"amount"`
+}
+
+func GetTagsMostUsed(api router.API, step int, count int, token string, order bool) []MostUsedTag {
+	var content = []MostUsedTag{}
+	stmt, err := api.Context.Session.Prepare("CALL getMostUsedTags(?, ?, ?)")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(step, count, order)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result MostUsedTag
+
+		err := rows.Scan(
+			&result.Title,
+			&result.Amount,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return content
 }
