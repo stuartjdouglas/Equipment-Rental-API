@@ -11,14 +11,12 @@ import (
 	"io"
 	"strings"
 	"image/gif"
+	"github.com/koyachi/go-nude"
 )
 
 func WriteBase64Image(filez io.Reader, filetype string, filename string, extension string) bool {
 	if (filetype == "image/jpeg") {
-		file, err := jpeg.Decode(filez)
-		if err != nil {
-			log.Println(err)
-		}
+		file:= convertJpeg(filez)
 
 
 		// Write original
@@ -40,18 +38,12 @@ func WriteBase64Image(filez io.Reader, filetype string, filename string, extensi
 		Write(thumbnail, filename + "_thumb" + extension, filetype)
 
 	} else if (filetype == "image/gif") {
-		file, err := gif.DecodeAll(filez)
-		if err != nil {
-			log.Println(err)
-		}
+		file := convertGif(filez)
 		// write original
 		writeGIF(file, filename + extension, filetype)
 
 	} else if (filetype == "image/png") {
-		file, err := png.Decode(filez)
-		if err != nil {
-			log.Println(err)
-		}
+		file := convertPng(filez)
 		// Write original
 		Write(file, filename + extension, filetype)
 		// Write Large
@@ -95,6 +87,30 @@ func WriteBase64Image(filez io.Reader, filetype string, filename string, extensi
 		Write(thumbnail, filename + "_thumb" + extension, filetype)
 	}
 	return true;
+}
+
+func convertJpeg(filez io.Reader) image.Image {
+	file, err := jpeg.Decode(filez)
+	if err != nil {
+		log.Println(err)
+	}
+	return file
+}
+
+func convertGif(filez io.Reader) *gif.GIF {
+	file, err := gif.DecodeAll(filez)
+	if err != nil {
+		log.Println(err)
+	}
+	return file
+}
+
+func convertPng(filez io.Reader) image.Image {
+	file, err := png.Decode(filez)
+	if err != nil {
+		log.Println(err)
+	}
+	return file
 }
 
 func ResizeImage(image image.Image, height uint) image.Image {
@@ -219,4 +235,22 @@ func getFilename(data string) string {
 func getFullFilename(data string) string {
 	splitfile := strings.Split(data, "/")
 	return splitfile[len(splitfile) - 1]
+}
+
+func CheckImageIsSafe(file io.Reader, filetype string) bool {
+	log.Println(filetype)
+	if (filetype == "image/jpeg") {
+		img := convertJpeg(file)
+		result, _ := nude.IsImageNude(img)
+		return result
+	} else if (filetype == "image/gif") {
+		//img := convertGif(file)
+		//result, _ := nude.IsImageNude(img)
+		return true
+	} else if (filetype == "image/png") {
+		img := convertPng(file)
+		result, _ := nude.IsImageNude(img)
+		return result
+	}
+	return false
 }

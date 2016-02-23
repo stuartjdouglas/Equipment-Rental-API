@@ -9,6 +9,102 @@ import (
 )
 
 func generateCommentsRoutes(api router.API) {
+
+	api.Router.Post("/product/:pid/comments/enable", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		pid := c.URLParams["pid"]
+		token := req.Header.Get("token")
+		if len(pid) > 5 {
+			if (models.IsOwner(api, token, pid)) {
+				models.EnableComments(api, pid, token)
+				message := hello{
+					Message: "Comments enabled",
+				}
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusOK)
+				json.NewEncoder(res).Encode(message)
+
+			} else {
+				message := hello{
+					Message: "Not authorized",
+				}
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(res).Encode(message)
+			}
+
+		} else {
+			message := hello{
+				Message: "Unable to enable comments",
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(res).Encode(message)
+		}
+	})
+	api.Router.Post("/product/:pid/comments/disable", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		pid := c.URLParams["pid"]
+		token := req.Header.Get("token")
+		if len(pid) > 5 {
+			if (models.IsOwner(api, token, pid)) {
+				models.DisableComments(api, pid, token)
+				message := hello{
+					Message: "Comments disabled",
+				}
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusOK)
+				json.NewEncoder(res).Encode(message)
+
+			} else {
+				message := hello{
+					Message: "Not authorized",
+				}
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(res).Encode(message)
+			}
+
+		} else {
+			message := hello{
+				Message: "Unable to disable comments",
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(res).Encode(message)
+		}
+	})
+	api.Router.Post("/product/:pid/comment/:cid/approve", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		pid := c.URLParams["pid"]
+		cid := c.URLParams["cid"]
+		token := req.Header.Get("token")
+		if len(pid) > 5 {
+			if (models.IsOwner(api, token, pid)) {
+				models.ApproveComment(api, pid, cid)
+				message := hello{
+					Message: "Comments approved",
+				}
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusOK)
+				json.NewEncoder(res).Encode(message)
+
+			} else {
+				message := hello{
+					Message: "Not authorized",
+				}
+				res.Header().Set("Content-Type", "application/json")
+				res.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(res).Encode(message)
+			}
+
+		} else {
+			message := hello{
+				Message: "Unable to approve comment",
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(res).Encode(message)
+		}
+	})
+
 	api.Router.Post("/product/:pid/comment", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		pid := c.URLParams["pid"]
 		comment := req.Header.Get("comment")

@@ -28,7 +28,7 @@ func generateAuthRoutes(api router.API) {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 		}
 
-		if models.PerformRegister(api, newdata) {
+		if models.PerformRegister(api, newdata, false) {
 			res.Header().Set("Content-Type", "application/json")
 			res.WriteHeader(http.StatusCreated)
 			json.NewEncoder(res).Encode(error_response{Message:"User Created"})

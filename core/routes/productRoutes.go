@@ -18,7 +18,7 @@ func generateProductRoutes(api router.API) {
 	api.Router.Post("/p", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("token")
 
-		if models.ValidToken(token) {
+		if models.IsSessionValid(api, token) {
 			limit, err := strconv.Atoi(r.FormValue("rental_period_limit"))
 
 			if err != nil {
@@ -31,7 +31,10 @@ func generateProductRoutes(api router.API) {
 				Rental_period_limit:limit,
 				Image:r.FormValue("image"),
 				Filetype:r.FormValue("filetype"),
+				Condition: r.FormValue("condition"),
+				Content: r.FormValue("content"),
 			}
+			log.Println(product.Content)
 
 			tags := r.FormValue("tags")
 
@@ -50,20 +53,27 @@ func generateProductRoutes(api router.API) {
 			res.Write(data)
 
 		} else {
-			http.Error(res, "", http.StatusUnauthorized)
+			http.Error(res, "Token not valid", http.StatusUnauthorized)
 		}
 	})
 
 
 
 	//	Get all Products
-	api.Router.Get("/p", func(c web.C, res http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/products", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+			tmp_order := r.Header.Get("order")
+			order, err := strconv.ParseBool(tmp_order)
+			if err != nil {
+				order = true
+			}
+
 			step, err := strconv.Atoi(r.Header.Get("Start"))
 			count, err := strconv.Atoi(r.Header.Get("Count"))
 			token := r.Header.Get("token")
-			result := models.GetProductsPaging(api, step, count, token)
+			result := models.GetProductsPaging(api, step, count, token, order)
 
 			data, err := json.Marshal(result)
 
@@ -87,7 +97,123 @@ func generateProductRoutes(api router.API) {
 			res.WriteHeader(200)
 			res.Write(data)
 		}
+	})
 
+	//	Get all Products Filtered by added
+	api.Router.Get("/products/added/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "newest"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingSortedByAdded(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+	})
+
+//	Get all Products Filtered by added
+	api.Router.Get("/products/updated/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "newest"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingSortedByUpdated(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+	})
+
+//	Get all Products Filtered by likes
+	api.Router.Get("/products/likes/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "most"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingSortedByLikes(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
 	})
 
 	api.Router.Get("/owner/products", func(c web.C, res http.ResponseWriter, req *http.Request) {
@@ -141,16 +267,20 @@ func generateProductRoutes(api router.API) {
 	})
 	api.Router.Post("/product/:id/edit", func(c web.C, res http.ResponseWriter, r *http.Request) {
 		limit, err := strconv.Atoi(r.FormValue("rental_period_limit"))
-
+		Comments_enabled, err := strconv.ParseBool(r.FormValue("comments_enabled"))
+		Comments_require_approval, err := strconv.ParseBool(r.FormValue("comments_require_approval"))
 		if err != nil {
 			log.Println(err)
 		}
-		product := models.Product {
+		product := models.Product{
 			Title:r.FormValue("title"),
 			Description:r.FormValue("description"),
 			Rental_period_limit: limit,
 			Filetype:r.FormValue("filetype"),
 			Condition:r.FormValue("condition"),
+			Comments_enabled: Comments_enabled,
+			Comments_require_approval: Comments_require_approval,
+			Content: r.FormValue("content"),
 		}
 
 		if len(product.Condition) <= 0 {

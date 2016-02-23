@@ -9,15 +9,20 @@ import (
 	"strings"
 	"log"
 	"bytes"
+	"gitlab.com/remon/lemon-swear-detector"
+	"html"
 )
 
 type Product struct {
-	Title               string        `json:"title"`
-	Description         string        `json:"description"`
-	Rental_period_limit int        `json:"rental_period_limit"`
-	Image               string        `json:"image"`
-	Filetype            string        `json:"filetype"`
-	Condition           string        `json:"condition"`
+	Title                     string        `json:"title"`
+	Description               string        `json:"description"`
+	Rental_period_limit       int        `json:"rental_period_limit"`
+	Image                     string        `json:"image"`
+	Filetype                  string        `json:"filetype"`
+	Condition                 string        `json:"condition"`
+	Comments_enabled          bool `json:"comments_enabled"`
+	Comments_require_approval bool `json:"comments_require_approval"`
+	Content                   string `json:"content"`
 }
 
 func ValidToken(token string) bool {
@@ -61,7 +66,6 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 	}
 
 	var fileExt string
-
 	if (product.Filetype == "image/jpeg") {
 		fileExt = ".jpg"
 	} else if (product.Filetype == "image/gif") {
@@ -70,6 +74,7 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 		fileExt = ".png"
 	}
 
+	//imageGood := utils.CheckImageIsSafe(file, product.Filetype)
 	filename := imageCode + fileExt
 	// If write is success then add image details to db
 	if utils.WriteBase64Image(file, product.Filetype, imageCode, fileExt) {
@@ -79,7 +84,21 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 		filename = "nil"
 	}
 	product_id := utils.GenerateUUID();
-	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, "new")
+
+
+	requires_approval := lemon_swear_detector.CheckSentence(product.Title + " " + product.Description)
+	log.Println(requires_approval)
+
+	if len(product.Content) <= 0 {
+		product.Content = " "
+	}
+
+	product.Title = html.EscapeString(product.Title)
+	product.Description = html.EscapeString(product.Description)
+	product.Condition = html.EscapeString(product.Condition)
+	product.Content = html.EscapeString(product.Content)
+
+	database.CreateProduct(api, product.Title, product.Description, product.Rental_period_limit, token, filename, product_id, product.Condition, requires_approval, product.Content)
 
 	return database.GetProductFromID(api, product_id, token)
 }
@@ -94,9 +113,8 @@ func GetProductFromID(api router.API, product_id string, token string) database.
 
 func RemoveProduct(api router.API, product_id string, token string, item database.Items) bool {
 
-
-	for i:=0; i < len(item.Items[0].Image); i++ {
-		utils.BinFiles("image", item.Items[0].Image[i].Title)
+	for i := 0; i < len(item.Items[0].Images); i++ {
+		utils.BinFiles("image", item.Items[0].Images[i].Title)
 		database.RemoveImages(api, product_id)
 	}
 	database.RemoveProduct(api, product_id, token)
@@ -109,7 +127,8 @@ func GetCurrentlyRentedProducts(api router.API, token string, step int, count in
 }
 
 func GetProducts(api router.API) database.Items {
-	return database.GetProducts(api)
+	//return database.GetProducts(api)
+	return database.Items{}
 }
 
 func GetAuthedAvailability(api router.API, product_id string, token string) database.RentalStatus {
@@ -136,8 +155,19 @@ func ReturnItem(api router.API, product_id string, token string) {
 	}
 }
 
-func GetProductsPaging(api router.API, step int, count int, token string) database.Items {
-	return database.GetProductsPaging(api, step, count, token)
+func GetProductsPaging(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPaging(api, step, count, token, order)
+}
+
+func GetProductsPagingSortedByAdded(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPagingSortedByAdded(api, step, count, token, order)
+}
+
+func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPagingSortedByUpdated(api, step, count, token, order)
+}
+func GetProductsPagingSortedByLikes(api router.API, step int, count int, token string, order bool) database.Items {
+	return database.GetProductsPagingSortedByLikes(api, step, count, token, order)
 }
 
 func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.OwnerItems {
@@ -158,10 +188,17 @@ func AmITheOwner(api router.API, pid string, token string) OwnerRes {
 
 func EditProduct(api router.API, pid string, product Product, token string) bool {
 	if IsOwner(api, token, pid) {
+		log.Println(product.Content)
 		if len(product.Title) > 0 && len(product.Description) > 0 && product.Rental_period_limit > 0 {
-			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition)
+			product.Title = html.EscapeString(product.Title)
+			product.Description = html.EscapeString(product.Description)
+			product.Condition = html.EscapeString(product.Condition)
+			product.Content = html.EscapeString(product.Content)
+			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition, product.Comments_enabled, product.Comments_require_approval, product.Content)
 
 		}
+	} else {
+		log.Println("we are not owner")
 	}
 	return false
 }

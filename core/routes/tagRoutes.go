@@ -6,6 +6,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"encoding/json"
+"strconv"
 )
 
 func generateTagRoutes(api router.API) {
@@ -83,4 +84,45 @@ func generateTagRoutes(api router.API) {
 			json.NewEncoder(res).Encode(message)
 		}
 	})
+
+
+	//	Get All most used tags
+	api.Router.Get("/filter/tags/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			var order bool
+
+			t_order := c.URLParams["order"]
+
+			order = t_order == "popular"
+
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetTagsMostUsed(api, step, count, token, order)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+	})
+
 }

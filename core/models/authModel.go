@@ -7,6 +7,11 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"log"
 	"regexp"
+	"net/http"
+	"time"
+	"encoding/json"
+	"io/ioutil"
+	"net/url"
 )
 
 type Error_response struct {
@@ -14,9 +19,10 @@ type Error_response struct {
 }
 
 type Register struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
+	Recaptcha string `json:"recaptcha"`
 }
 
 func authLogin(password string, digest string) bool {
@@ -59,21 +65,69 @@ func PerformLogin(api router.API, username string, password string) database.Aut
 
 }
 
-func PerformRegister(api router.API, data Register) bool {
+type googleResponse struct {
+	Success    bool
+	ErrorCodes []string `json:"error-codes"`
+}
+
+func validReCaptchaResposne (response string) bool {
+	privatekey := "6LezuhgTAAAAABQg4nNctdCz0ED8cRcFI9-3EcOm"
+	path := "https://www.google.com/recaptcha/api/siteverify"
+
+	client := &http.Client{Timeout: 20 * time.Second}
+	resp, err := client.PostForm(path,
+		url.Values{"secret": {privatekey}, "response": {response}})
+	if err != nil {
+		return false
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+	gr := new(googleResponse)
+	err = json.Unmarshal(body, gr)
+
+
+	return gr.Success
+}
+
+func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 	if !database.CheckIfUserExists(api, data.Username) {
-		if (secureEntry(data.Password) && secureEntry(data.Username) && secureEntry(data.Email)) {
+		if (!skipCaptcha) {
+			if (secureEntry(data.Password) && secureEntry(data.Username)) {
+				log.Println("data is secure")
+				hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
-			if err != nil {
-				log.Fatal(err)
+				if database.RegisterUser(api, data.Username, hash, data.Email) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		} else {
+			if validReCaptchaResposne(data.Recaptcha) {
+				if (secureEntry(data.Password) && secureEntry(data.Username)) {
+					log.Println("data is secure")
+					hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if database.RegisterUser(api, data.Username, hash, data.Email) {
+						return true;
+					} else {
+						return false;
+					}
+				}
 			}
 
-			if database.RegisterUser(api, data.Username, hash, data.Email) {
-				return true;
-			} else {
-				return false;
-			}
 		}
+
 
 	}
 	return false
@@ -83,7 +137,7 @@ func PerformRegister(api router.API, data Register) bool {
 // secureEntry guards the api from entering data which is not acceptable
 func secureEntry(password string) bool {
 	// if the value if more or equal to 6 || if the value does not contain any spaces
-	if len(password) >= 6 && len(strings.Split(password, " ")) == 1 {
+	if len(password) >= 4 && len(strings.Split(password, " ")) == 1 {
 		// Return true that it is acceptable
 		return true;
 	}

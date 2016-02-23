@@ -5,6 +5,7 @@ import (
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"strings"
+	"html"
 )
 
 type Items struct {
@@ -25,11 +26,14 @@ type Item struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Image                       []Image           `json:"image"`
+	Images                       []Image           `json:"images"`
 	Tags                        []Tag                `json:"tags"`
 	Condition                   string        `json:"condition"`
 	Comments                    []Comment `json:"comments"`
 	Likes                       Like `json:"likes"`
+	Comments_enabled            bool `json:"comments_enabled"`
+	Comments_require_approval   bool `json:"comments_require_approval"`
+	Content                     string `json:"content"`
 }
 
 type Comment struct {
@@ -38,6 +42,7 @@ type Comment struct {
 	Author       User `json:"author"`
 	Date_added   time.Time `json:"date_added"`
 	Date_updated time.Time `json:"date_updated"`
+	Authorized   bool `json:"authorized"`
 }
 
 type OwnerItem struct {
@@ -51,6 +56,12 @@ type OwnerItem struct {
 	Image                       []Image           `json:"image"`
 	Holder                      User `json:"holder"`
 	Tags                        []Tag                `json:"tags"`
+	Condition                   string        `json:"condition"`
+	Comments                    []Comment `json:"comments"`
+	Likes                       Like `json:"likes"`
+	Comments_enabled            bool `json:"comments_enabled"`
+	Comments_require_approval   bool `json:"comments_require_approval"`
+	Requests                    UserRequests `json:"requests"`
 }
 
 type Tag struct {
@@ -62,17 +73,17 @@ type Result struct {
 	Total   int                `json:"total"`     // The total number of results
 }
 
-func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string, condition string) bool {
+func CreateProduct(api router.API, product_name string, product_description string, product_rental_period_limit int, token string, file_name string, product_id string, condition string, requires_approval bool, content string) bool {
 	userid := GetUserIdFromToken(api, token)
-	log.Println(userid)
+	log.Println("> " + content)
 
 	//	stmt, err := api.Context.Session.Prepare("INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, product_image_id, owner_id) values (?,?,?,?,?,?,?,?)")
-	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL createProduct(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, condition)
+	res, err := stmt.Exec(product_name, product_id, time.Now(), time.Now(), product_description, product_rental_period_limit, file_name, userid, condition, requires_approval, content)
 	if (err != nil) {
 		log.Println(err)
 		return false
@@ -111,11 +122,13 @@ func GetProducts(api router.API) Items {
 			&result.Product_description,
 			&result.Product_rental_period_limit,
 			&postid,
+			&result.Content,
 		)
 
 		result.Tags = getTags(api, result.Product_id);
+
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, postid)
+		result.Images = GetImage(api, postid)
 
 		if err != nil {
 			panic(err)
@@ -199,6 +212,7 @@ func getComments(api router.API, pid string) []Comment {
 			&result.Date_added,
 			&result.Date_updated,
 			&result.ID,
+			&result.Authorized,
 		)
 
 		if err != nil {
@@ -215,6 +229,46 @@ func getComments(api router.API, pid string) []Comment {
 	return tags
 }
 
+func getCommentsAsOwner(api router.API, pid string) []Comment {
+	var tags = []Comment{}
+
+	stmt, err := api.Context.Session.Prepare("CALL GetOwnerComments(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(pid)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Comment
+		err := rows.Scan(
+			&result.Text,
+			&result.Author.Username,
+			&result.Author.Gravatar,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.ID,
+			&result.Authorized,
+		)
+
+		if err != nil {
+			log.Println("Getting comments scanning")
+			panic(err)
+		}
+
+		tags = append(tags, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return tags
+}
 
 type Like struct {
 	Likes int `json:"likes"`
@@ -252,17 +306,17 @@ func getLikes(api router.API, pid string, token string) Like {
 	return result
 }
 
-func GetProductsPaging(api router.API, step int, count int, token string) Items {
+func GetProductsPaging(api router.API, step int, count int, token string, order bool) Items {
 
 	var content = []Item{}
 
-	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(step, count)
+	rows, err := stmt.Query(step, count, true)
 	if err != nil {
 		log.Println(err)
 	}
@@ -271,6 +325,7 @@ func GetProductsPaging(api router.API, step int, count int, token string) Items 
 	for rows.Next() {
 		var result Item
 		var image_id int
+		var likes int
 		//var tmpuserid string
 		err := rows.Scan(
 			&result.Product_id,
@@ -283,11 +338,191 @@ func GetProductsPaging(api router.API, step int, count int, token string) Items 
 			&result.Owner.Username,
 			&result.Owner.Gravatar,
 			&result.Condition,
+			&result.Content,
+			&likes,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, image_id)
+		result.Images = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Items = content
+	items.Total = len(content)
+
+	return items
+}
+
+func GetProductsPagingSortedByAdded(api router.API, step int, count int, token string, order bool) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getPagedProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count, order)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_id int
+		var likes int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Content,
+			&likes,
+		)
+
+		result.Tags = getTags(api, result.Product_id)
+		result.Comments = getComments(api, result.Product_id)
+		result.Images = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Items = content
+	items.Total = len(content)
+
+	return items
+}
+func GetProductsPagingSortedByLikes(api router.API, step int, count int, token string, order bool) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getMostLikedPagedProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count, order)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_id int
+		var likes int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Content,
+			&likes,
+		)
+
+		result.Tags = getTags(api, result.Product_id)
+		result.Comments = getComments(api, result.Product_id)
+		result.Images = GetImage(api, image_id)
+		result.Likes = getLikes(api, result.Product_id, token)
+
+		if err != nil {
+			log.Println("Getting paged results error scanning")
+			panic(err)
+		}
+
+		content = append(content, result)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	var items Items
+
+	items.Items = content
+	items.Total = len(content)
+
+	return items
+}
+func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token string, order bool) Items {
+
+	var content = []Item{}
+
+	stmt, err := api.Context.Session.Prepare("CALL getRecentlyUpdatedPagedProducts(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(step, count, order)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result Item
+		var image_id int
+		var likes int
+		//var tmpuserid string
+		err := rows.Scan(
+			&result.Product_id,
+			&result.Product_name,
+			&result.Product_description,
+			&result.Date_added,
+			&result.Date_updated,
+			&result.Product_rental_period_limit,
+			&image_id,
+			&result.Owner.Username,
+			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Content,
+			&likes,
+		)
+
+		result.Tags = getTags(api, result.Product_id)
+		result.Comments = getComments(api, result.Product_id)
+		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
 		if err != nil {
@@ -547,15 +782,25 @@ func GetProductFromID(api router.API, id string, token string) Items {
 			&imageid,
 			&tags,
 			&result.Condition,
+			&result.Comments_enabled,
+			&result.Comments_require_approval,
+			&result.Content,
 		)
+
+		result.Content = html.UnescapeString(result.Content)
 
 		if err != nil {
 			panic(err)
 		}
 
 		result.Tags = filterTags(tags)
-		result.Comments = getComments(api, result.Product_id)
-		result.Image = GetImage(api, imageid)
+		if IsOwner(api, token, result.Product_id) {
+			log.Println("getting owner commments")
+			result.Comments = getCommentsAsOwner(api, result.Product_id)
+		} else {
+			result.Comments = getComments(api, result.Product_id)
+		}
+		result.Images = GetImage(api, imageid)
 		result.Likes = getLikes(api, result.Product_id, token)
 		if err != nil {
 			panic(err)
@@ -853,11 +1098,15 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) O
 			&image_id,
 			&result.Owner.Username,
 			&result.Owner.Gravatar,
+			&result.Condition,
+			&result.Comments_enabled,
+			&result.Comments_require_approval,
 		)
 
 		result.Image = GetImage(api, image_id)
 		result.Holder = getHolder(api, result.Product_id)
-
+		result.Comments = getCommentsAsOwner(api, result.Product_id)
+		result.Requests = GetProductRequests(api, result.Product_id, token)
 		if err != nil {
 			log.Println("Getting paged results error scanning")
 			panic(err)
@@ -900,14 +1149,14 @@ func getHolder(api router.API, pid string) User {
 	}
 	return result
 }
-func UpdateProduct(api router.API, pid string, title string, description string, time int, condition string) bool {
-	stmt, err := api.Context.Session.Prepare("CALL EditProduct(?, ?, ?, ?, ?)")
+func UpdateProduct(api router.API, pid string, title string, description string, time int, condition string, comments_enabled bool, comments_require_approval bool, content string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL EditProduct(?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(pid, title, description, time, condition)
+	rows, err := stmt.Query(pid, title, description, time, condition, comments_enabled, comments_require_approval, content)
 
 	if err != nil {
 		log.Println(err)

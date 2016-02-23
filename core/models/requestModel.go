@@ -84,7 +84,7 @@ func RequestProduct(api router.API, pid string, token string) database.Request {
 					user.Username,
 					user.Email,
 					"Someone has requested " + product.Items[0].Product_name,
-					"Hello, " + user.Username + "\nSomeone has requested " + result.Title + "\n <img src=\"https://www.karite.xyz" + product.Items[0].Image[0].Size.Medium + "\">")
+					"Hello, " + user.Username + "\nSomeone has requested " + result.Title + "\n <img src=\"https://www.karite.xyz" + product.Items[0].Images[0].Size.Medium + "\">")
 
 			}
 			return result

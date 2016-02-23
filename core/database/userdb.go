@@ -9,8 +9,11 @@ import (
 )
 
 type User struct {
-	Username string        `json:"username"`
-	Gravatar string  `json:"gravatar"`
+	Username        string        `json:"username"`
+	Gravatar        string  `json:"gravatar"`
+	Email           string `json:"email"`
+	Date_registered time.Time `json:"date_registered"`
+	Role            string `json:"role"`
 }
 
 type tempUser struct {
@@ -58,7 +61,7 @@ func getUserID(api router.API, username string) int {
 // Returns User information when given a username
 //noinspection GoUnusedFunction
 func GetUser(api router.API, id string) User {
-	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users WHERE username = ?")
+	stmt, err := api.Context.Session.Prepare("SELECT username, email, role FROM users WHERE username = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,17 +74,16 @@ func GetUser(api router.API, id string) User {
 
 	var User User;
 	for rows.Next() {
-		var result tempUser
 		err := rows.Scan(
-			&result.Username,
-			&result.Email,
+			&User.Username,
+			&User.Email,
+			&User.Role,
 		)
 
 		if err != nil {
 			log.Println(err)
 		}
-		User.Username = result.Username
-		sum := md5.Sum([]byte(result.Email))
+		sum := md5.Sum([]byte(User.Email))
 		User.Gravatar = hex.EncodeToString(sum[:])
 	}
 	if err != nil {
@@ -92,7 +94,7 @@ func GetUser(api router.API, id string) User {
 
 type UserDetails struct {
 	Username string `json:"username"`
-	Email string `json:"email"`
+	Email    string `json:"email"`
 }
 
 func GetUserDetails(api router.API, username string) UserDetails {
@@ -171,43 +173,88 @@ func GetUsername(api router.API, userid int) string {
 
 
 //noinspection GoUnusedFunction
-func GetUsers(api router.API) []User {
-	//	SELECT username, bio FROM users;
-	stmt, err := api.Context.Session.Prepare("SELECT username, email FROM users")
+func GetUsers(api router.API, token string) []User {
+	stmt, err := api.Context.Session.Prepare("CALL getUsers(?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(token)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var users []User
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.Username,
+			&user.Gravatar,
+			&user.Date_registered,
+			&user.Email,
+			&user.Role,
+		)
+		users = append(users, user)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return users
+}
+
+func ChangeRole(api router.API, username string , role string, token string) bool {
+	stmt, err := api.Context.Session.Prepare("CALL ChangeUserRole(?, ?, ?)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(username, role, token)
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	return true
+}
+
+type UserRole struct {
+	Username string `json:"username"`
+	Role string `json:"role"`
+}
+
+func GetUserRoleFromToken(api router.API, token string) UserRole {
+	var user UserRole
+	stmt, err := api.Context.Session.Prepare("CALL GetUserRole(?)")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query()
+	rows, err := stmt.Query(token)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 
-	users := []User{}
-
 	for rows.Next() {
-		var result tempUser
 		err := rows.Scan(
-			&result.Username,
-			&result.Email,
+			&user.Username,
+			&user.Role,
 		)
 
 		if err != nil {
 			panic(err)
 		}
-
-		sum := md5.Sum([]byte(result.Email))
-		gravatar := hex.EncodeToString(sum[:])
-		users = append(users, User{
-			Username:result.Username,
-			Gravatar:gravatar,
-		})
 	}
-	if err != nil {
+	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return users;
+	return user;
 }
 
 func GetUserNameFromToken(api router.API, token string) string {

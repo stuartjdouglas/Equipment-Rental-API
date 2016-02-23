@@ -143,6 +143,9 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`products` (
   `product_description`         VARCHAR(240) NOT NULL,
   `product_rental_period_limit` VARCHAR(240) NOT NULL,
   `ownerid`                     INT          NOT NULL,
+  `content` text NOT NULL,
+  `enable_comments` tinyint(1) NOT NULL DEFAULT '1',
+  `comments_require_approval` tinyint(1) NOT NULL DEFAULT '0',
   `condition` varchar(240) NOT NULL,
   `authorized` tinyint(1) NOT NULL DEFAULT '0',
   `visable` tinyint(1) DEFAULT '1',
@@ -304,6 +307,7 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`comments` (
   `date_updated` DATETIME NOT NULL,
   `author` INT NOT NULL,
   `ident` VARCHAR(240) NOT NULL,
+  `authorized` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -444,36 +448,114 @@ CREATE PROCEDURE `getLikes`(p_id VARCHAR(240), u_token VARCHAR(240))
 #  Add comment
 #
 DROP PROCEDURE `AddComment`;
-CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "708e2cd0-6294-4e03-ba53-e17fee0732f9", "this is lewd");
+CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9", "this is lewdz", true);
 
-CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140))
+CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140), requiresApproval BOOL)
   BEGIN
     DECLARE uid INT;
     DECLARE pid INT;
-
+    DECLARE requires_authoriz BOOL;
     SELECT user_id into uid FROM tokens where token = u_token;
-    select id into pid from products where product_id = p_id;
-    insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+    select id, comments_require_approval into pid, requires_authoriz from products where product_id = p_id;
+    if (requires_authoriz OR requiresApproval) THEN
+      insert into comments(comment, date_added, date_updated, author, ident, authorized) VALUES(u_comment, NOW(), NOW(), uid, UUID(), FALSE);
+    ELSE
+
+      insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+    END IF;
     insert into products_has_comments(products_id, comments_id, users_id) VALUES(pid, LAST_INSERT_ID(), uid);
   END;
 
 #
+# DisableComments
+#
+DROP PROCEDURE DisableComments;
+CALL DisableComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `DisableComments`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET enable_comments = false WHERE product_id = p_id;
+  END;
+#
+# EnableComments
+#
+DROP PROCEDURE EnableComments;
+CALL EnableComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `EnableComments`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET enable_comments = true WHERE product_id = p_id;
+  END;
+
+#
+# DisableCommentsRequireAuth
+#
+DROP PROCEDURE DisableCommentsRequireAuth;
+CALL DisableCommentsRequireAuth("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `DisableCommentsRequireAuth`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET comments_require_approval = false WHERE product_id = p_id;
+  END;
+#
+# EnableCommentsRequireAuth
+#
+DROP PROCEDURE EnableCommentsRequireAuth;
+CALL EnableCommentsRequireAuth("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+CREATE PROCEDURE `EnableCommentsRequireAuth`(p_id VARCHAR(240))
+  BEGIN
+    UPDATE products SET comments_require_approval = true WHERE product_id = p_id;
+  END;
+
+#
+# ApproveComment
+#
+DROP PROCEDURE `ApproveComment`;
+CALL ApproveComment("ed2be2a7-d1b2-11e5-966e-fa163e786249");
+
+CREATE PROCEDURE `ApproveComment`(c_id VARCHAR(240))
+  BEGIN
+#     DECLARE pid INT;
+    DECLARE cid INT;
+#     SELECT id into pid from products where product_id = p_id;
+    select id into cid from comments where ident = c_id;
+
+    UPDATE comments SET authorized = true where id = cid;
+  END;
+#
 #  GetComments
 #
 DROP PROCEDURE GetComments;
-CALL GetComments("7431eec7-7ee8-4681-a157-29e6a1e22841");
-
+CALL GetComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
 
 CREATE PROCEDURE `GetComments`(p_id VARCHAR(240))
   BEGIN
     DECLARE pid INT;
-    select id into pid from products where product_id = p_id;
+    DECLARE enabled BOOL;
+    select id , enable_comments into pid, enabled from products where product_id = p_id;
 
-    select comment, username, md5(email) as gravatar, date_added, date_updated, ident as indentifier from products_has_comments
-    left JOIN comments on products_has_comments.comments_id = comments.id
-      LEFT JOIN users on products_has_comments.users_id = users.id
-    WHERE products_id = pid
-    ORDER BY date_added ASC;
+      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized from products_has_comments
+      left JOIN comments on products_has_comments.comments_id = comments.id
+        LEFT JOIN users on products_has_comments.users_id = users.id
+        left join products on products_has_comments.products_id = products.id
+      WHERE products_id = pid and comments.authorized = true and products.enable_comments = true
+      ORDER BY date_added ASC;
+  END;
+#
+#  GetOwnerComments
+#
+DROP PROCEDURE GetOwnerComments;
+CALL GetOwnerComments("0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9");
+
+CREATE PROCEDURE `GetOwnerComments`(p_id VARCHAR(240))
+  BEGIN
+    DECLARE pid INT;
+    DECLARE enabled BOOL;
+    select id , enable_comments into pid, enabled from products where product_id = p_id;
+
+      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized from products_has_comments
+      left JOIN comments on products_has_comments.comments_id = comments.id
+        LEFT JOIN users on products_has_comments.users_id = users.id
+        left join products on products_has_comments.products_id = products.id
+      WHERE products_id = pid and products.enable_comments = true
+      ORDER BY date_added ASC;
   END;
 
 #
@@ -650,7 +732,8 @@ CREATE PROCEDURE `login`(u_name VARCHAR(240), u_token VARCHAR(240), u_idenf VARC
       username,
       md5(email)             AS gravatar,
       u_token                AS token,
-      NOW() + INTERVAL 7 DAY AS expiry
+      NOW() + INTERVAL 7 DAY AS expiry,
+      role
     FROM users
     WHERE username = u_name;
 
@@ -718,11 +801,12 @@ FROM images
 WHERE file_name = 'EDH86AiKEx.jpg';
 
 DROP PROCEDURE createProduct;
-CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something", 7, 0, 16);
+CALL createProduct("item3", "something3", "2015-12-27", "2015-12-27", "something", 7, 0, 16, "new", FALSE, "");
 
 CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product_id VARCHAR(240), date_added DATETIME,
                                date_updated                DATETIME, product_description VARCHAR(240),
-                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240))
+                               product_rental_period_limit VARCHAR(240), product_image_id VARCHAR(240), owner_id INT, p_condition VARCHAR(240), requires_approval BOOL,
+                              n_content TEXT)
   BEGIN
     DECLARE imgid INT;
     SELECT id
@@ -730,12 +814,24 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
     FROM images
     WHERE file_name = product_image_id
     ORDER BY date_added DESC;
-    INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`)
+
+    if (requires_approval) THEN
+       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`, content)
     VALUES
-      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition);
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition, n_content);
+      ELSE
+       INSERT INTO products (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, ownerid, `condition`, authorized, content)
+    VALUES
+      (product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, p_condition, TRUE, n_content);
+    END IF;
+
     SET @last_id = LAST_INSERT_ID();
+
+
     INSERT INTO has (users_id, products_id, status) VALUES (owner_id, @last_id, 0);
     INSERT INTO products_has_images (products_id, images_id) VALUES (@last_id, imgid);
+
+
   END;
 
 #
@@ -743,9 +839,9 @@ CREATE PROCEDURE createProduct(product_name                VARCHAR(240), product
 #
 DROP PROCEDURE EditProduct;
 
-CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240))
+CREATE PROCEDURE `EditProduct` (p_id VARCHAR(240), p_name VARCHAR(240), p_description VARCHAR(240), p_rental_period_limit VARCHAR(240), p_condition VARCHAR(240), comments_enabled BOOL, comments_require_approvala BOOL, n_content TEXT)
   BEGIN
-    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition
+    UPDATE products SET product_name = p_name, product_description = p_description, product_rental_period_limit = p_rental_period_limit, date_updated = NOW(), `condition` = p_condition, enable_comments = comments_enabled, comments_require_approval = comments_require_approvala, content = n_content
     WHERE product_id = p_id;
 
   END;
@@ -800,6 +896,9 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     WHERE products_id = pid;
 
     DELETE FROM products_has_tags
+    WHERE products_id = pid;
+
+    DELETE FROM products_has_likes
     WHERE products_id = pid;
 
     DELETE FROM user_rent_product
@@ -891,7 +990,8 @@ CREATE PROCEDURE getListing()
       date_updated,
       product_description,
       product_rental_period_limit,
-      products.id AS id
+      products.id AS id,
+      content
     FROM products
       LEFT JOIN has ON products.id = has.products_id
       LEFT JOIN users ON has.users_id = users.id
@@ -935,7 +1035,10 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
       username,
       products.id AS id,
       tags,
-      `condition`
+      `condition`,
+      enable_comments as comments_enabled,
+      comments_require_approval as comments_require_approval,
+      content
     FROM has
       LEFT JOIN users ON has.users_id = users.id
       LEFT JOIN products ON has.products_id = products.id
@@ -1471,9 +1574,68 @@ CREATE PROCEDURE `checkItemAvailability`(product VARCHAR(240), usrname VARCHAR(2
 #
 
 DROP PROCEDURE getPagedProducts;
-CALL getPagedProducts(0, 6);
+CALL getPagedProducts(0, 6, TRUE );
 
-CREATE PROCEDURE getPagedProducts(step INT, count INT)
+CREATE PROCEDURE getPagedProducts(step INT, count INT, sorting bool)
+  BEGIN
+    if (sorting) THEN
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+        GROUP BY products.product_id
+    ORDER BY products.date_added DESC
+    LIMIT step, COUNT;
+      ELSE
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+        GROUP BY products.product_id
+    ORDER BY products.date_added ASC
+    LIMIT step, COUNT;
+    END IF;
+
+  END;
+
+#
+# Get Most Recent Paged Products
+#
+
+DROP PROCEDURE getMostRecentPagedProducts;
+CALL getMostRecentPagedProducts(0, 6);
+
+CREATE PROCEDURE getMostRecentPagedProducts(step INT, count INT)
   BEGIN
     SELECT
       product_id                  AS id,
@@ -1485,14 +1647,134 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT)
       products_id                 AS image_id,
       username                    AS username,
       md5(email)                  AS gravatar,
-      `condition`
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
       WHERE visable = TRUE AND authorized = TRUE
-    ORDER BY products.date_updated DESC
+    ORDER BY products.date_added DESC
     LIMIT step, COUNT;
   END;
+
+#
+# Get Recently Updated Paged Products
+#
+
+DROP PROCEDURE getRecentlyUpdatedPagedProducts;
+CALL getRecentlyUpdatedPagedProducts(0, 6, true);
+
+CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT, t_order bool)
+  BEGIN
+    if (t_order) THEN
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+    GROUP BY products.product_id
+    ORDER BY products.date_updated DESC
+    LIMIT step, COUNT;
+      ELSE
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+    GROUP BY products.product_id
+    ORDER BY products.date_updated ASC
+    LIMIT step, COUNT;
+    END IF;
+  END;
+
+#
+# Get Most Liked Paged Products
+#
+DROP PROCEDURE getMostLikedPagedProducts;
+CALL getMostLikedPagedProducts(0, 6, true);
+CREATE PROCEDURE getMostLikedPagedProducts(step INT, count INT, sortOrder bool)
+  BEGIN
+    if (sortOrder) THEN
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT JOIN products ON has.products_id = products.id
+      LEFT JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+      GROUP BY products.product_id
+    ORDER BY COALESCE(sum(likes.`like`), 0) DESC
+    LIMIT step, COUNT;
+      ELSE
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      COALESCE(sum(likes.`like`), 0) as likes,
+      product_description         AS description,
+      products.date_added,
+      products.date_updated,
+      product_rental_period_limit AS time_period,
+      product.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content
+    FROM has
+      LEFT JOIN products ON has.products_id = products.id
+      LEFT JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+      GROUP BY products.product_id
+    ORDER BY COALESCE(sum(likes.`like`), 0) ASC
+    LIMIT step, COUNT;
+
+    END IF;
+  END;
+
 
 # Get Rented Products
 
@@ -1538,7 +1820,7 @@ CREATE PROCEDURE getCurrentlyRentingProducts(u_name VARCHAR(240), step INT, coun
       LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
       LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
     WHERE user_rent_product.date_due > NOW() AND username = u_name
-    ORDER BY products.date_updated DESC
+    ORDER BY user_rent_product.date_due ASC
     LIMIT step, COUNT;
   END;
 
@@ -1687,7 +1969,10 @@ CREATE PROCEDURE getOwnerProducts(u_token VARCHAR(240), step INT, count INT)
       product_rental_period_limit AS time_period,
       products_id                 AS image_id,
       username                    AS username,
-      md5(email)                  AS gravatar
+      md5(email)                  AS gravatar,
+      `condition`,
+      enable_comments as comments_enabled,
+      comments_require_approval as comments_require_approval
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1746,8 +2031,11 @@ left join users ON has.users_id = users.id
   left join products on has.products_id = products.id
 where product_id = "fbf749c8-010f-4bb1-aa10-7da3aca6ba0d";
 
+CALL getUserIDofToken("f05a1fc2-2c05-4e88-92d1-b9a3a71b8dd2");
+select * from users where id = 2;
+
 DROP PROCEDURE isOwner;
-CALL isOwner("f05a1fc2-2c05-4e88-92d1-b9a3a71b8dd2", "fbf749c8-010f-4bb1-aa10-7da3aca6ba0d");
+CALL isOwner("f05a1fc2-2c05-4e88-92d1-b9a3a71b8dd2", "a47704d9-abeb-4b17-bbe5-1c9f41226e78");
 
 CREATE PROCEDURE isOwner(u_token VARCHAR(240), p_id VARCHAR(240))
   BEGIN
@@ -1935,3 +2223,117 @@ CREATE PROCEDURE `DeleteImage`(image_title VARCHAR(240))
     delete from products_has_images where images_id = iid;
     delete from images where id = iid;
   END;
+
+#
+#  Get all users
+#
+
+
+DROP PROCEDURE `getUsers`;
+CALL getAllUsers("1dc468bc-71e1-4417-b1b2-55ff341f64d1");
+CALL getAllUsers("1064273e-b842-4747-b392-fdbab6bc4c23");
+
+CREATE PROCEDURE `getUsers`(u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE token_expires DATETIME;
+    DECLARE isAdmin BOOL;
+
+
+    select user_id, date_expires into uid, token_expires from tokens where token = u_token;
+    select exists(select role from users where id = uid AND role = 'admin') into isAdmin;
+
+    if (token_expires > NOW() AND isAdmin)
+      THEN
+        select username, md5(email) as gravatar, date_registered, email, role from users;
+      ELSE
+        select "nope", "nope", "nope", "nope", "nope";
+    END IF;
+
+  END;
+
+#
+#
+#
+
+#
+#   Remove user
+#   > Later on we will want to limit this to only admins and the defined user by using there token
+#
+DROP PROCEDURE removeUserAsAdmin;
+CALL removeUserAsAdmin("poop", "5920da7e-cb2e-4352-8229-f07d1723d2fa");
+
+CREATE PROCEDURE `removeUserAsAdmin`(u_name VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE auid INT;
+    DECLARE token_expires DATETIME;
+    DECLARE isAdmin BOOL;
+    DECLARE UID INT;
+
+    select user_id, date_expires into auid, token_expires from tokens where token = u_token;
+    select exists(select role from users where id = auid AND role = "admin") into isAdmin;
+
+    SELECT id
+    INTO UID
+    FROM users
+    WHERE username = u_name;
+
+
+    IF (isAdmin) THEN
+      DELETE FROM tokens
+        WHERE user_id = UID;
+      DELETE FROM users
+        WHERE username = u_name;
+        SELECT "user deleted";
+      ELSE
+        SELECT "user not deleted";
+    END IF;
+  END;
+
+
+#
+# ChangeUserRole
+#
+DROP PROCEDURE `ChangeUserRole`;
+CREATE PROCEDURE `ChangeUserRole`(c_username VARCHAR(240), n_role VARCHAR(240), u_token VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE isAdmin BOOL;
+
+
+    select user_id into uid from tokens where token = u_token;
+ select exists(select role from users where id = uid AND role = 'admin') into isAdmin;
+
+    if (isAdmin)
+      THEN
+        UPDATE users SET role = n_role where username = c_username;
+    END IF;
+
+  END;
+
+
+#
+# getMostUsedTags
+#
+#
+DROP PROCEDURE getMostUsedTags;
+CALL getMostUsedTags(0, 3, true);
+
+CREATE PROCEDURE `getMostUsedTags` (start INT, count INT, sortOrder bool)
+  BEGIN
+    if (sortOrder) THEN
+      select tag, count(tag) from products_has_tags
+    left JOIN tags ON products_has_tags.tags_id = tags.id
+     GROUP BY tag
+    ORDER BY count(tag) DESC
+    LIMIT start, count;
+      ELSE
+      select tag, count(tag) from products_has_tags
+    left JOIN tags ON products_has_tags.tags_id = tags.id
+     GROUP BY tag
+    ORDER BY count(tag) ASC
+    LIMIT start, count;
+    END IF;
+
+  END;
+
