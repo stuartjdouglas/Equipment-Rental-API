@@ -1717,6 +1717,39 @@ CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT, t_order bo
     LIMIT step, COUNT;
     END IF;
   END;
+#
+# Get Random Paged Products
+#
+
+DROP PROCEDURE getRandomPagedProducts;
+CALL getRandomPagedProducts(0, 6);
+
+CREATE PROCEDURE getRandomPagedProducts(step INT, count INT)
+  BEGIN
+      SELECT
+      product_id                  AS id,
+      product_name                AS name,
+      product_description         AS description,
+      products.date_added,
+      date_updated,
+      product_rental_period_limit AS time_period,
+      products.id                 AS image_id,
+      username                    AS username,
+      md5(email)                  AS gravatar,
+      `condition`,
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes
+    FROM has
+      LEFT OUTER JOIN products ON has.products_id = products.id
+      LEFT OUTER JOIN users ON has.users_id = users.id
+      LEFT JOIN products_has_likes ON products.id = products_has_likes.products_id
+      LEFT JOIN likes ON products_has_likes.likes_id = likes.id
+      WHERE visable = TRUE AND authorized = TRUE
+    GROUP BY products.product_id
+    ORDER BY RAND()
+    LIMIT step, COUNT;
+
+  END;
 
 #
 # Get Most Liked Paged Products

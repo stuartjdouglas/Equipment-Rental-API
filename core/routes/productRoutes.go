@@ -216,6 +216,39 @@ func generateProductRoutes(api router.API) {
 		}
 	})
 
+//	Get Random Products
+	api.Router.Get("/products/random", func(c web.C, res http.ResponseWriter, r *http.Request) {
+
+		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
+			step, err := strconv.Atoi(r.Header.Get("Start"))
+			count, err := strconv.Atoi(r.Header.Get("Count"))
+			token := r.Header.Get("token")
+			result := models.GetProductsPagingRandom(api, step, count, token)
+
+			data, err := json.Marshal(result)
+
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			result := models.GetProducts(api)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		}
+	})
+
 	api.Router.Get("/owner/products", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		token := req.Header.Get("token")
 		step, err := strconv.Atoi(req.Header.Get("step"))
