@@ -169,6 +169,9 @@ func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token
 func GetProductsPagingSortedByLikes(api router.API, step int, count int, token string, order bool) database.Items {
 	return database.GetProductsPagingSortedByLikes(api, step, count, token, order)
 }
+func GetProductsPagingRandom(api router.API, step int, count int, token string) database.Items {
+	return database.GetProductsPagingRandom(api, step, count, token)
+}
 
 func GetOwnerProductsPaging(api router.API, token string, step int, count int) database.OwnerItems {
 	return database.GetOwnerProductsPaging(api, token, step, count)
