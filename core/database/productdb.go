@@ -655,7 +655,7 @@ func GetCurrentlyRentedProducts(api router.API, token string, step int, count in
 			log.Println("Getting paged results error scanning")
 			panic(err)
 		}
-		result.Owner = GetUser(api, username)
+		result.Owner = GetUser(api, username, false)
 
 		if err != nil {
 			panic(err)
@@ -865,7 +865,7 @@ func GetProductFromID(api router.API, id string, token string) Items {
 		if err != nil {
 			panic(err)
 		}
-		result.Owner = GetUser(api, username)
+		result.Owner = GetUser(api, username, false)
 		content = append(content, result)
 	}
 	if err = rows.Err(); err != nil {

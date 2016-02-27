@@ -268,7 +268,7 @@ func GetUserRequests(api router.API, token string, start int, count int) UserIte
 			log.Println("Getting paged results error scanning")
 			panic(err)
 		}
-		result.Owner = GetUser(api, username)
+		result.Owner = GetUser(api, username, false)
 
 		if err != nil {
 			panic(err)

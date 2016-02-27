@@ -59,8 +59,7 @@ func getUserID(api router.API, username string) int {
 }
 
 // Returns User information when given a username
-//noinspection GoUnusedFunction
-func GetUser(api router.API, id string) User {
+func GetUser(api router.API, id string, getSensitive bool) User {
 	stmt, err := api.Context.Session.Prepare("SELECT username, email, role FROM users WHERE username = ?")
 	if err != nil {
 		log.Fatal(err)
@@ -85,6 +84,11 @@ func GetUser(api router.API, id string) User {
 		}
 		sum := md5.Sum([]byte(User.Email))
 		User.Gravatar = hex.EncodeToString(sum[:])
+
+		if (!getSensitive) {
+			User.Email = "********"
+			User.Role = "*****"
+		}
 	}
 	if err != nil {
 		log.Println(err)

@@ -6,7 +6,8 @@ import (
 )
 
 func GetUserData(api router.API, username string) database.User {
-	return database.GetUser(api, username)
+
+	return database.GetUser(api, username, false)
 }
 
 func GetUsersData(api router.API, token string) []database.User {
