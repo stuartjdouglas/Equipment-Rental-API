@@ -102,15 +102,15 @@ func RemoveUser(api router.API, username string) bool {
 }
 
 // Registers the User
-func RegisterUser(api router.API, username string, password []byte, email string) bool {
-	stmt, err := api.Context.Session.Prepare("CALL register(?,?,?,?,?)")
+func RegisterUser(api router.API, username string, password []byte, email string, dateofbirth time.Time) bool {
+	stmt, err := api.Context.Session.Prepare("CALL register(?,?,?,?,?, ?)")
 
 	if err != nil {
 		log.Fatal(err)
 		return false;
 	}
 
-	res, err := stmt.Exec(username, password, email, "first_name", "last_name")
+	res, err := stmt.Exec(username, password, email, "first_name", "last_name", dateofbirth)
 	if (err != nil) {
 		panic(err)
 		return false;

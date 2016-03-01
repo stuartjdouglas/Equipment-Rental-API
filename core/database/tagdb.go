@@ -123,6 +123,7 @@ func GetProductsWithTag(api router.API, tag string, start int, count int) Items 
 			&postid,
 			&result.Owner.Username,
 			&result.Owner.Gravatar,
+			&result.Age_Rating,
 		)
 
 		result.Tags = getTags(api, result.Product_id);

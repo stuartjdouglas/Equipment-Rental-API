@@ -26,7 +26,7 @@ type Item struct {
 	Product_description         string                `json:"description"`
 	Product_rental_period_limit int64                `json:"product_rental_period_limit"`
 	Owner                       User                `json:"owner"`
-	Images                       []Image           `json:"images"`
+	Images                      []Image           `json:"images"`
 	Tags                        []Tag                `json:"tags"`
 	Condition                   string        `json:"condition"`
 	Comments                    []Comment `json:"comments"`
@@ -34,6 +34,7 @@ type Item struct {
 	Comments_enabled            bool `json:"comments_enabled"`
 	Comments_require_approval   bool `json:"comments_require_approval"`
 	Content                     string `json:"content"`
+	Age_Rating                  int `json:"age_rating"`
 }
 
 type Comment struct {
@@ -340,6 +341,7 @@ func GetProductsPaging(api router.API, step int, count int, token string, order 
 			&result.Condition,
 			&result.Content,
 			&likes,
+			&result.Age_Rating,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
@@ -400,6 +402,7 @@ func GetProductsPagingSortedByAdded(api router.API, step int, count int, token s
 			&result.Condition,
 			&result.Content,
 			&likes,
+			&result.Age_Rating,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
@@ -459,6 +462,7 @@ func GetProductsPagingSortedByLikes(api router.API, step int, count int, token s
 			&result.Condition,
 			&result.Content,
 			&likes,
+			&result.Age_Rating,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
@@ -519,6 +523,7 @@ func GetProductsPagingRandom(api router.API, step int, count int, token string) 
 			&result.Condition,
 			&result.Content,
 			&likes,
+			&result.Age_Rating,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
@@ -578,6 +583,7 @@ func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token
 			&result.Condition,
 			&result.Content,
 			&likes,
+			&result.Age_Rating,
 		)
 
 		result.Tags = getTags(api, result.Product_id)
@@ -845,6 +851,7 @@ func GetProductFromID(api router.API, id string, token string) Items {
 			&result.Comments_enabled,
 			&result.Comments_require_approval,
 			&result.Content,
+			&result.Age_Rating,
 		)
 
 		result.Content = html.UnescapeString(result.Content)

@@ -656,10 +656,10 @@ DROP PROCEDURE register;
 
 CALL register("lemon", "test", "lemon@lemondev.xyz", "lemon", "yamano");
 CREATE PROCEDURE `register`(u_name      VARCHAR(240), u_password VARCHAR(240), u_email VARCHAR(240),
-                            u_firstname VARCHAR(240), u_lastname VARCHAR(240))
+                            u_firstname VARCHAR(240), u_lastname VARCHAR(240), p_date_of_birth DATETIME)
   BEGIN
-    INSERT INTO users (username, password, email, first_name, last_name, location, date_registered, role)
-    VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW(), "user");
+    INSERT INTO users (username, password, email, first_name, last_name, location, date_registered, role, date_of_birth)
+    VALUES (u_name, u_password, u_email, u_firstname, u_lastname, "null", NOW(), "user", p_date_of_birth);
   END;
 
 SELECT *
@@ -932,7 +932,8 @@ CREATE PROCEDURE `getListingOfTag`(s_tag VARCHAR(240), start INT, count INT)
       products.product_rental_period_limit AS time_period,
       has.products_id                      AS image_id,
       username                             AS username,
-      md5(email)                           AS gravatar
+      md5(email)                           AS gravatar,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1038,7 +1039,8 @@ CREATE PROCEDURE getProduct(pid VARCHAR(240))
       `condition`,
       enable_comments as comments_enabled,
       comments_require_approval as comments_require_approval,
-      content
+      content,
+      age_rating
     FROM has
       LEFT JOIN users ON has.users_id = users.id
       LEFT JOIN products ON has.products_id = products.id
@@ -1591,7 +1593,8 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT, sorting bool)
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1614,7 +1617,8 @@ CREATE PROCEDURE getPagedProducts(step INT, count INT, sorting bool)
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1641,15 +1645,16 @@ CREATE PROCEDURE getMostRecentPagedProducts(step INT, count INT)
       product_id                  AS id,
       product_name                AS name,
       product_description         AS description,
-      date_added,
+      products.date_added,
       date_updated,
       product_rental_period_limit AS time_period,
-      products_id                 AS image_id,
+      products.id                 AS image_id,
       username                    AS username,
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1682,7 +1687,8 @@ CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT, t_order bo
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1705,7 +1711,8 @@ CREATE PROCEDURE getRecentlyUpdatedPagedProducts(step INT, count INT, t_order bo
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1738,7 +1745,8 @@ CREATE PROCEDURE getRandomPagedProducts(step INT, count INT)
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT OUTER JOIN products ON has.products_id = products.id
       LEFT OUTER JOIN users ON has.users_id = users.id
@@ -1755,7 +1763,7 @@ CREATE PROCEDURE getRandomPagedProducts(step INT, count INT)
 # Get Most Liked Paged Products
 #
 DROP PROCEDURE getMostLikedPagedProducts;
-CALL getMostLikedPagedProducts(0, 6, true);
+CALL getMostLikedPagedProducts(0, 6, false);
 CREATE PROCEDURE getMostLikedPagedProducts(step INT, count INT, sortOrder bool)
   BEGIN
     if (sortOrder) THEN
@@ -1771,7 +1779,8 @@ CREATE PROCEDURE getMostLikedPagedProducts(step INT, count INT, sortOrder bool)
       md5(email)                  AS gravatar,
       `condition`,
       content,
-      COALESCE(sum(likes.`like`), 0) as likes
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT JOIN products ON has.products_id = products.id
       LEFT JOIN users ON has.users_id = users.id
@@ -1790,11 +1799,13 @@ CREATE PROCEDURE getMostLikedPagedProducts(step INT, count INT, sortOrder bool)
       products.date_added,
       products.date_updated,
       product_rental_period_limit AS time_period,
-      product.id                 AS image_id,
+      products.id                 AS image_id,
       username                    AS username,
       md5(email)                  AS gravatar,
       `condition`,
-      content
+      content,
+      COALESCE(sum(likes.`like`), 0) as likes,
+      age_rating
     FROM has
       LEFT JOIN products ON has.products_id = products.id
       LEFT JOIN users ON has.users_id = users.id

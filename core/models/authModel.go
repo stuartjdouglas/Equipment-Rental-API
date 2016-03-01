@@ -23,6 +23,7 @@ type Register struct {
 	Password  string `json:"password"`
 	Email     string `json:"email"`
 	Recaptcha string `json:"recaptcha"`
+	DateOfBirth time.Time `json:"dateofbirth"`
 }
 
 func authLogin(password string, digest string) bool {
@@ -103,7 +104,7 @@ func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 					log.Fatal(err)
 				}
 
-				if database.RegisterUser(api, data.Username, hash, data.Email) {
+				if database.RegisterUser(api, data.Username, hash, data.Email, data.DateOfBirth) {
 					return true;
 				} else {
 					return false;
@@ -118,7 +119,7 @@ func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 						log.Fatal(err)
 					}
 
-					if database.RegisterUser(api, data.Username, hash, data.Email) {
+					if database.RegisterUser(api, data.Username, hash, data.Email, data.DateOfBirth) {
 						return true;
 					} else {
 						return false;
