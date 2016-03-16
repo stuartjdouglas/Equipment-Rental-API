@@ -44,6 +44,7 @@ type Comment struct {
 	Date_added   time.Time `json:"date_added"`
 	Date_updated time.Time `json:"date_updated"`
 	Authorized   bool `json:"authorized"`
+	Rating       int `json:"rating"`
 }
 
 type OwnerItem struct {
@@ -214,6 +215,7 @@ func getComments(api router.API, pid string) []Comment {
 			&result.Date_updated,
 			&result.ID,
 			&result.Authorized,
+			&result.Rating,
 		)
 
 		if err != nil {
@@ -255,6 +257,7 @@ func getCommentsAsOwner(api router.API, pid string) []Comment {
 			&result.Date_updated,
 			&result.ID,
 			&result.Authorized,
+			&result.Rating,
 		)
 
 		if err != nil {

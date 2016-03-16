@@ -5,15 +5,15 @@ import (
 	"log"
 )
 
-func AddComment(api router.API, token string, pid string, comment string, requiresApproval bool) bool {
+func AddComment(api router.API, token string, pid string, comment string, requiresApproval bool, rating int) bool {
 
-	stmt, err := api.Context.Session.Prepare("CALL AddComment(?, ?, ?, ?)")
+	stmt, err := api.Context.Session.Prepare("CALL AddComment(?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(token, pid, comment, requiresApproval)
+	rows, err := stmt.Query(token, pid, comment, requiresApproval, rating)
 
 	if err != nil {
 		log.Println(err)

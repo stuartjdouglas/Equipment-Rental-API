@@ -20,15 +20,23 @@ func checkIfNaughtyWord(word string) bool {
 	return false;
 }
 
-func AddComment(api router.API, token string, pid string, comment string) bool {
+func AddComment(api router.API, token string, pid string, comment string, rating int) bool {
+	// Rating cannot be more than 5 or less than 0
+
+	if (rating > 5) {
+		rating = 5
+	} else if (rating < 0) {
+		rating = 0
+	}
+
 	if IsSessionValid(api, token) {
 		//if (checkIfNaughtyWord(comment))
 		if lemon_swear_detector.CheckSentence(comment) {
 			//log.Println(checkIfNaughtyWord("0x0"))
-			database.AddComment(api, token, pid, comment, true)
+			database.AddComment(api, token, pid, comment, true, rating)
 			return true
 		} else {
-			database.AddComment(api, token, pid, comment, false)
+			database.AddComment(api, token, pid, comment, false, rating)
 			return true
 		}
 	}

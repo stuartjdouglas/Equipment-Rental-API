@@ -8,6 +8,8 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"fmt"
 	"github.com/remony/Equipment-Rental-API/core/database"
+	"log"
+	"strconv"
 )
 
 func generateMiscRoutes(api router.API) {
@@ -42,9 +44,15 @@ func generateMiscRoutes(api router.API) {
 	api.Router.Post("/product/:pid/comment", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		pid := c.URLParams["pid"]
 		comment := req.Header.Get("comment")
+		rating, err := strconv.Atoi(req.Header.Get("rating"))
+		if (err != nil) {
+			log.Print("Unable to parse rating int, setting to default")
+			rating = 3
+		}
+
 		if len(pid) > 5 {
 			if (len(comment) < 140 && len(comment) > 5) {
-				if models.AddComment(api, req.Header.Get("token"), pid, comment) {
+				if models.AddComment(api, req.Header.Get("token"), pid, comment, rating) {
 					message := hello{
 						Message: "Comment added",
 					}

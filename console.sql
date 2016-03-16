@@ -308,6 +308,7 @@ CREATE TABLE IF NOT EXISTS `honoursproject`.`comments` (
   `author` INT NOT NULL,
   `ident` VARCHAR(240) NOT NULL,
   `authorized` tinyint(1) NOT NULL DEFAULT '1',
+  `rating` int(11) NOT NULL DEFAULT '3',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -450,7 +451,7 @@ CREATE PROCEDURE `getLikes`(p_id VARCHAR(240), u_token VARCHAR(240))
 DROP PROCEDURE `AddComment`;
 CALL AddComment("028a2c2e-a0cf-472a-bdcb-171fbde12ae9", "0d9ba7eb-bf8d-4fc8-b55c-b2c3c0b3b8b9", "this is lewdz", true);
 
-CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140), requiresApproval BOOL)
+CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment VARCHAR(140), requiresApproval BOOL, u_rating int)
   BEGIN
     DECLARE uid INT;
     DECLARE pid INT;
@@ -458,12 +459,32 @@ CREATE PROCEDURE `AddComment`(u_token VARCHAR(240), p_id VARCHAR(240), u_comment
     SELECT user_id into uid FROM tokens where token = u_token;
     select id, comments_require_approval into pid, requires_authoriz from products where product_id = p_id;
     if (requires_authoriz OR requiresApproval) THEN
-      insert into comments(comment, date_added, date_updated, author, ident, authorized) VALUES(u_comment, NOW(), NOW(), uid, UUID(), FALSE);
+      insert into comments(comment, date_added, date_updated, author, ident, authorized, rating) VALUES(u_comment, NOW(), NOW(), uid, UUID(), FALSE, u_rating);
     ELSE
 
-      insert into comments(comment, date_added, date_updated, author, ident) VALUES(u_comment, NOW(), NOW(), uid, UUID());
+      insert into comments(comment, date_added, date_updated, author, ident, rating) VALUES(u_comment, NOW(), NOW(), uid, UUID(), u_rating);
     END IF;
     insert into products_has_comments(products_id, comments_id, users_id) VALUES(pid, LAST_INSERT_ID(), uid);
+  END;
+
+#
+#   HasOwnerReviewed: used to check if the user has already reviewed before on the listing or not
+#
+
+CALL HasUserReviewedListing("b2db2b52-9627-4472-bdb3-66deb01ccdf1", "");
+
+CREATE PROCEDURE `HasUserReviewedListing`(u_token VARCHAR(240), p_id VARCHAR(240))
+  BEGIN
+    DECLARE uid INT;
+    DECLARE pid INT;
+
+    SELECT user_id into uid FROM tokens where token = u_token;
+    select id into pid from products where product_id = p_id;
+
+    SELECT EXISTS(select comment from comments
+           left join products_has_comments on comments.id = products_has_comments.comments_id
+           left join users on products_has_comments.users_id = users.id
+           WHERE products_id = pid and users_id = users_id);
   END;
 
 #
@@ -531,7 +552,7 @@ CREATE PROCEDURE `GetComments`(p_id VARCHAR(240))
     DECLARE enabled BOOL;
     select id , enable_comments into pid, enabled from products where product_id = p_id;
 
-      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized from products_has_comments
+      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized, rating from products_has_comments
       left JOIN comments on products_has_comments.comments_id = comments.id
         LEFT JOIN users on products_has_comments.users_id = users.id
         left join products on products_has_comments.products_id = products.id
@@ -550,7 +571,7 @@ CREATE PROCEDURE `GetOwnerComments`(p_id VARCHAR(240))
     DECLARE enabled BOOL;
     select id , enable_comments into pid, enabled from products where product_id = p_id;
 
-      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized from products_has_comments
+      select comment, username, md5(email) as gravatar, comments.date_added, `comments`.date_updated, ident as indentifier, comments.authorized, rating from products_has_comments
       left JOIN comments on products_has_comments.comments_id = comments.id
         LEFT JOIN users on products_has_comments.users_id = users.id
         left join products on products_has_comments.products_id = products.id
