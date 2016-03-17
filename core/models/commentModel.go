@@ -20,7 +20,22 @@ func checkIfNaughtyWord(word string) bool {
 	return false;
 }
 
-func AddComment(api router.API, token string, pid string, comment string, rating int) bool {
+func EditComment(api router.API, token string, cid string, comment string, rating int) database.Comment {
+	if (IsSessionValid(api, token)) {
+		if (rating < 0) {
+			rating = 0;
+		} else if (rating > 5) {
+			rating = 5
+		}
+
+		cid := database.EditComment(api, token, cid, comment, rating)
+		return database.GetComment(api, cid)
+	}
+
+	return database.Comment{}
+}
+
+func AddComment(api router.API, token string, pid string, comment string, rating int) database.Comment {
 	// Rating cannot be more than 5 or less than 0
 
 	if (rating > 5) {
@@ -33,14 +48,14 @@ func AddComment(api router.API, token string, pid string, comment string, rating
 		//if (checkIfNaughtyWord(comment))
 		if lemon_swear_detector.CheckSentence(comment) {
 			//log.Println(checkIfNaughtyWord("0x0"))
-			database.AddComment(api, token, pid, comment, true, rating)
-			return true
+			cid := database.AddComment(api, token, pid, comment, true, rating)
+			return database.GetComment(api, cid)
 		} else {
-			database.AddComment(api, token, pid, comment, false, rating)
-			return true
+			cid := database.AddComment(api, token, pid, comment, false, rating)
+			return database.GetComment(api, cid)
 		}
 	}
-	return false
+	return database.Comment{}
 }
 
 func DeleteComment(api router.API, pid string, cid string, token string) {

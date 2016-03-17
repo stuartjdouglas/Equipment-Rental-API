@@ -52,7 +52,7 @@ func generateMiscRoutes(api router.API) {
 
 		if len(pid) > 5 {
 			if (len(comment) < 140 && len(comment) > 5) {
-				if models.AddComment(api, req.Header.Get("token"), pid, comment, rating) {
+				if models.AddComment(api, req.Header.Get("token"), pid, comment, rating).Text != "null" {
 					message := hello{
 						Message: "Comment added",
 					}
