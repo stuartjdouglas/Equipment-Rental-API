@@ -5,7 +5,6 @@ import (
 	. "github.com/franela/goblin"
 	//"github.com/remony/Equipment-Rental-API/core/router"
 	//"github.com/remony/Equipment-Rental-API/core/config"
-	"gitlab.com/remon/lemon-swear-detector"
 )
 
 //const CONF_FILE = "./../../config.json"
