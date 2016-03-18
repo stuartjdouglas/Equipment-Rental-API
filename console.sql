@@ -638,14 +638,14 @@ CREATE PROCEDURE `DeleteComment`(u_token VARCHAR(240), comment_id VARCHAR(240))
 # GetPushNotificationIDsOfUser
 #
 DROP PROCEDURE GetPushNotificationIDsOfUser;
-CALL GetPushNotificationIDsOfUser("remon");
+CALL GetPushNotificationIDsOfUser("stuart");
 
 CREATE PROCEDURE `GetPushNotificationIDsOfUser`(u_name VARCHAR(240))
   BEGIN
     DECLARE uid INT;
     SELECT id into uid from users where username = u_name;
 
-    SELECT username, GROUP_CONCAT(CONCAT(reqid) SEPARATOR ', ') as reqid, type FROM users_has_push_tokens
+    SELECT  IFNULL(username,""), IFNULL(GROUP_CONCAT(CONCAT(reqid) SEPARATOR ', '),"") as reqid, IFNULL(type,"") FROM users_has_push_tokens
     LEFT JOIN push_tokens ON users_has_push_tokens.push_tokens_id = push_tokens.id
       LEFT JOIN users ON users_has_push_tokens.users_id = users.id
     WHERE username = u_name;
@@ -1925,6 +1925,29 @@ CREATE PROCEDURE getCurrentlyRentingProducts(u_name VARCHAR(240), step INT, coun
     WHERE user_rent_product.date_due > NOW() AND username = u_name
     ORDER BY user_rent_product.date_due ASC
     LIMIT step, COUNT;
+  END;
+#
+# Get All Rentals due in less than 3 days
+#
+
+DROP PROCEDURE getRentalsDueThreeDays;
+CALL getRentalsDueThreeDays();
+
+CREATE PROCEDURE getRentalsDueThreeDays()
+  BEGIN
+    SELECT
+      product_id          AS id,
+      product_name        AS name,
+      product_description AS description,
+      date_due            AS due_date,
+      date_received       AS received_date,
+      products_id         AS image_id,
+      username            AS owner
+    FROM user_rent_product
+      LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
+      LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
+    WHERE user_rent_product.date_due < DATE_ADD(CURDATE(), INTERVAL +3 DAY)
+    ORDER BY user_rent_product.date_due ASC;
   END;
 
 #
