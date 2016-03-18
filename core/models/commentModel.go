@@ -6,6 +6,8 @@ import (
 	"github.com/minimaxir/big-list-of-naughty-strings/naughtystrings"
 	"log"
 	"gitlab.com/remon/lemon-swear-detector"
+	"github.com/remony/Equipment-Rental-API/core/utils/email"
+	"strconv"
 )
 
 
@@ -49,9 +51,32 @@ func AddComment(api router.API, token string, pid string, comment string, rating
 		if lemon_swear_detector.CheckSentence(comment) {
 			//log.Println(checkIfNaughtyWord("0x0"))
 			cid := database.AddComment(api, token, pid, comment, true, rating)
+			username := database.GetUserNameFromToken(api, token)
+			userdata := database.GetUserDetails(api, username)
+			owner := database.GetProductFromID(api, pid, token)
+			ownerDetails := database.GetUserDetails(api, owner.Items[0].Owner.Username)
+			//SendEmail(api router.API, sender string, receipt string, subject string, body string)
+			email.SendEmail(
+				api,
+				ownerDetails.Username,
+				ownerDetails.Email,
+				"Someone has reviewed " + owner.Items[0].Product_name,
+				userdata.Username + " wrote review on owner.Items[0].Product_name: \n" + comment + "\n\nRating: " + strconv.Itoa(rating) + "/5",
+			)
 			return database.GetComment(api, cid)
 		} else {
 			cid := database.AddComment(api, token, pid, comment, false, rating)
+			username := database.GetUserNameFromToken(api, token)
+			userdata := database.GetUserDetails(api, username)
+			owner := database.GetProductFromID(api, pid, token)
+
+			ownerDetails := database.GetUserDetails(api, owner.Items[0].Owner.Username)
+			email.SendEmail(api,
+				ownerDetails.Username,
+				ownerDetails.Email,
+				"Someone has reviewed " + owner.Items[0].Product_name,
+				userdata.Username + " wrote review on " + owner.Items[0].Product_name + ": <br><br>" + comment + "<br><br><b>Rating</b>: " + strconv.Itoa(rating) + "/5",
+			)
 			return database.GetComment(api, cid)
 		}
 	}

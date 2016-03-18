@@ -79,6 +79,7 @@ func RequestProduct(api router.API, pid string, token string) database.Request {
 			username := database.GetUserNameFromToken(api, token)
 			user := database.GetUserDetails(api, username)
 			product := database.GetProductFromID(api, pid, token)
+
 			if result.Requested {
 				email.SendEmail(api,
 					user.Username,
