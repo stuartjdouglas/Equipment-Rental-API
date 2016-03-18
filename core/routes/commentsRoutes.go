@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/remony/Equipment-Rental-API/core/models"
+	"strconv"
+	"log"
 )
 
 func generateCommentsRoutes(api router.API) {
@@ -105,18 +107,60 @@ func generateCommentsRoutes(api router.API) {
 		}
 	})
 
+	api.Router.Post("/product/:pid/comment/:cid/edit", func(c web.C, res http.ResponseWriter, req *http.Request) {
+		//token string, cid string, comment string, rating int
+		cid := c.URLParams["cid"]
+		comment := req.Header.Get("comment")
+		token := req.Header.Get("token")
+		rating, err := strconv.Atoi(req.Header.Get("rating"))
+		if (err != nil) {
+			log.Print("Unable to parse rating int, setting to default")
+			rating = 3
+		}
+
+		if len(cid) > 5 {
+			result := models.EditComment(api, token, cid, comment, rating)
+			data, err := json.Marshal(result)
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(200)
+			res.Write(data)
+		} else {
+			message := hello{
+				Message: "Unable to edit comment",
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(res).Encode(message)
+		}
+	})
+
 	api.Router.Post("/product/:pid/comment", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		pid := c.URLParams["pid"]
 		comment := req.Header.Get("comment")
+		rating, err := strconv.Atoi(req.Header.Get("rating"))
+		if (err != nil) {
+			log.Print("Unable to parse rating int, setting to default")
+			rating = 3
+		}
+
 		if len(pid) > 5 {
 			if (len(comment) < 140 && len(comment) > 5) {
-				if models.AddComment(api, req.Header.Get("token"), pid, comment) {
-					message := hello{
-						Message: "Comment added",
+				newComment := models.AddComment(api, req.Header.Get("token"), pid, comment, rating)
+				if newComment.Text != "null" {
+					data, err := json.Marshal(newComment)
+					if err != nil {
+						http.Error(res, err.Error(), http.StatusInternalServerError)
+						return
 					}
+
 					res.Header().Set("Content-Type", "application/json")
-					res.WriteHeader(http.StatusOK)
-					json.NewEncoder(res).Encode(message)
+					res.WriteHeader(200)
+					res.Write(data)
 				} else {
 					message := hello{
 						Message: "Something went wrong on our end",

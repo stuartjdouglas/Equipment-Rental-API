@@ -6,6 +6,8 @@ import (
 	"github.com/minimaxir/big-list-of-naughty-strings/naughtystrings"
 	"log"
 	"gitlab.com/remon/lemon-swear-detector"
+	"github.com/remony/Equipment-Rental-API/core/utils/email"
+	"strconv"
 )
 
 
@@ -20,19 +22,65 @@ func checkIfNaughtyWord(word string) bool {
 	return false;
 }
 
-func AddComment(api router.API, token string, pid string, comment string) bool {
+func EditComment(api router.API, token string, cid string, comment string, rating int) database.Comment {
+	if (IsSessionValid(api, token)) {
+		if (rating < 0) {
+			rating = 0;
+		} else if (rating > 5) {
+			rating = 5
+		}
+
+		cid := database.EditComment(api, token, cid, comment, rating)
+		return database.GetComment(api, cid)
+	}
+
+	return database.Comment{}
+}
+
+func AddComment(api router.API, token string, pid string, comment string, rating int) database.Comment {
+	// Rating cannot be more than 5 or less than 0
+
+	if (rating > 5) {
+		rating = 5
+	} else if (rating < 0) {
+		rating = 0
+	}
+
 	if IsSessionValid(api, token) {
 		//if (checkIfNaughtyWord(comment))
 		if lemon_swear_detector.CheckSentence(comment) {
 			//log.Println(checkIfNaughtyWord("0x0"))
-			database.AddComment(api, token, pid, comment, true)
-			return true
+			cid := database.AddComment(api, token, pid, comment, true, rating)
+			username := database.GetUserNameFromToken(api, token)
+			userdata := database.GetUserDetails(api, username)
+			owner := database.GetProductFromID(api, pid, token)
+			ownerDetails := database.GetUserDetails(api, owner.Items[0].Owner.Username)
+			//SendEmail(api router.API, sender string, receipt string, subject string, body string)
+			email.SendEmail(
+				api,
+				ownerDetails.Username,
+				ownerDetails.Email,
+				"Someone has reviewed " + owner.Items[0].Product_name,
+				userdata.Username + " wrote review on owner.Items[0].Product_name: \n" + comment + "\n\nRating: " + strconv.Itoa(rating) + "/5",
+			)
+			return database.GetComment(api, cid)
 		} else {
-			database.AddComment(api, token, pid, comment, false)
-			return true
+			cid := database.AddComment(api, token, pid, comment, false, rating)
+			username := database.GetUserNameFromToken(api, token)
+			userdata := database.GetUserDetails(api, username)
+			owner := database.GetProductFromID(api, pid, token)
+
+			ownerDetails := database.GetUserDetails(api, owner.Items[0].Owner.Username)
+			email.SendEmail(api,
+				ownerDetails.Username,
+				ownerDetails.Email,
+				"Someone has reviewed " + owner.Items[0].Product_name,
+				userdata.Username + " wrote review on " + owner.Items[0].Product_name + ": <br><br>" + comment + "<br><br><b>Rating</b>: " + strconv.Itoa(rating) + "/5",
+			)
+			return database.GetComment(api, cid)
 		}
 	}
-	return false
+	return database.Comment{}
 }
 
 func DeleteComment(api router.API, pid string, cid string, token string) {

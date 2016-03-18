@@ -29,12 +29,17 @@ type Item struct {
 	Images                      []Image           `json:"images"`
 	Tags                        []Tag                `json:"tags"`
 	Condition                   string        `json:"condition"`
-	Comments                    []Comment `json:"comments"`
+	Comments                    Comments `json:"comments"`
 	Likes                       Like `json:"likes"`
 	Comments_enabled            bool `json:"comments_enabled"`
 	Comments_require_approval   bool `json:"comments_require_approval"`
 	Content                     string `json:"content"`
 	Age_Rating                  int `json:"age_rating"`
+}
+
+type Comments struct {
+	Reviews []Comment `json:"reviews"`
+	Reviewed bool `json:"reviewed"`
 }
 
 type Comment struct {
@@ -44,6 +49,7 @@ type Comment struct {
 	Date_added   time.Time `json:"date_added"`
 	Date_updated time.Time `json:"date_updated"`
 	Authorized   bool `json:"authorized"`
+	Rating       int `json:"rating"`
 }
 
 type OwnerItem struct {
@@ -58,7 +64,7 @@ type OwnerItem struct {
 	Holder                      User `json:"holder"`
 	Tags                        []Tag                `json:"tags"`
 	Condition                   string        `json:"condition"`
-	Comments                    []Comment `json:"comments"`
+	Comments                    Comments `json:"comments"`
 	Likes                       Like `json:"likes"`
 	Comments_enabled            bool `json:"comments_enabled"`
 	Comments_require_approval   bool `json:"comments_require_approval"`
@@ -129,6 +135,9 @@ func GetProducts(api router.API) Items {
 		result.Tags = getTags(api, result.Product_id);
 
 		result.Comments = getComments(api, result.Product_id)
+
+
+
 		result.Images = GetImage(api, postid)
 
 		if err != nil {
@@ -189,8 +198,8 @@ func getTags(api router.API, pid string) []Tag {
 	return tags
 }
 
-func getComments(api router.API, pid string) []Comment {
-	var tags = []Comment{}
+func getComments(api router.API, pid string) Comments {
+	var comments = []Comment{}
 
 	stmt, err := api.Context.Session.Prepare("CALL GetComments(?)")
 	if err != nil {
@@ -214,6 +223,7 @@ func getComments(api router.API, pid string) []Comment {
 			&result.Date_updated,
 			&result.ID,
 			&result.Authorized,
+			&result.Rating,
 		)
 
 		if err != nil {
@@ -221,16 +231,19 @@ func getComments(api router.API, pid string) []Comment {
 			panic(err)
 		}
 
-		tags = append(tags, result)
+		comments = append(comments, result)
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	return tags
+	return Comments{
+		Reviews: comments,
+		Reviewed: false,
+	}
 }
 
-func getCommentsAsOwner(api router.API, pid string) []Comment {
+func getCommentsAsOwner(api router.API, pid string) Comments {
 	var tags = []Comment{}
 
 	stmt, err := api.Context.Session.Prepare("CALL GetOwnerComments(?)")
@@ -255,6 +268,7 @@ func getCommentsAsOwner(api router.API, pid string) []Comment {
 			&result.Date_updated,
 			&result.ID,
 			&result.Authorized,
+			&result.Rating,
 		)
 
 		if err != nil {
@@ -268,7 +282,10 @@ func getCommentsAsOwner(api router.API, pid string) []Comment {
 		log.Fatal(err)
 	}
 
-	return tags
+	return Comments{
+		Reviews: tags,
+		Reviewed: false,
+	}
 }
 
 type Like struct {
@@ -467,6 +484,7 @@ func GetProductsPagingSortedByLikes(api router.API, step int, count int, token s
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
+		result.Comments.Reviewed = HaveIReviewed(api, result.Product_id, token)
 		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
@@ -528,6 +546,7 @@ func GetProductsPagingRandom(api router.API, step int, count int, token string) 
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
+		result.Comments.Reviewed = HaveIReviewed(api, result.Product_id, token)
 		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
@@ -588,6 +607,7 @@ func GetProductsPagingSortedByUpdated(api router.API, step int, count int, token
 
 		result.Tags = getTags(api, result.Product_id)
 		result.Comments = getComments(api, result.Product_id)
+		result.Comments.Reviewed = HaveIReviewed(api, result.Product_id, token)
 		result.Images = GetImage(api, image_id)
 		result.Likes = getLikes(api, result.Product_id, token)
 
@@ -864,9 +884,11 @@ func GetProductFromID(api router.API, id string, token string) Items {
 		if IsOwner(api, token, result.Product_id) {
 			log.Println("getting owner commments")
 			result.Comments = getCommentsAsOwner(api, result.Product_id)
+
 		} else {
 			result.Comments = getComments(api, result.Product_id)
 		}
+		result.Comments.Reviewed = HaveIReviewed(api, result.Product_id, token)
 		result.Images = GetImage(api, imageid)
 		result.Likes = getLikes(api, result.Product_id, token)
 		if err != nil {
@@ -1173,6 +1195,7 @@ func GetOwnerProductsPaging(api router.API, token string, step int, count int) O
 		result.Image = GetImage(api, image_id)
 		result.Holder = getHolder(api, result.Product_id)
 		result.Comments = getCommentsAsOwner(api, result.Product_id)
+		result.Comments.Reviewed = HaveIReviewed(api, result.Product_id, token)
 		result.Requests = GetProductRequests(api, result.Product_id, token)
 		if err != nil {
 			log.Println("Getting paged results error scanning")
