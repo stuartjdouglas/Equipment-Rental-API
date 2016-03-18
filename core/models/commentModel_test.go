@@ -24,13 +24,4 @@ func TestCommentModel(t *testing.T) {
 			g.Assert(checkIfNaughtyWord("")).IsTrue()
 		})
 	})
-
-	g.Describe("library lemon swear detector", func() {
-		g.It("Should detect word tit as a swear word", func() {
-			g.Assert(lemon_swear_detector.CheckWord("tit")).IsTrue()
-		})
-		g.It("should detect word twat in sentence", func() {
-			g.Assert((lemon_swear_detector.CheckSentence("x is a twat"))).IsTrue()
-		})
-	})
 }
