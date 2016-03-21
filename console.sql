@@ -1922,7 +1922,7 @@ CREATE PROCEDURE getCurrentlyRentingProducts(u_name VARCHAR(240), step INT, coun
     FROM user_rent_product
       LEFT OUTER JOIN products ON user_rent_product.products_id = products.id
       LEFT OUTER JOIN users ON user_rent_product.users_id = users.id
-    WHERE user_rent_product.date_due > NOW() AND username = u_name
+    WHERE username = u_name
     ORDER BY user_rent_product.date_due ASC
     LIMIT step, COUNT;
   END;
