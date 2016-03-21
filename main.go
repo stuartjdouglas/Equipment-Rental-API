@@ -4,11 +4,10 @@ package main
 import (
 	"fmt"
 	"os"
-//"os/exec"
-	"log"
 	"github.com/remony/Equipment-Rental-API/core/config"
 	"github.com/remony/Equipment-Rental-API/core/server"
 	"github.com/remony/Equipment-Rental-API/core/utils/setup"
+	"log"
 )
 
 const confFile = "./config.json"

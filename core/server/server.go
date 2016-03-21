@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"github.com/remony/lemonlog"
+	"github.com/remony/Equipment-Rental-API/core/utils/cron"
 )
 // Start handles all route configuration and starts the http server
 func Start(settings config.Config, context config.Context, mode int) {
@@ -56,6 +57,9 @@ func Start(settings config.Config, context config.Context, mode int) {
 	}
 	// Create the routes
 	routes.CreateRoutes(router.API{Router:apiRouter, Context:context, Config:settings})
+
+	// Start Cron Job
+	go cron.Cron(router.API{Router:apiRouter, Context:context, Config:settings});
 
 	// Gracefully Serve
 	if portIsFree(settings.Production.Port) {
