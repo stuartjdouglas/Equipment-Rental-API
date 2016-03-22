@@ -27,8 +27,8 @@ func Connection(url string) Context{
 		panic(err)
 //		return Context{Session:nil, Err: err}
 	} else {
-		//log.Println("Connected to " + url)
-		log.Println("Connected to maria");
+		log.Println("Connected to " + url)
+		//log.Println("Connected to maria");
 	}
 	context := Context{}
 	context.Session = db
