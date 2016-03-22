@@ -5,6 +5,13 @@ import (
 	"log"
 )
 
+/*
+
+		This file contains all of the queries required for creating the tables
+		It depends of the user having created the database prior
+
+ */
+
 func createUsersTable(db config.Context) {
 	stmt, err := db.Session.Prepare("CREATE TABLE IF NOT EXISTS `honoursproject`.`users` (`id` int(11) NOT NULL AUTO_INCREMENT, `username` varchar(45) NOT NULL, `password` varchar(250) NOT NULL, `email` varchar(45) NOT NULL,`first_name` varchar(45) DEFAULT 'first_name', `last_name` varchar(45) DEFAULT 'last_name', `location` varchar(45) DEFAULT 'unknown', `bio` varchar(140) DEFAULT 'Please describe me', `date_registered` date NOT NULL, `karma` int(11) NOT NULL DEFAULT '0', `role` varchar(240) NOT NULL, `date_of_birth` datetime NOT NULL, PRIMARY KEY (`id`),KEY `username` (`username`)) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=latin1")
 	if err != nil {

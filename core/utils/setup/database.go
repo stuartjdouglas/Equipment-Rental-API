@@ -10,13 +10,28 @@ func Start(context config.Context) {
 	setupdb(context)
 }
 
+/*
+				--NOTE--
+
+	Due to the current implementation of the mysql driver,
+	it does not support files, and/or sequential inserts
+	so for each table and procedure to be created it has
+	to be done via separate calls.
+
+ */
+
+// Sets up Database
 func setupdb(db config.Context) {
+	// Create the tables
 	createTables(db)
+	// Create the procedures
 	createProcedures(db)
 	log.Println("DB is fully installed")
 }
 
+// Create the procedures
 func createProcedures(db config.Context) {
+	// Call each function
 	createLikeProcedure(db)
 	createUnLikeProcedure(db)
 	createGetLikesProcedure(db)
@@ -97,6 +112,7 @@ func createProcedures(db config.Context) {
 	searchByTagProcedure(db)
 }
 
+// Create tables
 func createTables(db config.Context) {
 	createUsersTable(db)
 	createTokenTable(db)
@@ -116,21 +132,5 @@ func createTables(db config.Context) {
 	createProductHasCommentsTable(db)
 	createLikesTable(db)
 	createProductHasLikesTable(db)
-}
-
-func createBlankTable(db config.Context) {
-	stmt, err := db.Session.Prepare("")
-	if err != nil {
-		log.Println(err)
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.Query()
-	if err != nil {
-		log.Println(err)
-	}
-	defer rows.Close()
-
-	log.Println("Token Table Created")
 }
 

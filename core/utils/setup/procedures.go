@@ -5,6 +5,14 @@ import (
 	"log"
 )
 
+/*
+
+		Due to limits of the mysql driver these cannot be done via prepared statement.
+		Due to the function being automatically generated via extras/procedureCreator.html
+		There may or may not be issues. If any issues occur please refer to console.sql
+
+ */
+
 func createLikeProcedure(db config.Context) {
 	stmt, err := db.Session.Exec("CREATE PROCEDURE `like`(u_token VARCHAR(240), p_id VARCHAR(240))  BEGIN  DECLARE pid INT;  DECLARE uid INT;  select user_id into uid from tokens where token = u_token;  select id into pid from products where product_id = p_id;  INSERT INTO likes(`like`, date_added) VALUES(1, NOW());  INSERT INTO products_has_likes(products_id, users_id, likes_id) VALUES(pid, uid, LAST_INSERT_ID());  END;")
 	if err != nil {
