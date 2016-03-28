@@ -18,17 +18,19 @@ var clear map[string]func()
 func main() {
 	// Create the server and give it the config values
 	settings := config.LoadConfig(confFile, true)
+	log.Println(settings.Production.DbUrl)
 	args := os.Args
 	log.Println(args)
 	if len(args) > 1 {
 		if args[1] == "--setup" {
 			fmt.Println("INSTALLING!!!!")
 			setup.Start(config.Connection(settings.Production.DbUrl))
+			start(0, settings)
 		} else if (args[1] == "--dev") {
-			start(1, settings);
+			start(1, settings)
 		}
 	} else {
-		start(0, settings);
+		start(0, settings)
 	}
 }
 

@@ -49,7 +49,7 @@ DROP TABLE IF EXISTS `honoursproject`.`has`;
 DROP TABLE IF EXISTS `honoursproject`.`products`;
 DROP TABLE IF EXISTS `honoursproject`.`users`;
 
-ALTER TABLE `users` DROP COLUMN Salt;
+ALTER TABLE `users`;
 CREATE TABLE IF NOT EXISTS `honoursproject`.`users` (
   `id`              INT          NOT NULL AUTO_INCREMENT,
   `username`        VARCHAR(45)  NOT NULL,
@@ -558,11 +558,8 @@ CALL ApproveComment("ed2be2a7-d1b2-11e5-966e-fa163e786249");
 
 CREATE PROCEDURE `ApproveComment`(c_id VARCHAR(240))
   BEGIN
-#     DECLARE pid INT;
     DECLARE cid INT;
-#     SELECT id into pid from products where product_id = p_id;
     select id into cid from comments where ident = c_id;
-
     UPDATE comments SET authorized = true where id = cid;
   END;
 #
@@ -947,7 +944,7 @@ CREATE PROCEDURE removeProduct(u_token VARCHAR(240), p_id VARCHAR(240))
     FROM products_has_images
     WHERE products_id = pid;
 
-    #     select iid;
+
     DELETE FROM has
     WHERE users_id = uid AND products_id = pid;
 
@@ -1129,7 +1126,6 @@ CREATE PROCEDURE `addTag`(p_id VARCHAR(240), p_tag VARCHAR(240))
                   FROM products_has_tags
                   WHERE products_id = pid AND tags_id = tag_exists)
     INTO tag_relation_exists;
-    #     SELECT tag_exists;
 
     IF (tag_exists IS NULL)
     THEN
@@ -1331,8 +1327,6 @@ CREATE PROCEDURE `OwnerGetRequests`(u_token VARCHAR(240), step int, count int)
     DECLARE requests int;
     select user_id into uid from tokens where token = u_token;
 
-
-#     select uid;
     SELECT
       username    AS username,
       md5(email)  AS gravatar,
@@ -1500,7 +1494,6 @@ CREATE PROCEDURE RentFromRequest(u_pid VARCHAR(240), usrname VARCHAR(240))
     INTO pid, days
     FROM products
     WHERE product_id = u_pid;
-    #     SELECT days;
     DELETE FROM users_requests_products
     WHERE users_id = userid AND products_id = pid;
 
@@ -1531,7 +1524,6 @@ CREATE PROCEDURE RentItem(u_pid VARCHAR(240), usrname VARCHAR(240))
     INTO pid, days
     FROM products
     WHERE product_id = u_pid;
-    #     SELECT days;
     INSERT INTO user_rent_product (products_id, users_id, date_received, date_due)
     VALUES (pid, userid, NOW(), DATE_ADD(NOW(), INTERVAL days DAY));
   END;
@@ -2027,7 +2019,6 @@ CREATE PROCEDURE `checkAuthedProductAvailability`(product VARCHAR(240))
     ORDER BY date_received DESC
     LIMIT 1;
 
-    #   select due_date;
     IF (user_name != "")
     THEN
       IF (due_date > NOW())

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl">
+  <div class="myinput">
+
+    <form ng-submit="addProcedure(procedure)">
+      <h2>Enter Procedure here</h2>
+      <input type="text" ng-model="procedure.function">
+      <!-- <textarea ng-model="procedure.function"></textarea> -->
+    </form>
+  </div>
+
+  <p ng-repeat="item in output track by $index">
+    {{item}}
+  </p>
+
+</div>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  input {
+    width: 500px;
+  }
+
+  .myinput {
+    color: white;
+    background: #3498db;
+    width: 100%;
+    position: relative;
+    padding: 20px;
+    height: 50px;
+
+  }
+</style>
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope) {
+  $scope.output = [];
+  var start = 'func '
+  var firstmiddle = 'Procedure(db config.Context) { stmt, err := db.Session.Exec("'
+  var secondmiddle = '")  if err != nil { log.Println(err) }  _= stmt log.Println("'
+  var end = ' Procedure Created") }'
+
+  var re = /ab+c/;
+  $scope.addProcedure = function(procedure) {
+    console.log('added procedure')
+
+    procedure.name = procedure.function.split('\`')[1]
+
+
+    $scope.output.push(start + procedure.name + firstmiddle + procedure.function + secondmiddle + procedure.name + end);
+    $scope.procedure = {}
+    setTimeout(function() {
+      $scope.$apply();
+    }, 0)
+  }
+});
+</script>
+
+</body>
+</html>

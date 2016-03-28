@@ -7,10 +7,10 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/utils"
 	"encoding/base64"
 	"strings"
-	"log"
 	"bytes"
 	"gitlab.com/remon/lemon-swear-detector"
 	"html"
+	"log"
 )
 
 type Product struct {
@@ -85,9 +85,7 @@ func CreateProduct(api router.API, product Product, token string) database.Items
 	}
 	product_id := utils.GenerateUUID();
 
-
 	requires_approval := lemon_swear_detector.CheckSentence(product.Title + " " + product.Description)
-	log.Println(requires_approval)
 
 	if len(product.Content) <= 0 {
 		product.Content = " "
@@ -191,17 +189,9 @@ func AmITheOwner(api router.API, pid string, token string) OwnerRes {
 
 func EditProduct(api router.API, pid string, product Product, token string) bool {
 	if IsOwner(api, token, pid) {
-		log.Println(product.Content)
 		if len(product.Title) > 0 && len(product.Description) > 0 && product.Rental_period_limit > 0 {
-			product.Title = html.EscapeString(product.Title)
-			product.Description = html.EscapeString(product.Description)
-			product.Condition = html.EscapeString(product.Condition)
-			product.Content = html.EscapeString(product.Content)
 			return database.UpdateProduct(api, pid, product.Title, product.Description, product.Rental_period_limit, product.Condition, product.Comments_enabled, product.Comments_require_approval, product.Content)
-
 		}
-	} else {
-		log.Println("we are not owner")
 	}
 	return false
 }
