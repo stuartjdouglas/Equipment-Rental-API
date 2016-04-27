@@ -17,8 +17,7 @@ type tokenremoved struct {
 func generateAuthRoutes(api router.API) {
 
 	api.Router.Post("/logout", func(c web.C, res http.ResponseWriter, r *http.Request) {
-		//		Not yet implemented
-		//		Call method to remove token
+
 	})
 
 	api.Router.Post("/user/register", func(c web.C, res http.ResponseWriter, r *http.Request) {

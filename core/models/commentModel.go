@@ -4,17 +4,13 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/database"
 	"github.com/minimaxir/big-list-of-naughty-strings/naughtystrings"
-	"log"
 	"gitlab.com/remon/lemon-swear-detector"
 	"github.com/remony/Equipment-Rental-API/core/utils/email"
 	"strconv"
 )
 
-
 func checkIfNaughtyWord(word string) bool {
-	log.Println("using word " + word)
 	for _, element := range naughtystrings.Unencoded() {
-		//log.Println(element)
 		if word == element {
 			return true
 		}
@@ -49,7 +45,6 @@ func AddComment(api router.API, token string, pid string, comment string, rating
 	if IsSessionValid(api, token) {
 		//if (checkIfNaughtyWord(comment))
 		if lemon_swear_detector.CheckSentence(comment) {
-			//log.Println(checkIfNaughtyWord("0x0"))
 			cid := database.AddComment(api, token, pid, comment, true, rating)
 			username := database.GetUserNameFromToken(api, token)
 			userdata := database.GetUserDetails(api, username)

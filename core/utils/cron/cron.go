@@ -36,7 +36,8 @@ func task(api router.API) {
 		days := getDays(element.Due)
 		hours := getHours(element.Due)
 		// If it is less than 3 days
-		if (days < 3) {
+		log.Println(days)
+		if (days < 3 && hours > 0) {
 			// If it is less than 24 hours
 			if (hours < 24) {
 				// Send a push notification to the user inform it is due in hours
@@ -59,6 +60,16 @@ func task(api router.API) {
 					},
 				);
 			}
+		} else {
+			// If the days is negative, product is overdue
+			models.SendNotificationToUser(
+				api,
+				element.Owner.Username,
+				models.Notification{
+					Title: "Overdue " + strconv.Itoa(-days) + " days.",
+					Message: element.Title + " is overdue",
+				},
+			);
 		}
 
 	}

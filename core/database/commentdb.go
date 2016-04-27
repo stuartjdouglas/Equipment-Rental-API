@@ -21,7 +21,6 @@ func AddComment(api router.API, token string, pid string, comment string, requir
 	defer rows.Close()
 
 	for rows.Next() {
-
 		err := rows.Scan(
 			&id,
 		)
@@ -32,8 +31,8 @@ func AddComment(api router.API, token string, pid string, comment string, requir
 	}
 
 	return id
-
 }
+
 func DeleteComment(api router.API, pid string, cid string, token string) Comment {
 	var comment Comment
 	stmt, err := api.Context.Session.Prepare("CALL DeleteComment(?, ?)")
@@ -63,8 +62,8 @@ func DeleteComment(api router.API, pid string, cid string, token string) Comment
 	}
 
 	return comment
-
 }
+
 func GetComment(api router.API, cid string) Comment {
 	var comment Comment
 	stmt, err := api.Context.Session.Prepare("CALL GetComment(?)")
@@ -103,9 +102,7 @@ func GetComment(api router.API, cid string) Comment {
 	return comment
 }
 
-
 func DisableComments(api router.API, pid string) bool {
-
 	stmt, err := api.Context.Session.Prepare("CALL DisableComments(?)")
 	if err != nil {
 		log.Println(err)
@@ -120,7 +117,6 @@ func DisableComments(api router.API, pid string) bool {
 	defer rows.Close()
 
 	return true
-
 }
 
 func EnableComments(api router.API, pid string) bool {
@@ -139,7 +135,6 @@ func EnableComments(api router.API, pid string) bool {
 	defer rows.Close()
 
 	return true
-
 }
 
 func ApproveComment(api router.API, pid string, cid string) bool {
@@ -211,13 +206,9 @@ func HaveIReviewed(api router.API, pid string, token string) bool {
 		err := rows.Scan(
 			&id,
 		)
-
-		log.Println(id)
 		if (id == 0) {
 			reviewed = false
-			log.Println("not reviewed")
 		} else {
-			log.Println("reviewed")
 			reviewed = true
 		}
 

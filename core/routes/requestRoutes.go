@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/remony/Equipment-Rental-API/core/models"
-"strconv"
+	"strconv"
 )
 
 func generateRequestRouter(api router.API) {
 	api.Router.Get("/owner/requests", func(c web.C, res http.ResponseWriter, req *http.Request) {
-		//pid := c.URLParams["pid"]
 		token := req.Header.Get("token")
 		start := req.Header.Get("start")
 		count := req.Header.Get("count")
@@ -191,7 +190,6 @@ func generateRequestRouter(api router.API) {
 			json.NewEncoder(res).Encode(message)
 		}
 	})
-
 
 	api.Router.Get("/admin/requests/products", func(c web.C, res http.ResponseWriter, req *http.Request) {
 		token := req.Header.Get("token")

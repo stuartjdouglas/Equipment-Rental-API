@@ -125,7 +125,6 @@ func GetCurrentlyRentedProducts(api router.API, token string, step int, count in
 }
 
 func GetProducts(api router.API) database.Items {
-	//return database.GetProducts(api)
 	return database.Items{}
 }
 

@@ -17,13 +17,6 @@ func TestTagModel(t *testing.T) {
 		})
 	})
 
-	//g.Describe("Tags extracted from JSON", func() {
-	//	var json = "tag, eletronic, stuff, anothers";
-	//	g.It("should be returned in struct", func() {
-	//		log.Println(parseJSArrayTags(json))
-	//	})
-	//})
-
 	g.Describe("Count", func() {
 		g.It("below 6 should return 6", func() {
 			g.Assert(parseCount(0)).Equal(6)

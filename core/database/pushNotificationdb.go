@@ -50,9 +50,9 @@ type RequestID struct {
 }
 
 type PushNotificationReqID struct {
-	Username string `json:"username"`
+	Username   string `json:"username"`
 	RequestIDs []string `json:"requestids"`
-	Type string `json:"type"`
+	Type       string `json:"type"`
 }
 
 func GetPushNotificationProductregid(api router.API, pid string) PushNotificationReqID {
@@ -79,7 +79,7 @@ func GetPushNotificationProductregid(api router.API, pid string) PushNotificatio
 		content.RequestIDs = parseids(ids)
 
 		if err != nil {
-			log.Println("Getting paged results error scanning")
+			log.Println("Getting push notification regid results error scanning")
 			panic(err)
 		}
 	}
@@ -113,8 +113,7 @@ func GetPushNotificationUserRegID(api router.API, username string) PushNotificat
 		content.RequestIDs = parseids(ids)
 
 		if err != nil {
-			log.Println("Getting paged results error scanning")
-			panic(err)
+			log.Println(err)
 		}
 	}
 	if err = rows.Err(); err != nil {

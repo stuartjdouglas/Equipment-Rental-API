@@ -34,7 +34,6 @@ func generateProductRoutes(api router.API) {
 				Condition: r.FormValue("condition"),
 				Content: r.FormValue("content"),
 			}
-			log.Println(product.Content)
 
 			tags := r.FormValue("tags")
 
@@ -138,7 +137,7 @@ func generateProductRoutes(api router.API) {
 		}
 	})
 
-//	Get all Products Filtered by added
+	//	Get all Products Filtered by added
 	api.Router.Get("/products/updated/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
@@ -177,7 +176,7 @@ func generateProductRoutes(api router.API) {
 		}
 	})
 
-//	Get all Products Filtered by likes
+	//	Get all Products Filtered by likes
 	api.Router.Get("/products/likes/:order", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {
@@ -216,7 +215,7 @@ func generateProductRoutes(api router.API) {
 		}
 	})
 
-//	Get Random Products
+	//	Get Random Products
 	api.Router.Get("/products/random", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		if (r.Header.Get("Start") != "" || r.Header.Get("Count") != "") {

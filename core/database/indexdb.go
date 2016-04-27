@@ -30,8 +30,7 @@ func GetIndexFromDB(api router.API) Index {
 		)
 
 		if err != nil {
-			log.Println("Getting site index")
-			panic(err)
+			log.Println(err)
 		}
 	}
 	if err = rows.Err(); err != nil {

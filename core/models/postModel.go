@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-	"fmt"
 	"log"
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/database"
@@ -48,8 +47,7 @@ func CreatePost(api router.API, post Post, token string, slug string) bool {
 	if (err != nil) {
 		return false
 	}
-	//	TODO Remove this
-	fmt.Println(res);
+	_= res
 
 	defer stmt.Close()
 	return true

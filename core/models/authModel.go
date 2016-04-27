@@ -19,10 +19,10 @@ type Error_response struct {
 }
 
 type Register struct {
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	Email     string `json:"email"`
-	Recaptcha string `json:"recaptcha"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	Recaptcha   string `json:"recaptcha"`
 	DateOfBirth time.Time `json:"dateofbirth"`
 }
 
@@ -71,7 +71,7 @@ type googleResponse struct {
 	ErrorCodes []string `json:"error-codes"`
 }
 
-func validReCaptchaResposne (response string) bool {
+func validReCaptchaResposne(response string) bool {
 	privatekey := "6LezuhgTAAAAABQg4nNctdCz0ED8cRcFI9-3EcOm"
 	path := "https://www.google.com/recaptcha/api/siteverify"
 
@@ -90,7 +90,6 @@ func validReCaptchaResposne (response string) bool {
 	gr := new(googleResponse)
 	err = json.Unmarshal(body, gr)
 
-
 	return gr.Success
 }
 
@@ -98,7 +97,6 @@ func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 	if !database.CheckIfUserExists(api, data.Username) {
 		if (!skipCaptcha) {
 			if (secureEntry(data.Password) && secureEntry(data.Username)) {
-				log.Println("data is secure")
 				hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
 				if err != nil {
 					log.Fatal(err)
@@ -113,7 +111,6 @@ func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 		} else {
 			if validReCaptchaResposne(data.Recaptcha) {
 				if (secureEntry(data.Password) && secureEntry(data.Username)) {
-					log.Println("data is secure")
 					hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.MinCost)
 					if err != nil {
 						log.Fatal(err)
@@ -128,7 +125,6 @@ func PerformRegister(api router.API, data Register, skipCaptcha bool) bool {
 			}
 
 		}
-
 
 	}
 	return false

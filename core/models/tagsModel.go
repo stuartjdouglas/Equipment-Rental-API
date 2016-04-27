@@ -79,6 +79,5 @@ func GetProductsOfTag(api router.API, tag string, start string, count string) da
 }
 
 func GetTagsMostUsed(api router.API, step int, count int, token string, order bool) []database.MostUsedTag {
-	log.Println("hello")
 	return database.GetTagsMostUsed(api, step, count, token, order)
 }

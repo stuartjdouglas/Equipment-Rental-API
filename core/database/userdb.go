@@ -210,7 +210,7 @@ func GetUsers(api router.API, token string) []User {
 	return users
 }
 
-func ChangeRole(api router.API, username string , role string, token string) bool {
+func ChangeRole(api router.API, username string, role string, token string) bool {
 	stmt, err := api.Context.Session.Prepare("CALL ChangeUserRole(?, ?, ?)")
 	if err != nil {
 		log.Println(err)
@@ -229,7 +229,7 @@ func ChangeRole(api router.API, username string , role string, token string) boo
 
 type UserRole struct {
 	Username string `json:"username"`
-	Role string `json:"role"`
+	Role     string `json:"role"`
 }
 
 func GetUserRoleFromToken(api router.API, token string) UserRole {

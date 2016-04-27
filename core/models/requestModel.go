@@ -135,7 +135,7 @@ func GetAdminProductsRequests(api router.API, token string, step int, count int)
 
 func AdminAuthorizeListingRequest(api router.API, pid string, token string) bool {
 	//if isAdmin(api, token) {
-		return database.AdminAuthorizeListingRequest(api, pid, token)
+	return database.AdminAuthorizeListingRequest(api, pid, token)
 	//}
 
 	return false

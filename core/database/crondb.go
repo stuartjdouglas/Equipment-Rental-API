@@ -6,9 +6,7 @@ import (
 )
 
 func GetRentalsDueLessThreeDays(api router.API) RentResult {
-
 	var content = []RentItems{}
-	//	stmt, err := api.Context.Session.Prepare("SELECT product_name, product_id, date_added, date_updated, product_description, product_rental_period_limit, owner_id, product_image_id FROM products ORDER BY date_added DESC LIMIT ?, ?")
 	stmt, err := api.Context.Session.Prepare("CALL getRentalsDueThreeDays()")
 	if err != nil {
 		log.Println(err)

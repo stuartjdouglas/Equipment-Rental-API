@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"fmt"
 	"github.com/alexjlockwood/gcm"
 	"github.com/remony/Equipment-Rental-API/core/router"
@@ -61,14 +60,10 @@ func sendNotification(user database.PushNotificationReqID, message Notification)
 		fmt.Println("Failed to send message:", err)
 		return
 	}
-	log.Println(response)
+	_= response
 }
 
 func TestNotification() {
-	log.Println("test notification")
-
-
-
 	// Create the message to be sent.
 	data := map[string]interface{}{
 		"title": "Hello",
@@ -86,5 +81,5 @@ func TestNotification() {
 		fmt.Println("Failed to send message:", err)
 		return
 	}
-	log.Println(response)
+	_= response
 }
