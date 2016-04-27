@@ -22,7 +22,7 @@ func GetProfile(api router.API, token string) database.UserProfileContainer {
 	return database.GetProfile(api, token)
 }
 
-func ChangeRole(api router.API, username string , role string, token string) bool {
+func ChangeRole(api router.API, username string, role string, token string) bool {
 	if database.GetUserNameFromToken(api, token) != username {
 		if IsSessionValid(api, token) {
 			database.ChangeRole(api, username, role, token)

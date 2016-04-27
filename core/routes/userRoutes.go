@@ -66,7 +66,6 @@ func generateUserRoutes(api router.API) {
 		}
 	})
 
-
 	api.Router.Get("/profile", func(c web.C, res http.ResponseWriter, r *http.Request) {
 
 		if r.Header.Get("token") != "" {

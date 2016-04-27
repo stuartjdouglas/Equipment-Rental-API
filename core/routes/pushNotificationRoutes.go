@@ -64,7 +64,6 @@ func generatePushNotificationRoutes(api router.API) {
 	})
 
 	api.Router.Post("/notification", func(c web.C, res http.ResponseWriter, req *http.Request) {
-		log.Println("testing")
 		models.TestNotification();
 	})
 }

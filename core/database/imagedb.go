@@ -9,14 +9,14 @@ import (
 
 type Images struct {
 	Images []Image `json:"images"`
-	Total  int        `json:"total"`
+	Total  int     `json:"total"`
 }
 
 type Image struct {
-	Title      string                `json:"title"`
-	Location   string                `json:"location"`
+	Title      string           `json:"title"`
+	Location   string           `json:"location"`
 	Date_added time.Time        `json:"date_added"`
-	Size       size                `json:"size"`
+	Size       size             `json:"size"`
 }
 
 type size struct {
@@ -67,6 +67,7 @@ func GetImage(api router.API, id int) []Image {
 		}
 
 		values := strings.Split(image.Location, ".")
+		// set storage locations of other sizes of images
 		if (len(values) == 2) {
 			if (values[1] != "gif") {
 				image.Size.Large = "/data/" + values[0] + "_large" + "." + values[1]
@@ -135,8 +136,7 @@ func IsImageAvailable(api router.API, token string) bool {
 	var exist bool
 	err := api.Context.Session.QueryRow("SELECT EXISTS (SELECT 1 FROM images WHERE file_name = ?)", token).Scan(&exist)
 	if (err != nil) {
-		// TODO remove panic
-		panic(err)
+		log.Println(err)
 	}
 	// If it exists return true
 	if exist {

@@ -52,6 +52,7 @@ func Start(settings config.Config, context config.Context, mode int) {
 	masterRouter.Use(c.Handler)
 	// apiRouter.Use(c.Handler)
 	// imageRouter.Use(c.Handler)
+
 	if (mode == 1) {
 		masterRouter.Use(lemonlog.Logger)
 	}

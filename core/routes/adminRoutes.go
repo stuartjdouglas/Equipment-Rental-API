@@ -6,12 +6,10 @@ import (
 	"net/http"
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"encoding/json"
-	"log"
 )
 
 func generateAdminRoutes(api router.API) {
 	api.Router.Post("/", func(c web.C, res http.ResponseWriter, r *http.Request) {
-		log.Println(r.Body)
 		title := r.FormValue("title")
 		description := r.FormValue("description")
 		token := r.Header.Get("token")
@@ -55,9 +53,5 @@ func generateAdminRoutes(api router.API) {
 			res.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(res).Encode(message)
 		}
-
-
-		log.Println(token)
-		log.Println(uid)
 	})
 }

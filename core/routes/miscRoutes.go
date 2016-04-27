@@ -8,7 +8,6 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"fmt"
 	"github.com/remony/Equipment-Rental-API/core/database"
-	"log"
 	"strconv"
 )
 
@@ -18,7 +17,6 @@ func generateMiscRoutes(api router.API) {
 		message := hello{
 			Message: fmt.Sprintf("こんにちは, %s!", c.URLParams["name"]),
 		}
-		//email.SendEmail(api, "remonasebi@gmail.com", "hello", "<h1>" + message.Message + "</h1>")
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(200)
 		json.NewEncoder(res).Encode(message)
@@ -46,7 +44,6 @@ func generateMiscRoutes(api router.API) {
 		comment := req.Header.Get("comment")
 		rating, err := strconv.Atoi(req.Header.Get("rating"))
 		if (err != nil) {
-			log.Print("Unable to parse rating int, setting to default")
 			rating = 3
 		}
 

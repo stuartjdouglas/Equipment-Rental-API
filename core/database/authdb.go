@@ -8,12 +8,12 @@ import (
 )
 
 type Auth struct {
-	Success  bool                `json:"success"`
-	Username string                `json:"username"`
-	Gravatar string        `json:"gravatar"`
-	Token    string                `json:"token"`
-	Expiry   time.Time        `json:"expiry"`
-	Role string `json:"role"`
+	Success  bool           `json:"success"`
+	Username string         `json:"username"`
+	Gravatar string                `json:"gravatar"`
+	Token    string         `json:"token"`
+	Expiry   time.Time      `json:"expiry"`
+	Role     string        `json:"role"`
 }
 
 func GetDigest(api router.API, username string) string {

@@ -6,7 +6,7 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"encoding/json"
-"strconv"
+	"strconv"
 )
 
 func generateTagRoutes(api router.API) {

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"github.com/remony/Equipment-Rental-API/core/models"
 	"strconv"
-	"log"
 )
 
 func generateCommentsRoutes(api router.API) {
@@ -114,7 +113,6 @@ func generateCommentsRoutes(api router.API) {
 		token := req.Header.Get("token")
 		rating, err := strconv.Atoi(req.Header.Get("rating"))
 		if (err != nil) {
-			log.Print("Unable to parse rating int, setting to default")
 			rating = 3
 		}
 
@@ -144,7 +142,6 @@ func generateCommentsRoutes(api router.API) {
 		comment := req.Header.Get("comment")
 		rating, err := strconv.Atoi(req.Header.Get("rating"))
 		if (err != nil) {
-			log.Print("Unable to parse rating int, setting to default")
 			rating = 3
 		}
 

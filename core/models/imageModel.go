@@ -4,9 +4,9 @@ import (
 	"github.com/remony/Equipment-Rental-API/core/router"
 	"github.com/remony/Equipment-Rental-API/core/database"
 	"io"
-"github.com/remony/Equipment-Rental-API/core/utils"
+	"github.com/remony/Equipment-Rental-API/core/utils"
 	"encoding/base64"
-"strings"
+	"strings"
 	"log"
 	"bytes"
 )

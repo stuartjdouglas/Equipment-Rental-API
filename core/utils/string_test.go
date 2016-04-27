@@ -32,5 +32,12 @@ func TestUtilsString(t *testing.T) {
 			g.Assert(len(RandomString(100)) == 11).IsFalse()
 		})
 
+		g.It("2 generated strings should not be the same", func() {
+			one := RandomString(10)
+			two := RandomString(10)
+
+			g.Assert(one != two).IsTrue()
+		})
+
 	})
 }

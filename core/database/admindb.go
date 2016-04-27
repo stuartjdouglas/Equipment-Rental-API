@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// Update the index (site name) in the databasew
 func UpdateIndex(api router.API, title string, description string, token string) bool {
 	stmt, err := api.Context.Session.Prepare("CALL updateSite(?, ?, ?)")
 	if err != nil {

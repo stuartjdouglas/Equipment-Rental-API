@@ -1,11 +1,11 @@
 package config
+
 import (
 	"testing"
 	. "github.com/franela/goblin"
 )
 
 const CONF_FILE = "./../../../config.json"
-
 
 func TestConfig(t *testing.T) {
 	g := Goblin(t)

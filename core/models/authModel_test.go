@@ -28,31 +28,6 @@ func TestAuthModel(t *testing.T) {
 	})
 
 	g.Describe("login", func() {
-		//g.It("should return true", func() {
-		//	g.Assert(PerformLogin(api, testUser.Username, testUser.Password).Success).IsTrue()
-		//})
-		//
-		//g.It("should return username lemon", func() {
-		//	g.Assert(PerformLogin(api, testUser.Username, testUser.Password).Username == testUser.Username).IsTrue()
-		//})
-		//
-		//g.It("should return a token", func() {
-		//	g.Assert(len(PerformLogin(api, testUser.Username, testUser.Password).Token) > 2).IsTrue()
-		//})
-		//
-		//g.It("should not return a token with length 0", func() {
-		//	g.Assert(len(PerformLogin(api, testUser.Username, testUser.Password).Token) != 0).IsTrue()
-		//})
-		//
-		//g.It("should return false with bad login", func() {
-		//	g.Assert(PerformLogin(api, testUser.Username, "Password123").Success).IsFalse()
-		//})
-
-		//g.It("should return true is password is correct", func() {
-		//	var digest = database.GetDigest(api, testUser.Username)
-		//	g.Assert(authLogin(testUser.Password, digest)).IsTrue()
-		//})
-
 		g.It("should return false is password is incorrect", func() {
 			var digest = database.GetDigest(api, testUser.Username)
 			g.Assert(authLogin("Password123", digest)).IsFalse()
@@ -86,16 +61,5 @@ func TestAuthModel(t *testing.T) {
 			g.Assert(secureEntry("asd asd")).IsFalse()
 		})
 	})
-
-	//g.Describe("removing user", func() {
-	//	g.It("should return true", func() {
-	//		g.Assert(PerformRemoveUser(api, testUser)).IsTrue()
-	//	})
-	//
-	//	g.It("should return false", func() {
-	//		g.Assert(PerformRemoveUser(api, testUser)).IsFalse()
-	//	})
-	//
-	//})
 }
 
