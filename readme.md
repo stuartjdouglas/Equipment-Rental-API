@@ -4,6 +4,10 @@
 
 The following repo contains the backend API for my project called Equipment Booking Service.
 
+## Live Demo
+
+[https://www.karite.xyz](https://www.karite.xyz)
+
 ## Clients
 
 Ionic mobile app: [https://github.com/remony/equipment-rental-mobile](https://github.com/remony/equipment-rental-mobile)
